@@ -1,5 +1,5 @@
 from datetime import datetime
-import beautifulsoup4
+from bs4 import BeautifulSoup
 
 class SiteListParser(object):
 	def __init__(self, xml=''):
