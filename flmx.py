@@ -3,14 +3,19 @@ from bs4 import BeautifulSoup
 from operator import attrgetter
 
 def get_datetime(isoDate):
-	# returns the utc datetime for a given ISO861 date string formatted
-	# YYYY-mm-ddTHH:MM:SSZ, where Z is a timezone given as +/-HHMM
+	#: returns the utc datetime for a given ISO861 date string formatted
+	#: YYYY-mm-ddTHH:MM:SSZ, where Z is a timezone given as +/-HHMM
 	date = isoDate[:-6]
 	timezone = isoDate[-6:]
 	hrs = int(timezone[:3]) #ie: -01
 	mins = int(timezone[-2:]) #ie: 30
+
+	#if hrs negative, then mins should be too
+	if hrs < 0:
+		mins = 0 - mins
+
 	dt = datetime.strptime(date, "%Y-%m-%dT%H:%M:%S")
-	return dt + timedelta(hours = hrs, minutes = mins)
+	return dt + timedelta(hours=hrs, minutes=mins)
 
 class FacilityLink(object):	
 	id_code = "" 
