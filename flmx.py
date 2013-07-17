@@ -36,7 +36,7 @@ class SiteListParser(object):
 	def __init__(self, xml=''):
 		self.contents = xml
 
-		soup = BeautifulSoup(open(xml, 'r'), "xml")
+		soup = BeautifulSoup(xml, "xml")
 		self.sites.originator = soup.SiteList.Originator.string
 		self.sites.systemName = soup.SiteList.SystemName.string
 		facilities = []
@@ -49,7 +49,7 @@ class SiteListParser(object):
 			facLink.xlink_type = facility['xlink:type']
 
 			facilities.append(facLink)
-			
+
 		self.sites.facilities = sorted(facilities, key=attrgetter('last_modified'))
 
 	def get_sites(self, last_ran=None):
@@ -57,19 +57,6 @@ class SiteListParser(object):
 		# Also should be able to pass in a last_run daettime and have it return only the sites that have been modified since then.
 		if not last_ran:
 			last_ran = datetime.min
-
-		#TEST TEST TEST TEST TEST TEST 
-		# output = []
-		# for link in self.sites.facilities:
-		# 	if link.last_modified >= last_ran:
-		# 		output.append((link.xlink_href, link.last_modified))
-
-		# return output
-
-		# return [(link.xlink_href, link.last_modified)
-		# 			for link in self.sites.facilities
-		# 			if link.last_modified >= last_ran]
-		#TEST TEST TEST TEST TEST TEST 
 
 		return dict((link.xlink_href, link.last_modified)
 					for link in self.sites.facilities
@@ -88,15 +75,3 @@ class FacilityParser(object):
 	def get_certificates():
 		pass
 
-
-
-
-def main():
-	s = SiteListParser('D:\\data\\sitelist.xml')
-	print s.get_sites()
-
-	#return B + C, not A
-	print s.get_sites(last_ran = datetime(2012, 1, 1, 0, 0))
-	
-if __name__ == '__main__':
-	main()
