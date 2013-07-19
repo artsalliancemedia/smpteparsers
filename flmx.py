@@ -2,12 +2,15 @@ from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
 from operator import attrgetter
 
+# These helper methods take XML, strip the tags and
+# convert the contents to the required type
 def boolean(s):
     if not s:
         return None
 
-    string = s.get_text()
-    return string.lower() != "false" and bool(string)
+	string = s.get_text()
+	# Only boolean values in XML are 0 and 1, false and true
+	return string != "0" and string.lower() != "false"
 
 def string(s):
     return None if not s else s.get_text()
@@ -16,8 +19,8 @@ def date(s):
     if not s:
         return None
 
-    string = s.get_text
-    return datetime.strptime(string, "%Y-%m-%d")
+	string = s.get_text
+	return datetime.strptime(string, "%Y-%m-%d")
 
 def uint(s):
     if not s:
@@ -28,6 +31,7 @@ def uint(s):
     # int constructor returns a long if it doesn't fit in an int
     return int(string)
 
+# Parses a KDM or DCP delivery list
 def deliveries(xml):
     deliveries = {}
 
@@ -226,8 +230,10 @@ class Facility(object):
     booking_partner_id -- The ID of the facility's booking partner
     timezone -- The time zone name of the facility in TZ format
     contacts -- A list of people or organisations who are contacts for the facility
+
     """
 	def __init__(self, flm):
+        # Strip the 'urn:x-facilityID' tag from the front of the ID
 		self.id = flm.FacilityID.get_text().split(":", 2)[2]
 		self.name = string(flm.FacilityName)
 
@@ -357,6 +363,33 @@ class Contact(object):
 		self.type = string(contact.Type)
 
 class Device(object):
+    """Represents a device in an auditorium.
+
+    Mandatory fields:
+    type -- The type of the device defined by SMPTE 433-2008
+    id -- A unique ID for the device.  This can be a UUID or a certificate thumbprint.
+    manufacturer_name -- The name of the device manufacturer
+    model_number -- The model number of the device
+    active -- Whether the device is currently in active use or not
+
+    Optional fields:
+    serial -- The serial number of the device
+    manufacturer_id -- A URI corresponding to the ID of the manufacturer
+    install_date -- The device install date
+    resolution -- The resolution of the device (if a playback device)
+        Possible values are 2K, 4K and other.
+    integrator -- The integrator for the device
+    vpf_finance_entity -- The entity responsible for VPF on the device
+    vpf_start_date -- The date from which VPF was established on the device
+    ip_addresses -- Contactable IPv4/IPv6 addresses for the device
+    software -- A list of installed software on the device
+    certificates -- A list of certificates associated with the device
+    watermarking -- Watermarks associated with the device
+    kdm_deliveries -- A list of methods for delivery of KDMs to the device
+    dcp_deliveries -- A list of methods for delivery of DCP content to the device
+        Delivery methods are email, modem, network or physical.
+
+    """
 	def __init__(self, device):
         """Represents a device in an auditorium.
 
