@@ -159,7 +159,7 @@ class TestSiteListFetchHandling(unittest.TestCase):
         self.assertEqual(dict['linkC'], self.datetimeC)
 
     def test_middleDate(self):
-        #beginning of 2012, should only returb B and C
+        #beginning of 2012, should only return B and C
         dict = self.sites.get_sites(datetime(2012,01,01,12,0,0))
         self.assertEqual(len(dict), 2)
         self.assertFalse('linkA' in dict)

@@ -6,11 +6,12 @@ def get_datetime(isoDate):
     """returns the utc datetime for a given ISO8601 date string. Format must be
     as follows: YYYY-mm-ddTHH:MM:SS, with the following optional components
     (that must be in the given order if both are present):
+
     1. milliseconds eg '.123' (these will be discarded)
     2. timezone given by any of the following:
-    * +/-HH:MM
-    * +/-HHMM
-    * +/-HH
+        * +/-HH:MM
+        * +/-HHMM
+        * +/-HH
     """
 
     dt = datetime.strptime(isoDate[:19], "%Y-%m-%dT%H:%M:%S")
@@ -84,18 +85,17 @@ class SiteList(object):
     """List of ``FacilityLink`` objects
     """
 
-
 class SiteListParser(object):
     """Parses an xml sitelist, and constructs a container holding the the xml
     document's data.
     """
-
-    sites = SiteList()
-    def __init__(self, xml=''):
-        """XML can either be the contents of an xml file, or a file handle.
-        This will parse the contents (without validation) and construct ``sites``.
+    def __init__(self, xml='', validate=True, ):
+        """``xml`` can either be the contents of an xml file, or a file handle.
+        This will parse the contents and construct ``sites``. ``validate`` is an
+        optional
         """
         self.contents = xml
+        self.sites = SiteList()
 
         soup = BeautifulSoup(xml, "xml")
         self.sites.originator = soup.SiteList.Originator.string

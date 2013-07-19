@@ -109,7 +109,7 @@
 
 <dl class="class">
 <dt id="flmx.SiteListParser">
-<em class="property">class </em><tt class="descclassname">flmx.</tt><tt class="descname">SiteListParser</tt><big>(</big><em>xml=''</em><big>)</big><a class="headerlink" href="#flmx.SiteListParser" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">flmx.</tt><tt class="descname">SiteListParser</tt><big>(</big><em>xml=''</em>, <em>validate=True</em><big>)</big><a class="headerlink" href="#flmx.SiteListParser" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parses an xml sitelist, and constructs a container holding the the xml
 document&#8217;s data.</p>
 <dl class="method">
@@ -131,12 +131,21 @@ which to search for last_modified times after. defaults to
 <tt class="descclassname">flmx.</tt><tt class="descname">get_datetime</tt><big>(</big><em>isoDate</em><big>)</big><a class="headerlink" href="#flmx.get_datetime" title="Permalink to this definition">¶</a></dt>
 <dd><p>returns the utc datetime for a given ISO8601 date string. Format must be
 as follows: YYYY-mm-ddTHH:MM:SS, with the following optional components
-(that must be in the given order if both are present):
-1. milliseconds eg &#8216;.123&#8217; (these will be discarded)
-2. timezone given by any of the following:
-* +/-HH:MM
-* +/-HHMM
-* +/-HH</p>
+(that must be in the given order if both are present):</p>
+<ol class="arabic">
+<li><p class="first">milliseconds eg &#8216;.123&#8217; (these will be discarded)</p>
+</li>
+<li><dl class="first docutils">
+<dt>timezone given by any of the following:</dt>
+<dd><ul class="first last simple">
+<li>+/-HH:MM</li>
+<li>+/-HHMM</li>
+<li>+/-HH</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ol>
 </dd></dl>
 
 </div>

@@ -7,7 +7,7 @@ Welcome to flmx's documentation!
 ================================
 
 An API to process, validate and manipulate FLMX feeds.
-``````````````````````````````````````````````````````
+For more information see
 
 Contents:
 
