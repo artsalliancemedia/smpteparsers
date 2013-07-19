@@ -3,8 +3,16 @@ from bs4 import BeautifulSoup
 from operator import attrgetter
 
 def get_datetime(isoDate):
-	#: returns the utc datetime for a given ISO8601 date string formatted
-	#: YYYY-mm-ddTHH:MM:SSZ, where Z is a timezone given as +/-HHMM
+	"""returns the utc datetime for a given ISO8601 date string. Format must be
+	as follows: YYYY-mm-ddTHH:MM:SS, with the following optional components
+	(that must be in the given order if both are present):
+	1. milliseconds eg '.123' (these will be discarded)
+	2. timezone given by any of the following:
+	* +/-HH:MM
+	* +/-HHMM
+	* +/-HH
+	"""
+
 	dt = datetime.strptime(isoDate[:19], "%Y-%m-%dT%H:%M:%S")
 	# 19 is up to and including seconds.
 	rest = isoDate[19:]
@@ -37,10 +45,22 @@ def get_datetime(isoDate):
 	return dt - timedelta(hours=hrs, minutes=mins)
 
 class FacilityLink(object):	
-	id_code = "" 
-	last_modified = datetime.min
-	xlink_href = "" 
-	xlink_type = "simple" 
+	"""A link to a facility flm file, as contained within a SiteList.
+	"""
+	
+	 
+	id_code = '' 
+	"""e.g. aam.com:UK-ABC-123456-01
+	"""
+	last_modified = datetime.min 
+	"""Last time modified
+	"""
+	xlink_href = '' 
+	"""URL of Facility flmx
+	"""
+	xlink_type = "simple"
+	"""The type of link. Not currently used.
+	"""
 
 	def __str__(self):
 		return 'FacilityLink: \
@@ -50,14 +70,31 @@ class FacilityLink(object):
 				link_type: ' + self.xlink_type
 
 
+
 class SiteList(object):
+	"""Contains a list of facilities, and metadata about the site list itself.
+	"""
 	originator = ""
+	"""URL of the original FLM file
+	"""
 	systemName = ""
+	"""The name of the system that created this file
+	"""
 	facilities = []
+	"""List of ``FacilityLink`` objects
+	"""
+
 
 class SiteListParser(object):
+	"""Parses an xml sitelist, and constructs a container holding the the xml
+	document's data.
+	"""
+
 	sites = SiteList()
 	def __init__(self, xml=''):
+		"""XML can either be the contents of an xml file, or a file handle.
+		This will parse the contents (without validation) and construct ``sites``.
+		"""
 		self.contents = xml
 
 		soup = BeautifulSoup(xml, "xml")
@@ -76,10 +113,16 @@ class SiteListParser(object):
 
 		self.sites.facilities = sorted(facilities, key=attrgetter('last_modified'))
 
-	#: last_ran must be UTC
-	def get_sites(self, last_ran=None):
-		# Should be able to return the list of urls for a site list.
-		# Also should be able to pass in a last_run datetime and have it return only the sites that have been modified since then.
+	def get_sites(self, last_ran=datetime.min):
+		"""returns a dictionary mapping URLs as keys to the date that flm was last
+		modified as a value.
+
+		*	``last_ran`` - a datetime object, with the time given as UTC time, with
+			which to search for last_modified times after. defaults to
+			``datetime.min``, that is, to return all FacilityLinks.
+		"""
+
+
 		if not last_ran:
 			last_ran = datetime.min
 
