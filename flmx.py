@@ -54,7 +54,7 @@ class FacilityLink(object):
     """e.g. aam.com:UK-ABC-123456-01
     """
     last_modified = datetime.min 
-    """Last time modified
+    """Last time modified - defaults to *datetime.min*
     """
     xlink_href = '' 
     """URL of Facility flmx
