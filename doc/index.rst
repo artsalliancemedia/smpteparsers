@@ -7,7 +7,7 @@ Welcome to flmx's documentation!
 ================================
 
 An API to process, validate and manipulate FLMX feeds.
-For more information see
+For more information on the FLM-x format, including examples and schema documents, see the `FLM-x Homepage`__.
 
 Contents:
 
@@ -26,3 +26,6 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+
+.. __: http://flm.foxpico.com/
