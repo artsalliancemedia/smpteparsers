@@ -11,6 +11,6 @@ The SiteList Parser parses an flmx feed object, transforming the xml into a pyth
 Functions & Objects
 --------------------------------
 
-.. automodule:: flmx
+.. autoclass:: SiteListParser
    :members:
    

@@ -1,10 +1,10 @@
 import unittest
 from StringIO import StringIO
-
+from flmx import FlmxParseException
 from xmlvalidation import XMLValidator
+from lxml.etree import XMLSyntaxError   
 
-good_xsd = StringIO(
-    """<?xml version="1.0" encoding="utf-8"?>
+good_xsd = """<?xml version="1.0" encoding="utf-8"?>
     <schema
         xmlns="http://www.w3.org/2001/XMLSchema"
         targetNamespace="http://isdcf.com/2010/04/SiteList"
@@ -43,9 +43,11 @@ good_xsd = StringIO(
             </restriction>
         </complexContent>
         </complexType>
-    </schema>""")
+    </schema>
+    """
 
-bad_xsd = StringIO("""<?xml version="1.0" encoding="utf-8"?>
+#cuts off halfway
+bad_xsd = """<?xml version="1.0" encoding="utf-8"?>
     <schema
         xmlns="http://www.w3.org/2001/XMLSchema"
         targetNamespace="http://isdcf.com/2010/04/SiteList"
@@ -79,9 +81,10 @@ bad_xsd = StringIO("""<?xml version="1.0" encoding="utf-8"?>
             <restriction base="anyType">
             <attribute name="id" type="string" use="required" />
             <attribute name="modified" type="dateTime" use="required" />
-            <attribute ref="xlink:href" use="required" />""")
+            <attribute ref="xlink:href" use="required" />"""
 
-good_xml = StringIO("""<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet href="/2.4.4.19419/static/fort_nocs/xsl/flm/sitelist-to-xhtml.xsl" type="text/xsl"?>
+
+good_xml = """<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet href="/2.4.4.19419/static/fort_nocs/xsl/flm/sitelist-to-xhtml.xsl" type="text/xsl"?>
     <SiteList xmlns="http://isdcf.com/2010/04/SiteList" xmlns:xlink="http://www.w3.org/1999/xlink">
         <Originator>orig</Originator>
         <SystemName>sysName</SystemName>
@@ -91,17 +94,58 @@ good_xml = StringIO("""<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet hr
             <Facility id="C" modified="2013-06-09T12:12:03+03:40" xlink:href="linkC" xlink:type="simple"/>
             <Facility id="B" modified="2012-05-08T12:11:02-01:20" xlink:href="linkB" xlink:type="simple"/>
         </FacilityList>
-    </SiteList>""")
+    </SiteList>"""
+
+#Valid XML, but does not conform to schema - in this case does not have a xlink:href field in Facility
+invalid_xml = """<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet href="/2.4.4.19419/static/fort_nocs/xsl/flm/sitelist-to-xhtml.xsl" type="text/xsl"?>
+    <SiteList xmlns="http://isdcf.com/2010/04/SiteList" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <Originator>orig</Originator>
+        <SystemName>sysName</SystemName>
+        <DateTimeCreated>2001-01-01T15:49:40.220</DateTimeCreated>
+        <FacilityList>
+            <Facility id="A" modified="2011-04-07T12:10:01-00:00" xlink:type="simple"/>
+            <Facility id="C" modified="2013-06-09T12:12:03+03:40" xlink:type="simple"/>
+            <Facility id="B" modified="2012-05-08T12:11:02-01:20" xlink:type="simple"/>
+        </FacilityList>
+    </SiteList>"""
+
+#Invalid XML
+corrupt_xml = """<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet href="/2.4.4.19419/static/fort_nocs/xsl/flm/sitelist-to-xhtml.xsl" type="text/xsl"?>
+    <SiteList xmlns="http://isdcf.com/2010/04/SiteList" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <Originator>orig</Originator>
+        <SystemName>sysName</SystemName>
+        <DateTimeCreated>2001-01-01T15:49:40.220</DateTimeCreated>
+        <FacilityList>
+            <Facility id="A" modified="2011-04-07T12:10:01-00:00" xlink:href="linkA" xlink:type="simple"/>
+            <Facility id="C" modified="2013-06-09T12:12:03+03:40" xlink:href="linkC" xlink:type="simple"/>"""
+
+empty_str = """"""
 
 class TestXMLValidator(unittest.TestCase):
     v = XMLValidator()
 
     def test_goodschema(self):
-        self.assertTrue(self.v.validate(good_xml, good_xsd))
-        #empty list will evaluate to false
+        # We expect no messages here
+        self.assertTrue(self.v.validate(StringIO(good_xml), StringIO(good_xsd)))
         self.assertFalse(self.v.get_messages())
 
+        self.assertFalse(self.v.validate(StringIO(invalid_xml), StringIO(good_xsd)))
+        self.assertTrue(self.v.get_messages())
+
+        self.assertFalse(self.v.validate(StringIO(corrupt_xml), StringIO(good_xsd)))
+        self.assertTrue(self.v.get_messages())
+
+        self.assertFalse(self.v.validate(StringIO(empty_str), StringIO(good_xsd)))
+        self.assertTrue(self.v.get_messages())
+
     def test_badschema(self):
-        self.assertRaises(self.v.validate(good_xml, bad_xsd))
-        self.assertRaises(ValueError, flmx.get_datetime, date + '+aa:aa')
-        self.assertRaises(ValueError, flmx.get_datetime, date + '+15:a0')
+        self.assertRaises(FlmxParseException, self.v.validate, StringIO(empty_str), StringIO(bad_xsd))
+        self.assertRaises(FlmxParseException, self.v.validate, StringIO(good_xml), StringIO(bad_xsd))
+        self.assertRaises(FlmxParseException, self.v.validate, StringIO(invalid_xml), StringIO(bad_xsd))
+        self.assertRaises(FlmxParseException, self.v.validate, StringIO(corrupt_xml), StringIO(bad_xsd))
+
+    def test_emptyschema(self):
+        self.assertRaises(FlmxParseException, self.v.validate, StringIO(empty_str), StringIO(empty_str))
+        self.assertRaises(FlmxParseException, self.v.validate, StringIO(good_xml), StringIO(empty_str))
+        self.assertRaises(FlmxParseException, self.v.validate, StringIO(invalid_xml), StringIO(empty_str))
+        self.assertRaises(FlmxParseException, self.v.validate, StringIO(corrupt_xml), StringIO(empty_str))
