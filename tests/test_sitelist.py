@@ -178,6 +178,3 @@ class TestSiteListFetchHandling(unittest.TestCase):
         #beginning of 2014, should not return anything
         dict = self.sites.get_sites(datetime(2014,01,01,12,0,0))
         self.assertEqual(len(dict), 0)
-
-if __name__ == '__main__':
-    unittest.main()
