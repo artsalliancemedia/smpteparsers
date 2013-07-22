@@ -28,8 +28,9 @@ def uint(s):
     return int(s) if s else None
 
 def datetime(isoDate):
-    """returns the utc datetime for a given ISO8601 date string. Format must be
-    as follows: YYYY-mm-ddTHH:MM:SS, with the following optional components
+    """Returns the utc datetime for a given ISO8601 date string.
+
+    Format must be as follows: YYYY-mm-ddTHH:MM:SS, with the following optional components
     (that must be in the given order if both are present):
 
     1. milliseconds eg '.123' (these will be discarded)
@@ -38,6 +39,7 @@ def datetime(isoDate):
         * +/-HHMM
         * +/-HH
     """
+
     isoDate = strip_tags(isoDate)
     if not isoDate:
         return None
@@ -81,33 +83,30 @@ def deliveries(xml):
         return deliveries
 
     if xml.Email:
-        deliveries['email'] = xml.EmailAddress.get_text()
+        deliveries['email'] = string(xml.EmailAddress)
     if xml.Modem: # Modem, seriously?
-        deliveries['modem'] = xml.PhoneNumber.get_text()
+        deliveries['modem'] = string(xml.PhoneNumber)
     if xml.Network:
-        deliveries['network'] = xml.URL.get_text()
+        deliveries['network'] = string(xml.URL)
     if xml.Physical:
-        deliveries['physical'] = xml.MediaType.get_text()
+        deliveries['physical'] = string(xml.MediaType)
 
     return deliveries
 
 class FacilityLink(object): 
-    """A link to a facility flm file, as contained within a SiteList.
+    """A link to a facility FLM-x file, as contained within a SiteList.
+
+    :var string id_code: The ID of the facility, eg. *"aam.com:UK-ABC-123456-01"*.
+    :var datetime last_modified: Last time modified.
+    :var string xlink_href: URL of facility FLM-x.
+    :var string xlink_type: The type of link, not currently used.  Defaults to *"simple"*.
+
     """
-    
-    
+
     id_code = ''
-    """e.g. aam.com:UK-ABC-123456-01
-    """
     last_modified = dt.min
-    """Last time modified
-    """
     xlink_href = ''
-    """URL of Facility flmx
-    """
     xlink_type = "simple"
-    """The type of link. Not currently used.
-    """
 
     def __str__(self):
         return 'FacilityLink: \
@@ -120,26 +119,25 @@ class FacilityLink(object):
 
 class SiteList(object):
     """Contains a list of facilities, and metadata about the site list itself.
+
+    :var string originator: URL of the original FLM file.
+    :var string system_name: The name of the system that created this file.
+    :var [FacilityLink] facilities: List of ``FacilityLink`` objects.
+
     """
     originator = ""
-    """URL of the original FLM file
-    """
-    systemName = ""
-    """The name of the system that created this file
-    """
+    system_name = ""
     facilities = []
-    """List of ``FacilityLink`` objects
-    """
 
 class SiteListParser(object):
-    """Parses an xml sitelist, and constructs a container holding the the xml
-    document's data.
+    """Parses an XML sitelist, and constructs a container holding the the XML document's data.
+
+    :param string xml: Either the contents of an XML file, or a file handle.
+        This will parse the contents and construct ``sites``.
+    :param boolean validate: 
+
     """
-    def __init__(self, xml='', validate=True, ):
-        """``xml`` can either be the contents of an xml file, or a file handle.
-        This will parse the contents and construct ``sites``. ``validate`` is an
-        optional
-        """
+    def __init__(self, xml='', validate=True):
         self.contents = xml
         self.sites = SiteList()
 
@@ -150,7 +148,7 @@ class SiteListParser(object):
         for facility in soup.find_all('Facility'):
             facLink = FacilityLink()
             facLink.id_code = facility['id']
-            # strip  the timezone from the ISO timecode
+            # strip the timezone from the ISO timecode
             facLink.last_modified = datetime(facility['modified'])
             facLink.xlink_href = facility['xlink:href']
             facLink.xlink_type = facility['xlink:type']
@@ -160,14 +158,13 @@ class SiteListParser(object):
         self.sites.facilities = sorted(facilities, key=attrgetter('last_modified'))
 
     def get_sites(self, last_ran=dt.min):
-        """returns a dictionary mapping URLs as keys to the date that flm was last
-        modified as a value.
+        """Returns a dictionary mapping URLs as keys to the date that FLM was last modified as a value.
 
-        *   ``last_ran`` - a datetime object, with the time given as UTC time, with
+        :param datetime last_ran: a datetime object, with the time given as UTC time, with
             which to search for last_modified times after. defaults to
             ``datetime.min``, that is, to return all FacilityLinks.
-        """
 
+        """
 
         if not last_ran:
             last_ran = dt.min
@@ -180,8 +177,7 @@ class SiteListParser(object):
 class FacilityParser(object):
     """A class to parse a single FLM feed.
 
-    Keyword arguments:
-    xml -- an xml string or an open, readable xml file containing an FLM feed.
+    :param xml: an XML string or an open, readable XML file containing an FLM feed.
 
     """
     def __init__(self, xml=''):
@@ -214,18 +210,22 @@ class Facility(object):
     """Represents the top-level facility which the FLM refers to.
 
     Mandatory fields (guaranteed to not be ``None`` for a valid FLM):
-    id -- The facility's unique ID
-    name -- The name of the facility
-    circuit -- The circuit (exhibitor) the facility belongs to
-    addresses -- A dictionary of the addresses for the facility.
+
+    :ivar string id: The facility's unique ID type.
+    :ivar string name: The name of the facility.
+    :ivar string circuit: The circuit (exhibitor) the facility belongs to.
+    :ivar {string,Address} addresses: A dictionary of the addresses for the facility.
         There can be any combination of a *physical*, *shipping* or a *billing* address but there must be at least one.
-    auditoriums -- The screens in a facility
+    :ivar {int/string,Auditorium} auditoriums: The screens in a facility.
+        If the auditorium has a number then it is indexed by number.
+        Otherwise if it only has a name then it is indexed by name.
 
     Optional fields (may be ``None`` or empty):
-    alternate_ids -- A list of alternate IDs (also unique) for the facility
-    booking_partner_id -- The ID of the facility's booking partner
-    timezone -- The time zone name of the facility in TZ format
-    contacts -- A list of people or organisations who are contacts for the facility
+
+    :ivar [string] alternate_ids: A list of alternate IDs (also unique) for the facility.
+    :ivar string booking_partner_id: The ID of the facility's booking partner.
+    :ivar string timezone: The time zone name of the facility in TZ format.
+    :ivar [string] contacts: A list of people or organisations who are contacts for the facility.
 
     """
     def __init__(self, flm):
@@ -273,18 +273,20 @@ class Facility(object):
 class Address(object):
     """Represents an address.
 
-    The address of a facility can be *physical*, *shipping* or *billing*.
+    The addresses of a facility can be *physical*, *shipping* or *billing*.
 
     Mandatory fields:
-    street_address -- The street line of the address
-    city -- The city of the address
-    province -- The province/state/county of the address
-    country -- The two letter ISO3166 country code where the address resides
+
+    :ivar string street_address: The street line of the address.
+    :ivar string city: The city of the address.
+    :ivar string province: The province/state/county of the address.
+    :ivar string country: The two letter ISO3166 country code where the address resides.
 
     Optional fields:
-    addressee -- The contact whom the address refers to
-    street_address2 -- The second line of the street in the address
-    postal_code -- The postal/zip code of the address
+
+    :ivar string addressee: The contact whom the address refers to.
+    :ivar string street_address2: The second line of the street in the address.
+    :ivar string postal_code: The postal/zip code of the address.
 
     """
     def __init__(self, address):
@@ -300,20 +302,24 @@ class Auditorium(object):
     """Represents a screen or auditorium.
 
     Mandatory fields:
-    number -- The number of the auditorium in the facility
-    supports_35mm -- Whether the auditorium supports 35mm film or not
-    devices -- The devices present in the auditorium
+
+    :ivar integer number: The number of the auditorium in the facility.
+        This is not strictly mandatory as an auditorium may have a name instead of a number,
+        but it must have at least one of the two.
+    :ivar string supports_35mm: Whether the auditorium supports 35mm film or not.
+    :ivar [Device] devices: The devices present in the auditorium.
 
     Optional fields:
-    name -- The name of the auditorium (eg. "Auditorium 1")
-    screen_aspect_ratio -- The aspect ratio of the screen.
+
+    :ivar string name: The name of the auditorium (eg. *"Auditorium 1"*)
+    :ivar string screen_aspect_ratio: The aspect ratio of the screen.
         Possible values are 1.85, 2.39, 1.66, 1.37 or other.
-    adjustable_screen_mask -- The type of the adjustable screen mask.
-        Possible values are top, side, both or none.
-    audio_format -- The audio format in the auditorium (eg. "5.1")
-    install_date -- The install date of the auditorium
-    large_format_type -- The large format type of the auditorium
-    digital_3d_system -- The 3D system installed in the auditorium
+    :ivar string adjustable_screen_mask: The type of the adjustable screen mask.
+        Possible values are *top*, *side*, *both* or *none*.
+    :ivar string audio_format: The audio format in the auditorium (eg. *"5.1"*).
+    :ivar datetime install_date: The install date of the auditorium.
+    :ivar string large_format_type: The large format type of the auditorium.
+    :ivar Digital3DSystem digital_3d_system: The 3D system installed in the auditorium.
 
     """
     def __init__(self, auditorium):
@@ -336,14 +342,16 @@ class Contact(object):
     """Represents a point of contact.
 
     Mandatory fields:
-    name -- The name of the contact
+
+    :ivar string name: The name of the contact.
 
     Optional fields:
-    country -- The ISO3166 country code for the contact
-    phone1 -- First phone number for the contact
-    phone2 - Second phone number for the contact
-    email -- Email address for the contact
-    type -- A string categorising the contact
+
+    :ivar string country: The ISO3166 country code for the contact.
+    :ivar string phone1: First phone number for the contact.
+    :ivar string phone2: Second phone number for the contact.
+    :ivar string email: Email address for the contact.
+    :ivar string type: A string categorising the contact.
 
     """
     def __init__(self, contact):
@@ -358,49 +366,58 @@ class Device(object):
     """Represents a device in an auditorium.
 
     Mandatory fields:
-    type -- The type of the device defined by SMPTE 433-2008
-    id -- A unique ID for the device.  This can be a UUID or a certificate thumbprint.
-    manufacturer_name -- The name of the device manufacturer
-    model_number -- The model number of the device
-    active -- Whether the device is currently in active use or not
+
+    :ivar string type: The type of the device defined by SMPTE 433-2008.
+        These are given in the table below. 
+    :ivar string id: A unique ID for the device.  This can be a UUID or a certificate thumbprint.
+    :ivar string manufacturer_name: The name of the device manufacturer.
+    :ivar string model_number: The model number of the device.
+    :ivar boolean active: Whether the device is currently in active use or not.
 
     Optional fields:
-    serial -- The serial number of the device
-    manufacturer_id -- A URI corresponding to the ID of the manufacturer
-    install_date -- The device install date
-    resolution -- The resolution of the device (if a playback device)
-        Possible values are 2K, 4K and other.
-    integrator -- The integrator for the device
-    vpf_finance_entity -- The entity responsible for VPF on the device
-    vpf_start_date -- The date from which VPF was established on the device
-    ip_addresses -- Contactable IPv4/IPv6 addresses for the device
-    software -- A list of installed software on the device
-    certificates -- A list of certificates associated with the device
-    watermarking -- Watermarks associated with the device
-    kdm_deliveries -- A list of methods for delivery of KDMs to the device
-    dcp_deliveries -- A list of methods for delivery of DCP content to the device
-        Delivery methods are email, modem, network or physical.
+
+    :ivar string serial: The serial number of the device.
+    :ivar string manufacturer_id: A URI corresponding to the ID of the manufacturer.
+    :ivar datetime install_date: The device install date.
+    :ivar string resolution: The resolution of the device (if a playback device).
+        Possible values are *2K*, *4K* and *other*.
+    :ivar string integrator: The integrator for the device.
+    :ivar string vpf_finance_entity: The entity responsible for VPF on the device.
+    :ivar datetime vpf_start_date: The date from which VPF was established on the device.
+    :ivar [IPAddress] ip_addresses: Contactable IPv4/IPv6 addresses for the device.
+    :ivar [Software] software: A list of installed software on the device.
+    :ivar [Certificate] certificates: A list of certificates associated with the device.
+    :ivar [Watermarking] watermarking: Watermarks associated with the device.
+    :ivar {string,string} kdm_deliveries: A list of methods for delivery of KDMs to the device.
+    :ivar {string,string} dcp_deliveries: A list of methods for delivery of DCP content to the device.
+        Delivery methods are *email*, *modem*, *network* or *physical*.
+
+    Device Types (SMPTE 433-2008):
+
+    ==== ======================================
+    Type Description
+    ==== ======================================
+    DEC  Media Decoder
+    FMI  Forensic Mark Inserter (Image/Picture)
+    FMA  Forensic Mark Inserter (Audio/Sound)
+    LD   Link Decryptor (Image/Picture)
+    LE   Link Encryptor (Image/Picture)
+    MDA  Media Decryptor (Audio/Sound)
+    MDI  Media Decryptor (Image/Picture)
+    MDS  Media Decryptor (Subtitle)
+    NET  Networking Device
+    PLY  Playback Device
+    PR   Projector
+    PWR  Power Control System
+    SM   Security Manager
+    SMS  Screen Management System
+    SPB  Secure Processing Block
+    TAS  Theater Automation System
+    TMS  Theater Management System
+    ==== ======================================
 
     """
     def __init__(self, device):
-        #  Device Types (SMPTE 433-2008)
-        # DEC  Media Decoder
-        # FMI  Forensic Mark Inserter (Image/Picture)
-        # FMA  Forensic Mark Inserter (Audio/Sound)
-        # LD   Link Decryptor (Image/Picture)
-        # LE   Link Encryptor (Image/Picture)
-        # MDA  Media Decryptor (Audio/Sound)
-        # MDI  Media Decryptor (Image/Picture)
-        # MDS  Media Decryptor (Subtitle)
-        # NET  Networking Device
-        # PLY  Playback Device
-        # PR   Projector
-        # PWR  Power Control System
-        # SM   Security Manager
-        # SMS  Screen Management System
-        # SPB  Secure Processing Block
-        # TAS  Theater Automation System
-        # TMS  Theater Management System
         self.type = string(device.DeviceTypeID)
         self.id = string(device.DeviceIdentifier)
         self.serial = string(device.DeviceSerial)
@@ -440,17 +457,19 @@ class Digital3DSystem(object):
     """Represents a digital 3D system installed in an auditorium.
 
     Mandatory fields:
-    active -- Whether the 3D system is active or not
+
+    :ivar boolean active: Whether the 3D system is active or not.
     
     Optional fields:
-    configuration -- A string describing the 3D configuration, eg. "RealD" or "Dolby 3D"
-    install_date -- The install date of the 3D system
-    screen_color -- The colour of the screen.
-        Possible values are silver, white or other.
-    screen_luminance -- The luminance of the screen.
+
+    :ivar string configuration: A string describing the 3D configuration, eg. *"RealD"* or *"Dolby 3D"*.
+    :ivar datetime install_date: The install date of the 3D system.
+    :ivar string screen_color: The colour of the screen.
+        Possible values are *silver*, *white* or *other*.
+    :ivar integer screen_luminance: The luminance of the screen.
         Possible values are between 1 and 29 (inclusive).
-    ghostbusting -- Whether the screen supports ghostbusting technology
-    ghostbusting_configuration -- Details of the ghostbusting configuration
+    :ivar boolean ghostbusting: Whether the screen supports ghostbusting technology.
+    :ivar string ghostbusting_configuration: Details of the ghostbusting configuration.
 
     """
     def __init__(self, system):
@@ -466,10 +485,12 @@ class IPAddress(object):
     """Represents an IPv4 or IPv6 address.
 
     Mandatory fields:
-    address -- The IP address
+
+    :ivar string address: The IP address.
 
     Optional fields:
-    host -- The hostname
+
+    :ivar string host: The hostname.
 
     """
     def __init__(self, ip_address):
@@ -482,16 +503,18 @@ class Software(object):
     This can be used to describe any versionable portion of a device, and not just software.
 
     Mandatory fields:
-    description -- A description of the software (such as the name)
-    version -- The software version
+
+    :ivar string description: A description of the software (such as the name).
+    :ivar string version: The software version.
 
     Optional fields:
-    kind -- The type of the software.
-        Possible values are firmware, software or hardware.
-    producer -- The software producer
-    filename -- The name of the file
-    file_size -- Size of the file
-    file_time -- The creation or last modified time of the file
+
+    :ivar string kind: The type of the software.
+        Possible values are *firmware*, *software* or *hardware*.
+    :ivar string producer: The software producer.
+    :ivar string filename: The name of the file.
+    :ivar integer file_size: Size of the file.
+    :ivar datetime file_time: A time associated with the file, for versioning purposes.
 
     """
     def __init__(self, software):
@@ -507,8 +530,9 @@ class Certificate(object):
     """Represents an X509 certificate.
 
     Optional fields:
-    name -- The X509 subject name
-    certificate -- The X509 certificate
+
+    :ivar string name: The X509 subject name.
+    :ivar string certificate: The X509 certificate.
 
     """
     def __init__(self, cert):
@@ -519,13 +543,15 @@ class Watermarking(object):
     """Represents information about watermarking associated with a device.
 
     Mandatory fields:
-    manufacturer -- The watermarking manufacturer
+
+    :ivar string manufacturer: The watermarking manufacturer.
     
     Optional fields:
-    kind -- The type of watermarking.
-        Possible values are picture or audio.
-    model -- The model of the watermarking system
-    version -- The version of the watermarking system
+
+    :ivar string kind: The type of watermarking.
+        Possible values are *picture* or *audio*.
+    :ivar string model: The model of the watermarking system.
+    :ivar string version: The version of the watermarking system.
 
     """
     def __init__(self, watermarking):
