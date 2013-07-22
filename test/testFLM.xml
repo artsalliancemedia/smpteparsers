@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet href="/static/flm-to-xhtml.xsl" type="text/xsl"?>
+<FacilityListMessage xmlns="http://isdcf.com/2010/06/FLM" xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+  <MessageId>urn:uuid:2c87026f-0ec6-4490-8668-bd7647f8</MessageId>
+  <IssueDate>2013-07-19T09:24:10-10:00</IssueDate>
+  <FacilityInfo>
+    <FacilityID>urn:x-facilityID:smpte.com:5132</FacilityID>
+    <AlternateFacilityIDList>
+      <AlternateFacilityID>urn:x-facilityID:smpte.com:4115</AlternateFacilityID>
+    </AlternateFacilityIDList>
+    <FacilityName>A Cinema</FacilityName>
+    <FacilityTimeZone>Pacific/Johnston</FacilityTimeZone>
+    <Circuit>Independent</Circuit>
+    <FLMPartial>false</FLMPartial>
+    <AddressList>
+      <Address>
+        <Physical>
+          <StreetAddress>A Street</StreetAddress>
+          <City>A City</City>
+          <Province>North Island</Province>
+          <Country>UM</Country>
+        </Physical>
+      </Address>
+    </AddressList>
+  </FacilityInfo>
+  <AuditoriumList>
+    <Auditorium>
+      <AuditoriumNumber>1</AuditoriumNumber>
+      <AuditoriumName>Auditorium 1</AuditoriumName>
+      <Supports35MM>false</Supports35MM>
+      <AuditoriumInstallDate>2013-06-30T16:54:51-10:00</AuditoriumInstallDate>
+      <DeviceGroupList>
+        <DeviceGroup>
+          <Device>
+            <DeviceTypeID>PLY</DeviceTypeID>
+            <DeviceIdentifier idtype="CertThumbprint">certificate</DeviceIdentifier>
+            <DeviceSerial>serial</DeviceSerial>
+            <ManufacturerName>Christie</ManufacturerName>
+            <ModelNumber>Solaria One+</ModelNumber>
+            <InstallDate>2013-06-30T16:54:51-10:00</InstallDate>
+            <Resolution>2K</Resolution>
+            <IsActive>true</IsActive>
+            <Integrator>AAM</Integrator>
+            <KeyInfoList>
+              <ds:KeyInfo>
+                <ds:X509Data>
+                  <ds:X509SubjectName>THIS IS A CERTIFICATE</ds:X509SubjectName>
+                  <ds:X509Certificate>certificate1</ds:X509Certificate>
+                </ds:X509Data>
+                <ds:X509Data>
+                  <ds:X509SubjectName>THIS IS ANOTHER CERTIFICATE</ds:X509SubjectName>
+                  <ds:X509Certificate>certificate2</ds:X509Certificate>
+                </ds:X509Data>
+              </ds:KeyInfo>
+            </KeyInfoList>
+          </Device>
+        </DeviceGroup>
+      </DeviceGroupList>
+    </Auditorium>
+  </AuditoriumList>
+</FacilityListMessage>
