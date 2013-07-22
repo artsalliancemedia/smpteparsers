@@ -45,6 +45,14 @@ def get_datetime(isoDate):
     #convert to UTC by subtracting timedelta
     return dt - timedelta(hours=hrs, minutes=mins)
 
+class FlmxParseException(Exception):
+    def __init__(self, value):
+        self.msg = value
+
+    def __str__(self, value):
+        return self.msg
+
+
 class FacilityLink(object): 
     """A link to a facility flm file, as contained within a SiteList.
     """
@@ -142,4 +150,3 @@ class FacilityParser(object):
 
     def get_certificates():
         pass
-
