@@ -7,3 +7,6 @@ doc/_build/_templates/*
 
 # may especially want to add this line - depends on whether we want people to view doc in full dress straight from the repo
 # doc/_build/_static/*
+
+# No point committing compiled .pyc files
+*.pyc
