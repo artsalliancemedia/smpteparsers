@@ -19,7 +19,7 @@ def string(s):
 
 def date(s):
     s = strip_tags(s)
-    return datetime.strptime(string, "%Y-%m-%d") if s else None
+    return datetime.strptime(s, "%Y-%m-%d") if s else None
 
 def uint(s):
     s = strip_tags(s)
@@ -202,9 +202,7 @@ class FacilityParser(object):
         """Returns all certificates for all of the screens in the facility."""
         screens = {}
 
-        for key in self.facility.auditoriums:
-            auditorium = self.facility.auditoriums[key]
-
+        for key, auditorium in self.facility.auditoriums.iteritems():
             # Flatten certificates for all devices in same auditorium into one list
             certs = [cert for device in auditorium.devices for cert in device.certificates]
 
@@ -460,7 +458,7 @@ class Digital3DSystem(object):
         self.configuration = string(auditorium.Digital3DConfiguration)
         self.install_date = datetime(auditorium.InstallDate.get_text())
         self.screen_color = string(auditorium.ScreenColor) # enum
-        self.screen_luminance = uint(auditorium.ScreenLuminance) # 1 to 30
+        self.screen_luminance = uint(auditorium.ScreenLuminance) # 1 to 29
         self.ghostbusting = boolean(auditorium.ghostbusting)
         self.ghostbusting_configuration = string(auditorium.GhostbustingConfiguration)
 
