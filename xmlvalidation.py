@@ -50,26 +50,3 @@ class XMLValidator(object):
         """
 
         return self.messages
-
-def main():
-    validator = XMLValidator()
-    xsd = open('schema_sitelist.xsd', 'r')
-    # xml = open('sitelist example.xml', 'r')
-    xml = StringIO("""<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet href="/2.4.4.19419/static/fort_nocs/xsl/flm/sitelist-to-xhtml.xsl" type="text/xsl"?>
-    <SiteList xmlns="http://isdcf.com/2010/04/SiteList" xmlns:xlink="http://www.w3.org/1999/xlink">
-        <Originator>orig</Originator>
-        <SystemName>sysName</SystemName>
-        <DateTimeCreated>2001-01-01T15:49:40.220</DateTimeCreated>
-        <FacilityList>
-            <Facility id="A" modified="2011-04-07T12:10:01-00:00" xlink:type="simple"/>
-            <Facility id="C" modified="2013-06-09T12:12:03+03:40" xlink:type="simple"/>
-            <Facility id="B" modified="2012-05-08T12:11:02-01:20" xlink:type="simple"/>
-        </FacilityList>
-    </SiteList>""")
-
-    b = validator.validate(xml, xsd)
-    print b
-    print validator.get_messages()
-
-if __name__ == '__main__':
-    main()
