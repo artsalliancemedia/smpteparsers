@@ -1,8 +1,8 @@
 import unittest
 from StringIO import StringIO
-from flmx import FlmxParseException
-from xmlvalidation import XMLValidator
+import flmx 
 from lxml.etree import XMLSyntaxError   
+from xmlvalidation import XMLValidator
 
 good_xsd = """<?xml version="1.0" encoding="utf-8"?>
     <schema
@@ -125,7 +125,7 @@ class TestXMLValidator(unittest.TestCase):
     v = XMLValidator()
 
     def test_goodschema(self):
-        # We expect no messages here
+        # We expect no messages 
         self.assertTrue(self.v.validate(StringIO(good_xml), StringIO(good_xsd)))
         self.assertFalse(self.v.get_messages())
 
@@ -139,13 +139,13 @@ class TestXMLValidator(unittest.TestCase):
         self.assertTrue(self.v.get_messages())
 
     def test_badschema(self):
-        self.assertRaises(FlmxParseException, self.v.validate, StringIO(empty_str), StringIO(bad_xsd))
-        self.assertRaises(FlmxParseException, self.v.validate, StringIO(good_xml), StringIO(bad_xsd))
-        self.assertRaises(FlmxParseException, self.v.validate, StringIO(invalid_xml), StringIO(bad_xsd))
-        self.assertRaises(FlmxParseException, self.v.validate, StringIO(corrupt_xml), StringIO(bad_xsd))
+        self.assertRaises(flmx.FlmxParseError, self.v.validate, StringIO(empty_str),    StringIO(bad_xsd))
+        self.assertRaises(flmx.FlmxParseError, self.v.validate, StringIO(good_xml),     StringIO(bad_xsd))
+        self.assertRaises(flmx.FlmxParseError, self.v.validate, StringIO(invalid_xml),  StringIO(bad_xsd))
+        self.assertRaises(flmx.FlmxParseError, self.v.validate, StringIO(corrupt_xml),  StringIO(bad_xsd))
 
     def test_emptyschema(self):
-        self.assertRaises(FlmxParseException, self.v.validate, StringIO(empty_str), StringIO(empty_str))
-        self.assertRaises(FlmxParseException, self.v.validate, StringIO(good_xml), StringIO(empty_str))
-        self.assertRaises(FlmxParseException, self.v.validate, StringIO(invalid_xml), StringIO(empty_str))
-        self.assertRaises(FlmxParseException, self.v.validate, StringIO(corrupt_xml), StringIO(empty_str))
+        self.assertRaises(flmx.FlmxParseError, self.v.validate, StringIO(empty_str),    StringIO(empty_str))
+        self.assertRaises(flmx.FlmxParseError, self.v.validate, StringIO(good_xml),     StringIO(empty_str))
+        self.assertRaises(flmx.FlmxParseError, self.v.validate, StringIO(invalid_xml),  StringIO(empty_str))
+        self.assertRaises(flmx.FlmxParseError, self.v.validate, StringIO(corrupt_xml),  StringIO(empty_str))

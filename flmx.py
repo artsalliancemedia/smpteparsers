@@ -1,6 +1,10 @@
-from datetime import datetime, timedelta
+from datetime import datetime as dt
+from datetime import timedelta
 from bs4 import BeautifulSoup
 from operator import attrgetter
+import xmlvalidation
+
+from StringIO import StringIO
 
 def get_datetime(isoDate):
     """returns the utc datetime for a given ISO8601 date string. Format must be
@@ -14,7 +18,7 @@ def get_datetime(isoDate):
         * +/-HH
     """
 
-    dt = datetime.strptime(isoDate[:19], "%Y-%m-%dT%H:%M:%S")
+    date = dt.strptime(isoDate[:19], "%Y-%m-%dT%H:%M:%S")
     # 19 is up to and including seconds.
     rest = isoDate[19:]
 
@@ -26,7 +30,7 @@ def get_datetime(isoDate):
     #must be millis - 3 extra digits. datetime doesn't store that precision so 
     #we'll just round up so as not to miss this entry when updating
     if rest.startswith('.'):
-        dt += timedelta(seconds = 1)
+        date += timedelta(seconds = 1)
         #timezone starts after millis
         startTimezone = 4
 
@@ -43,9 +47,9 @@ def get_datetime(isoDate):
             mins = -mins
 
     #convert to UTC by subtracting timedelta
-    return dt - timedelta(hours=hrs, minutes=mins)
+    return date - timedelta(hours=hrs, minutes=mins)
 
-class FlmxParseException(Exception):
+class FlmxParseError(Exception):
     def __init__(self, value):
         self.msg = value
 
@@ -61,7 +65,7 @@ class FacilityLink(object):
     id_code = '' 
     """e.g. aam.com:UK-ABC-123456-01
     """
-    last_modified = datetime.min 
+    last_modified = dt.min 
     """Last time modified - defaults to *datetime.min*
     """
     xlink_href = '' 
@@ -78,8 +82,6 @@ class FacilityLink(object):
                 link_href: ' + self.xlink_href + ' \
                 link_type: ' + self.xlink_type
 
-
-
 class SiteList(object):
     """Contains a list of facilities, and metadata about the site list itself.
     """
@@ -93,6 +95,19 @@ class SiteList(object):
     """List of ``FacilityLink`` objects
     """
 
+def validate_XML(xml, xsd):
+    v = xmlvalidation.XMLValidator()
+    with open('schema_sitelist.xsd', 'r') as xsd:
+        xml_file = xml
+
+        # If xml is a string, we wrap it in a StringIO object so validate and lxml
+        # will work nicely with it
+        if isinstance(xml, str):
+            xml = StringIO(xml)
+                            
+        if not v.validate(xml, xsd):
+            raise FlmxParseError(v.get_messages)
+
 class SiteListParser(object):
     """Parses an xml sitelist, and constructs a container holding the the xml
     document's data.
@@ -105,23 +120,31 @@ class SiteListParser(object):
         self.contents = xml
         self.sites = SiteList()
 
+        if validate:
+            validate_XML(xml, 'schema_sitelist.xsd')
+
         soup = BeautifulSoup(xml, "xml")
-        self.sites.originator = soup.SiteList.Originator.string
-        self.sites.systemName = soup.SiteList.SystemName.string
-        facilities = []
-        for facility in soup.find_all('Facility'):
-            facLink = FacilityLink()
-            facLink.id_code = facility['id']
-            # strip  the timezone from the ISO timecode
-            facLink.last_modified = get_datetime(facility['modified'])
-            facLink.xlink_href = facility['xlink:href']
-            facLink.xlink_type = facility['xlink:type']
 
-            facilities.append(facLink)
+        try:
+            self.sites.originator = soup.SiteList.Originator.string
+            self.sites.systemName = soup.SiteList.SystemName.string
+            facilities = []
+            for facility in soup.find_all('Facility'):
+                facLink = FacilityLink()
+                facLink.id_code = facility['id']
+                # strip  the timezone from the ISO timecode
+                facLink.last_modified = get_datetime(facility['modified'])
+                facLink.xlink_href = facility['xlink:href']
+                facLink.xlink_type = facility['xlink:type']
 
-        self.sites.facilities = sorted(facilities, key=attrgetter('last_modified'))
+                facilities.append(facLink)
 
-    def get_sites(self, last_ran=datetime.min):
+            self.sites.facilities = sorted(facilities, key=attrgetter('last_modified'))
+        except Exception, e:
+            raise FlmxParseError(repr(e))
+
+
+    def get_sites(self, last_ran=dt.min):
         """returns a dictionary mapping URLs as keys to the date that flm was last
         modified as a value.
 
@@ -132,7 +155,7 @@ class SiteListParser(object):
 
 
         if not last_ran:
-            last_ran = datetime.min
+            last_ran = dt.min
 
         return dict((link.xlink_href, link.last_modified)
                     for link in self.sites.facilities
@@ -150,3 +173,4 @@ class FacilityParser(object):
 
     def get_certificates():
         pass
+

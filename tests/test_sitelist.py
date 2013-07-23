@@ -61,13 +61,13 @@ class TestSiteListXMLParsing(unittest.TestCase):
 
     def test_malformedxml(self):
         # will look for the key xlink , and raise a keyerror
-        self.assertRaises(KeyError, flmx.SiteListParser, self.malformedA)
+        self.assertRaises(flmx.FlmxParseError, flmx.SiteListParser, self.malformedA)
         # value error as the modified field won't pass strptime
-        self.assertRaises(ValueError, flmx.SiteListParser, self.malformedB)
+        self.assertRaises(flmx.FlmxParseError, flmx.SiteListParser, self.malformedB)
 
     def test_emptyxml(self):
         # will look for the attribute 'Originator', which ofc isn't there
-        self.assertRaises(AttributeError, flmx.SiteListParser, self.empty)
+        self.assertRaises(flmx.FlmxParseError, flmx.SiteListParser, self.empty)
 
 class TestSiteListDateHandling(unittest.TestCase):
     def test_dates(self):
