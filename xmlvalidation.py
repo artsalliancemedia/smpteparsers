@@ -27,9 +27,6 @@ class XMLValidator(object):
         except XMLSyntaxError, e:
             raise flmx.FlmxParseError("Schema could not be parsed: " + repr(e))
         except IOError, e:
-            print 'D' * 10
-            print xsd
-            print 'D' * 10
             raise flmx.FlmxParseError("Schema could not be opened: " + repr(e))
 
         #Not mission critical if the xml file does not parse - just return false as does not validate. 
@@ -39,9 +36,6 @@ class XMLValidator(object):
             self.messages = ["XML document could not be parsed: " + repr(e)]
             return False
         except IOError, e:
-            print 'X' * 10
-            print xml
-            print 'X' * 10
             raise flmx.FlmxParseError("XML document could not be opened: " + repr(e))
 
         schema = etree.XMLSchema(schema_doc)

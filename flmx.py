@@ -146,7 +146,7 @@ def validate_XML(xml, xsd):
             xml = StringIO(xml)
                             
         if not v.validate(xml, xsd):
-            raise FlmxParseError(v.get_messages)
+            raise FlmxParseError(v.get_messages())
 
 class SiteListParser(object):
     """Parses an XML sitelist, and constructs a container holding the the XML document's data.
@@ -173,7 +173,7 @@ class SiteListParser(object):
                 facLink = FacilityLink()
                 facLink.id_code = facility['id']
                 # strip  the timezone from the ISO timecode
-                facLink.last_modified = get_datetime(facility['modified'])
+                facLink.last_modified = datetime(facility['modified'])
                 facLink.xlink_href = facility['xlink:href']
                 facLink.xlink_type = facility['xlink:type']
 
