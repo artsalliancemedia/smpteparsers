@@ -153,7 +153,9 @@ class SiteListParser(object):
 
     :param string xml: Either the contents of an XML file, or a file handle.
         This will parse the contents and construct ``sites``.
-    :param boolean validate: 
+    :param boolean validate: Defaults to true. If set, will validate the given
+        XML file against the Sitelist XML Schema xsd file, as found on the `FLM-x Homepage`__
+    .. __: http://flm.foxpico.com/
 
     """
     def __init__(self, xml='', validate=True):
