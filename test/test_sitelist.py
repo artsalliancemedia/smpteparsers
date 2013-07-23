@@ -1,4 +1,4 @@
-import flmx
+import flmx.sitelist as flmx
 import unittest
 from datetime import datetime, timedelta
 

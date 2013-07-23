@@ -1,4 +1,4 @@
-.. module:: flmx
+.. module:: flmx.facility
 
 ================================
 Facility Parser

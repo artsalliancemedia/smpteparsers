@@ -1,7 +1,6 @@
-from StringIO import StringIO
 from lxml import etree
 from lxml.etree import XMLSyntaxError   
-import flmx
+from error import FlmxParseError
 
 class XMLValidator(object):
     def __init__(self):
@@ -25,10 +24,10 @@ class XMLValidator(object):
         try:
             schema_doc = etree.parse(xsd)
         except XMLSyntaxError, e:
-            raise flmx.FlmxParseError("Schema could not be parsed: " + repr(e))
+            raise FlmxParseError("Schema could not be parsed: " + repr(e))
         # Decided not to wrap IOError here - it should be a different issue if file can't be opened!
         # except IOError, e:
-        #     raise flmx.FlmxParseError("Schema could not be opened: " + repr(e))
+        #     raise FlmxParseError("Schema could not be opened: " + repr(e))
 
         #Not mission critical if the xml file does not parse - just return false as does not validate. 
         try:
@@ -37,7 +36,7 @@ class XMLValidator(object):
             self.messages = ["XML document could not be parsed: " + repr(e)]
             return False
         # except IOError, e:
-        #     raise flmx.FlmxParseError("XML document could not be opened: " + repr(e))
+        #     raise FlmxParseError("XML document could not be opened: " + repr(e))
 
         schema = etree.XMLSchema(schema_doc)
         out = schema.validate(xml_doc)    

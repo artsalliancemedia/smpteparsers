@@ -1,4 +1,5 @@
-import flmx, unittest
+import flmx.facility as flmx
+import unittest
 from bs4 import BeautifulSoup
 
 class TestFacilityParser(unittest.TestCase):
