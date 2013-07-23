@@ -500,13 +500,13 @@ class Digital3DSystem(object):
 
     """
     def __init__(self, system):
-        self.active = boolean(auditorium.IsActive)
-        self.configuration = string(auditorium.Digital3DConfiguration)
-        self.install_date = datetime(auditorium.InstallDate.get_text())
-        self.screen_color = string(auditorium.ScreenColor) # enum
-        self.screen_luminance = uint(auditorium.ScreenLuminance) # 1 to 29
-        self.ghostbusting = boolean(auditorium.ghostbusting)
-        self.ghostbusting_configuration = string(auditorium.GhostbustingConfiguration)
+        self.active = boolean(system.IsActive)
+        self.configuration = string(system.Digital3DConfiguration)
+        self.install_date = datetime(system.InstallDate.get_text())
+        self.screen_color = string(system.ScreenColor) # enum
+        self.screen_luminance = uint(system.ScreenLuminance) # 1 to 29
+        self.ghostbusting = boolean(system.ghostbusting)
+        self.ghostbusting_configuration = string(system.GhostbustingConfiguration)
 
 class IPAddress(object):
     """Represents an IPv4 or IPv6 address.
