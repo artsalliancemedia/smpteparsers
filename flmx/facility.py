@@ -193,7 +193,7 @@ class Auditorium(object):
         self.large_format_type = string(auditorium.LargeFormatType)
 
         if auditorium.Digital3DSystem:
-            self.digital_3d_system = Digital3DSystem(auditorium.digital_3d_system)
+            self.digital_3d_system = Digital3DSystem(auditorium.Digital3DSystem)
 
         self.devices = [Device(device) for device in auditorium.DeviceGroupList("Device")]
 
