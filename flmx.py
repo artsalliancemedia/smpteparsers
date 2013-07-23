@@ -76,13 +76,6 @@ def datetime(isoDate):
 
     return date - timedelta(hours=hrs, minutes=mins)
 
-class FlmxParseError(Exception):
-    def __init__(self, value):
-        self.msg = value
-
-    def __str__(self):
-        return self.msg
-
 # Parses a KDM or DCP delivery list
 def deliveries(xml):
     deliveries = {}
@@ -100,6 +93,13 @@ def deliveries(xml):
         deliveries['physical'] = string(xml.MediaType)
 
     return deliveries
+
+class FlmxParseError(Exception):
+    def __init__(self, value):
+        self.msg = value
+
+    def __str__(self):
+        return self.msg
 
 class FacilityLink(object): 
     """A link to a facility FLM-x file, as contained within a SiteList.
@@ -136,6 +136,15 @@ class SiteList(object):
     facilities = []
 
 def validate_XML(xml, xsd):
+    """Validates an xml object against a given .xsd XML Schema.
+
+    Will raise an `FlmxParseError` if any errors are encountered during the validation process.
+
+    :param xml: A string or file-like object containing the xml file to validate. 
+
+    :param xsd: A string or file-like object containing the xsd file to validate against. 
+
+    """
     v = xmlvalidation.XMLValidator()
     with open('schema_sitelist.xsd', 'r') as xsd:
         xml_file = xml
@@ -144,6 +153,9 @@ def validate_XML(xml, xsd):
         # will work nicely with it
         if isinstance(xml, str):
             xml = StringIO(xml)
+
+        if isinstance(xsd, str):
+            xsd = StringIO(xsd)
                             
         if not v.validate(xml, xsd):
             raise FlmxParseError(v.get_messages())
@@ -199,11 +211,12 @@ class SiteListParser(object):
                     for link in self.sites.facilities
                     if link.last_modified >= last_ran)
 
-
 class FacilityParser(object):
     """A class to parse a single FLM feed.
 
     :param xml: an XML string or an open, readable XML file containing an FLM feed.
+
+    :param bool validate: If true, will validate the XML file against the FLM XML Schema provided by FoxPico.
 
     Any of the values in the FLM feed can be accessed through the objects given in the next section.
     For example, the screen colour of the 3D system installed in screen #1 can be accessed using
@@ -225,8 +238,15 @@ class FacilityParser(object):
     ...   print(certs[3])
 
     """
-    def __init__(self, xml=''):
+    def __init__(self, xml='', validate=True):
         self.contents = xml
+
+
+
+        if validate:
+            validate_XML(xml, 'schema_facility.xsd')
+
+
         flm = BeautifulSoup(self.contents, 'xml')
 
         if flm.FLMPartial and boolean(flm.FLMPartial):
