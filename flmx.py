@@ -38,8 +38,8 @@ def datetime(isoDate):
         * +/-HH:MM
         * +/-HHMM
         * +/-HH
-    """
 
+    """
     isoDate = strip_tags(isoDate)
     if not isoDate:
         return None
@@ -53,11 +53,11 @@ def datetime(isoDate):
     # Additionally timezone might be in a different format, either +01:00, +0100, or +01
     startTimezone = 0
 
-    #must be millis - 3 extra digits. datetime doesn't store that precision so 
-    #we'll just round up so as not to miss this entry when updating
+    # must be millis - 3 extra digits. datetime doesn't store that precision so 
+    # we'll just round up so as not to miss this entry when updating
     if rest.startswith('.'):
         d += timedelta(seconds = 1)
-        #timezone starts after millis
+        # timezone starts after millis
         startTimezone = 4
 
     hrs = 0
@@ -65,14 +65,14 @@ def datetime(isoDate):
 
     timezone = rest[startTimezone:]
     if timezone:
-        hrs = int(timezone[:3]) #always should be there
+        hrs = int(timezone[:3]) # always should be there
         if len(timezone) > 3:
             mins = int(timezone[-2:])
-        #if hrs negative, then mins should be too
+        # if hrs negative, then mins should be too
         if hrs < 0:
             mins = -mins
 
-    #convert to UTC by subtracting timedelta
+    # convert to UTC by subtracting timedelta
     return d - timedelta(hours=hrs, minutes=mins)
 
 # Parses a KDM or DCP delivery list
@@ -184,7 +184,7 @@ class FacilityParser(object):
         self.contents = xml
         flm = BeautifulSoup(self.contents, 'xml')
 
-        if flm.FLMPartial and flm.FLMPartial.get_text().lower() == "true":
+        if flm.FLMPartial and boolean(flm.FLMPartial):
             pass # Warning for partial FLM?
 
         self.facility = Facility(flm)
