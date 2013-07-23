@@ -179,6 +179,25 @@ class FacilityParser(object):
 
     :param xml: an XML string or an open, readable XML file containing an FLM feed.
 
+    Any of the values in the FLM feed can be accessed through the objects given in the next section.
+    For example, the screen colour of the 3D system installed in screen #1 can be accessed using
+    ``facility.auditoriums[1].digital_3d_system.screen_color``.  Any optional value can be ``None``
+    if it is not specified in the FLM.  A value marked *mandatory* is guaranteed to never be ``None``
+    providing the original FLM is valid.
+
+    :ivar facility: The top-level facility this FLM feed corresponds to.
+
+    Example usage:
+
+    >>> # Open file handle
+    ... with open('flm.xml') as flm:
+    ...   # Set up FacilityParser
+    ...   fp = flmx.FacilityParser(flm)
+    ...   # Get certificates
+    ...   certs = fp.get_certificates()
+    ...   # Print out the certificates for screen #3 (for example)
+    ...   print(certs[3])
+
     """
     def __init__(self, xml=''):
         self.contents = xml
@@ -191,11 +210,19 @@ class FacilityParser(object):
 
     # Add some more consuming methods, these are just ideas of what data you'd need to get back.
     def get_screens(self):
-        """Returns the dictionary of screens in a facility keyed by screen number."""
+        """Returns the Auditorium objects corresponding to the screens in the facility.
+
+        This is a dictionary keyed by screen number.
+
+        """
         return self.facility.auditoriums
 
     def get_certificates(self):
-        """Returns all certificates for all of the screens in the facility."""
+        """Returns all certificates for all of the screens in the facility.
+
+        The certificates are provided in a dictionary keyed by screen number.
+
+        """
         screens = {}
 
         for key, auditorium in self.facility.auditoriums.iteritems():
