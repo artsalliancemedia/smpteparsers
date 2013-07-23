@@ -1,12 +1,5 @@
 # sphinx doc gubbins - may want to edit this as we learn more about sphinx's capabilities
-doc/_build/html/_sources/*
-doc/_build/html/.buildinfo
-doc/_build/html/objects.inv
-doc/_build/_templates/*
-
-
-# may especially want to add this line - depends on whether we want people to view doc in full dress straight from the repo
-# doc/_build/_static/*
+doc/_build/*
 
 # No point committing compiled .pyc files
 *.pyc
