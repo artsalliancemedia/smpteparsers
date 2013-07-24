@@ -1,0 +1,622 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Version 0.22 -->
+<xs:schema
+  elementFormDefault="qualified"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:flm="http://isdcf.com/2010/06/FLM" targetNamespace="http://isdcf.com/2010/06/FLM"
+  xmlns:dcml="http://www.smpte-ra.org/schemas/433/2008/dcmlTypes"
+  xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+  <xs:import namespace="http://www.w3.org/2000/09/xmldsig#" schemaLocation="http://flm.foxpico.com/schema/dsig.xsd"/>
+  <xs:import namespace="http://www.smpte-ra.org/schemas/433/2008/dcmlTypes" schemaLocation="http://flm.foxpico.com/schema/dcmlTypes-2008.xsd"/>
+  <xs:element name="FacilityListMessage" type="flm:FacilityListMessageType"/>
+
+  <xs:simpleType name="UUID">
+    <xs:restriction base="xs:anyURI">
+      <xs:pattern value="urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="FacilityListMessageType">
+    <xs:sequence>
+      <xs:element name="MessageId" type="flm:UUID"/>
+      <xs:element name="IssueDate" type="xs:dateTime"/>
+      <xs:element name="AnnotationText" type="dcml:UserTextType" minOccurs="0"/>
+      <xs:element name="FacilityInfo" type="flm:FacilityInfoType"/>
+      <xs:element name="AuditoriumList" type="flm:AuditoriumListType">
+       <xs:unique name="AuditoriumNameUnique">
+         <xs:selector xpath="flm:Auditorium"/>
+         <xs:field    xpath="flm:AuditoriumName"/>
+       </xs:unique>
+       <xs:unique name="AuditoriumNumberUnique">
+         <xs:selector xpath="flm:Auditorium"/>
+         <xs:field    xpath="flm:AuditoriumNumber"/>
+       </xs:unique>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="FacilityInfoType">
+    <xs:sequence>
+      <xs:element name="FacilityID" type="xs:anyURI"/>
+      <xs:element name="AlternateFacilityIDList" minOccurs="0">
+        <xs:complexType>
+          <xs:sequence maxOccurs="unbounded">
+            <xs:element name="AlternateFacilityID" type="xs:anyURI"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="BookingPartnerFacilityID" type="xs:anyURI" minOccurs="0"/>
+      <xs:element name="FacilityName" type="dcml:UserTextType"/>
+      <xs:element name="FacilityTimeZone" type="xs:string" minOccurs="0"/>
+      <xs:element name="Circuit" type="dcml:UserTextType"/>
+      <xs:element name="FLMPartial" type="xs:boolean" minOccurs="0"/>
+      <xs:element name="ContactList" minOccurs="0">
+       <xs:complexType>
+        <xs:sequence>
+          <xs:element name="Contact" type="flm:ContactType" maxOccurs="unbounded"/>
+        </xs:sequence>
+       </xs:complexType>
+      </xs:element>
+      <xs:element name="AddressList">
+       <xs:complexType>
+         <xs:sequence>
+           <xs:element name="Address" type="flm:AddressTypeType" maxOccurs="unbounded"/>
+         </xs:sequence>
+       </xs:complexType>
+      </xs:element>
+      <xs:element name="KDMDeliveryMethodList" type="flm:DeliveryMethodListType" minOccurs="0"/>
+      <xs:element name="DCPDeliveryMethodList" type="flm:DeliveryMethodListType" minOccurs="0"/>
+      <xs:element name="NonCriticalFacilityExtensions" minOccurs="0">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="AuditoriumListType">
+    <xs:sequence>
+      <xs:element name="Auditorium" type="flm:AuditoriumType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="DeliveryMethodListType">
+    <xs:sequence>
+      <xs:element name="DeliveryMethod" type="flm:DeliveryMethodType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="DeliveryMethodType">
+    <xs:choice>
+      <xs:element name="Email"    type="flm:EmailType"/>
+      <xs:element name="Modem"    type="flm:ModemType"/>
+      <xs:element name="Network"  type="flm:NetworkType"/>
+      <xs:element name="Physical" type="flm:PhysicalType"/>
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name="PhysicalType">
+    <xs:sequence>
+      <xs:element name="MediaType" type="xs:string"/>
+      <xs:element name="Detail" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="EmailType">
+    <xs:sequence>
+      <xs:element name="EmailName" type="xs:string" minOccurs="0"/>
+      <xs:element name="EmailAddress" type="flm:EmailAddressType"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:simpleType name="EmailAddressType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[A-Za-z0-9!#$%&amp;'*+/=?\^_`{|}~-]+(\.[A-Za-z0-9!#$%&amp;'*+/=?\^_`{|}~-]+)*@([A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?\.)+[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="AddressType">
+   <xs:sequence>
+      <xs:element name="Addressee" type="xs:string" minOccurs="0"/>
+      <xs:element name="StreetAddress" type="dcml:UserTextType"/>
+      <xs:element name="StreetAddress2" type="dcml:UserTextType" minOccurs="0"/>
+      <xs:element name="City" type="xs:string"/>
+      <xs:element name="Province" type="xs:string"/>
+      <xs:element name="PostalCode" type="xs:string" minOccurs="0"/>
+      <xs:element name="Country" type="flm:ISO3166CountyCode"/>
+   </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="AddressTypeType">
+    <xs:choice>
+      <xs:element name="Physical" type="flm:AddressType"/>
+      <xs:element name="Shipping" type="flm:AddressType"/>
+      <xs:element name="Billing"  type="flm:AddressType"/>
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:simpleType name="ResolutionType">
+    <xs:restriction base="xs:token">
+      <xs:enumeration value="2K"/>
+      <xs:enumeration value="4K"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="ScreenAspectRatioType">
+    <xs:restriction base="xs:token">
+      <xs:enumeration value="1.85"/>
+      <xs:enumeration value="2.39"/>
+      <xs:enumeration value="1.66"/>
+      <xs:enumeration value="1.37"/>
+      <xs:enumeration value="Other"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="AdjustableScreenMaskType">
+    <xs:restriction base="xs:token">
+      <xs:enumeration value="Top"/>
+      <xs:enumeration value="Side"/>
+      <xs:enumeration value="Both"/>
+      <xs:enumeration value="None"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="ContactType">
+    <xs:sequence>
+      <xs:element name="Name" type="dcml:UserTextType"/>
+      <xs:element name="CountryCode" type="flm:ISO3166CountyCode" minOccurs="0"/>
+      <xs:element name="Phone1" type="xs:string" minOccurs="0"/>
+      <xs:element name="Phone2" type="xs:string" minOccurs="0"/>
+      <xs:element name="Email" type="flm:EmailAddressType" minOccurs="0"/>
+      <xs:element name="Type" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- DeviceGroups are a set of interconnected devies within an Auditorium. It must consist of 
+       a single Security Manager along with 0 or more auxilliary devices. -->
+  <xs:complexType name="DeviceGroupType">
+    <xs:sequence>
+      <xs:element name="Device" type="flm:DeviceType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="AuditoriumType">
+    <xs:sequence>
+      <xs:choice minOccurs="1" maxOccurs="2">
+        <xs:element name="AuditoriumNumber" type="xs:unsignedInt"/>
+        <xs:element name="AuditoriumName"   type="xs:string"/>
+      </xs:choice>
+      <xs:element name="Supports35MM" type="xs:boolean"/>
+      <xs:element name="ScreenAspectRatio" type="flm:ScreenAspectRatioType" minOccurs="0"/>
+      <xs:element name="AdjustableScreenMask" type="flm:AdjustableScreenMaskType" minOccurs="0"/>
+      <xs:element name="AudioFormat" type="xs:string" minOccurs="0"/>
+      <xs:element name="AuditoriumInstallDate" type="xs:dateTime" minOccurs="0"/>
+      <xs:element name="LargeFormatType" type="xs:string" minOccurs="0"/>
+      <xs:element name="Digital3DSystem" minOccurs="0">
+       <xs:complexType>
+         <xs:sequence>
+            <xs:element name="IsActive"                  type="xs:boolean"/>
+            <xs:element name="Digital3DConfiguration"    type="xs:string" minOccurs="0"/>
+            <xs:element name="InstallDate"               type="xs:dateTime" minOccurs="0"/>
+            <xs:element name="ScreenColor"               type="flm:ScreenTypeToken" minOccurs="0"/>
+            <xs:element name="ScreenLuminance"           type="flm:LuminanceType"   minOccurs="0"/>
+            <xs:element name="Ghostbusting"              type="xs:boolean" minOccurs="0"/>
+            <xs:element name="GhostbustingConfiguration" type="xs:string"  minOccurs="0"/>
+         </xs:sequence>
+       </xs:complexType>
+      </xs:element>
+      <xs:element name="DeviceGroupList">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="DeviceGroup" type="flm:DeviceGroupType" maxOccurs="unbounded" minOccurs="0"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="NonCriticalAuditoriumExtensions" minOccurs="0">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="DeviceType">
+    <xs:sequence>
+      <xs:element name="DeviceTypeID" type="dcml:deviceTypeType"/>
+      <xs:element name="DeviceIdentifier" type="dcml:deviceIdentifierPolyType"/>
+      <xs:element name="DeviceSerial" type="xs:string" minOccurs="0"/>
+      <xs:element name="ManufacturerID" type="xs:anyURI" minOccurs="0"/>
+      <xs:element name="ManufacturerName" type="xs:string"/>
+      <xs:element name="ModelNumber" type="xs:string"/>
+      <xs:element name="InstallDate" type="xs:dateTime" minOccurs="0"/>
+      <xs:element name="Resolution" type="flm:ResolutionType" minOccurs="0"/>
+      <xs:element name="IsActive" type="xs:boolean"/>
+      <xs:element name="Integrator" type="xs:string" minOccurs="0"/>
+      <xs:element name="VPFFinanceEntity" type="xs:string" minOccurs="0"/>
+      <xs:element name="VPFStartDate" type="xs:date" minOccurs="0"/>
+      <xs:element name="IPAddressList" minOccurs="0">
+        <xs:complexType>
+         <xs:sequence>
+           <xs:element name="IPAddress" maxOccurs="unbounded" type="flm:IPAddressType"/>
+         </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SoftwareList" minOccurs="0">
+        <xs:complexType>
+          <xs:sequence maxOccurs="unbounded">
+            <xs:element name="Software" type="flm:SoftwareType"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="KeyInfoList" minOccurs="0">
+        <xs:complexType>
+          <xs:sequence maxOccurs="unbounded">
+            <xs:element ref="ds:KeyInfo"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="WatermarkingList" minOccurs="0">
+        <xs:complexType>
+          <xs:sequence maxOccurs="unbounded">
+            <xs:element name="Watermarking">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="WatermarkManufacturer" type="xs:string"/>
+                  <xs:element name="WatermarkKind" type="flm:WatermarkKindType" minOccurs="0"/>
+                  <xs:element name="WatermarkModel" type="xs:string" minOccurs="0"/>
+                  <xs:element name="WatermarkVersion" type="xs:string" minOccurs="0"/>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="KDMDeliveryMethodList" type="flm:DeliveryMethodListType" minOccurs="0"/>
+      <xs:element name="DCPDeliveryMethodList" type="flm:DeliveryMethodListType" minOccurs="0"/>
+      <xs:element name="NonCriticalDeviceExtensions" minOccurs="0">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="SoftwareType">
+    <xs:sequence>
+      <xs:element name="SoftwareKind" type="flm:SoftwareKindToken" minOccurs="0"/>      
+      <xs:element name="SoftwareProducer" type="xs:string" minOccurs="0"/>
+      <xs:element name="Description" type="xs:string"/>
+      <xs:element name="Version" type="xs:string"/>
+      <xs:element name="FileName" type="xs:string" minOccurs="0"/>
+      <xs:element name="FileSize" type="xs:unsignedInt" minOccurs="0"/>
+      <xs:element name="FileDateTime" type="xs:dateTime" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="IPAddressType">
+    <xs:sequence>
+       <xs:element name="Address" type="flm:ipAddress"/>
+       <xs:element name="Host" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:simpleType name="ipAddress">
+    <xs:union memberTypes="flm:ipAddressV4 flm:ipAddressV6"/>
+  </xs:simpleType>
+
+  <xs:simpleType name="ipAddressV6">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="([0-9a-fA-F]{0,4}:){0,7}[0-9a-fA-F]{0,4}"/>
+      <xs:pattern value="(([0-9a-fA-F]+:){7}[0-9a-fA-F]+)|(([0-9a-fA-F]+:)*[0-9a-fA-F]+)?::(([0-9a-fA-F]+:)*[0-9a-fA-F]+)?"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="ipAddressV4">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="((1?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\.){3}(1?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="SoftwareKindToken">
+    <xs:restriction base="xs:token">
+      <xs:enumeration value="Firmware"/>
+      <xs:enumeration value="Software"/>
+      <xs:enumeration value="Hardware"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="ScreenTypeToken">
+    <xs:restriction base="xs:token">
+      <xs:enumeration value="Silver"/>
+      <xs:enumeration value="White"/>
+      <xs:enumeration value="Other"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="ModemType">
+    <xs:sequence>
+      <xs:element name="PhoneNumber" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="NetworkType">
+    <xs:sequence>
+      <xs:element name="URL" type="xs:anyURI"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:simpleType name="LuminanceType">
+    <xs:restriction base='xs:decimal'>
+      <xs:fractionDigits value='1'/>
+      <xs:minExclusive value='0'/>
+      <xs:maxExclusive value='30'/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="WatermarkKindType">
+    <xs:restriction base="xs:token">
+      <xs:enumeration value="Picture"/>
+      <xs:enumeration value="Audio"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="ISO3166CountyCode">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="AF"/>
+      <xs:enumeration value="AX"/>
+      <xs:enumeration value="AL"/>
+      <xs:enumeration value="DZ"/>
+      <xs:enumeration value="AS"/>
+      <xs:enumeration value="AD"/>
+      <xs:enumeration value="AO"/>
+      <xs:enumeration value="AI"/>
+      <xs:enumeration value="AQ"/>
+      <xs:enumeration value="AG"/>
+      <xs:enumeration value="AR"/>
+      <xs:enumeration value="AM"/>
+      <xs:enumeration value="AW"/>
+      <xs:enumeration value="AU"/>
+      <xs:enumeration value="AT"/>
+      <xs:enumeration value="AZ"/>
+      <xs:enumeration value="BS"/>
+      <xs:enumeration value="BH"/>
+      <xs:enumeration value="BD"/>
+      <xs:enumeration value="BB"/>
+      <xs:enumeration value="BY"/>
+      <xs:enumeration value="BE"/>
+      <xs:enumeration value="BZ"/>
+      <xs:enumeration value="BJ"/>
+      <xs:enumeration value="BM"/>
+      <xs:enumeration value="BT"/>
+      <xs:enumeration value="BO"/>
+      <xs:enumeration value="BQ"/>
+      <xs:enumeration value="BA"/>
+      <xs:enumeration value="BW"/>
+      <xs:enumeration value="BV"/>
+      <xs:enumeration value="BR"/>
+      <xs:enumeration value="IO"/>
+      <xs:enumeration value="BN"/>
+      <xs:enumeration value="BG"/>
+      <xs:enumeration value="BF"/>
+      <xs:enumeration value="BI"/>
+      <xs:enumeration value="KH"/>
+      <xs:enumeration value="CM"/>
+      <xs:enumeration value="CA"/>
+      <xs:enumeration value="CV"/>
+      <xs:enumeration value="KY"/>
+      <xs:enumeration value="CF"/>
+      <xs:enumeration value="TD"/>
+      <xs:enumeration value="CL"/>
+      <xs:enumeration value="CN"/>
+      <xs:enumeration value="CX"/>
+      <xs:enumeration value="CC"/>
+      <xs:enumeration value="CO"/>
+      <xs:enumeration value="KM"/>
+      <xs:enumeration value="CG"/>
+      <xs:enumeration value="CD"/>
+      <xs:enumeration value="CK"/>
+      <xs:enumeration value="CR"/>
+      <xs:enumeration value="CI"/>
+      <xs:enumeration value="HR"/>
+      <xs:enumeration value="CU"/>
+      <xs:enumeration value="CW"/>
+      <xs:enumeration value="CY"/>
+      <xs:enumeration value="CZ"/>
+      <xs:enumeration value="DK"/>
+      <xs:enumeration value="DJ"/>
+      <xs:enumeration value="DM"/>
+      <xs:enumeration value="DO"/>
+      <xs:enumeration value="EC"/>
+      <xs:enumeration value="EG"/>
+      <xs:enumeration value="SV"/>
+      <xs:enumeration value="GQ"/>
+      <xs:enumeration value="ER"/>
+      <xs:enumeration value="EE"/>
+      <xs:enumeration value="ET"/>
+      <xs:enumeration value="FK"/>
+      <xs:enumeration value="FO"/>
+      <xs:enumeration value="FJ"/>
+      <xs:enumeration value="FI"/>
+      <xs:enumeration value="FR"/>
+      <xs:enumeration value="GF"/>
+      <xs:enumeration value="PF"/>
+      <xs:enumeration value="TF"/>
+      <xs:enumeration value="GA"/>
+      <xs:enumeration value="GM"/>
+      <xs:enumeration value="GE"/>
+      <xs:enumeration value="DE"/>
+      <xs:enumeration value="GH"/>
+      <xs:enumeration value="GI"/>
+      <xs:enumeration value="GR"/>
+      <xs:enumeration value="GL"/>
+      <xs:enumeration value="GD"/>
+      <xs:enumeration value="GP"/>
+      <xs:enumeration value="GU"/>
+      <xs:enumeration value="GT"/>
+      <xs:enumeration value="GG"/>
+      <xs:enumeration value="GN"/>
+      <xs:enumeration value="GW"/>
+      <xs:enumeration value="GY"/>
+      <xs:enumeration value="HT"/>
+      <xs:enumeration value="HM"/>
+      <xs:enumeration value="VA"/>
+      <xs:enumeration value="HN"/>
+      <xs:enumeration value="HK"/>
+      <xs:enumeration value="HU"/>
+      <xs:enumeration value="IS"/>
+      <xs:enumeration value="IN"/>
+      <xs:enumeration value="ID"/>
+      <xs:enumeration value="IR"/>
+      <xs:enumeration value="IQ"/>
+      <xs:enumeration value="IE"/>
+      <xs:enumeration value="IM"/>
+      <xs:enumeration value="IL"/>
+      <xs:enumeration value="IT"/>
+      <xs:enumeration value="JM"/>
+      <xs:enumeration value="JP"/>
+      <xs:enumeration value="JE"/>
+      <xs:enumeration value="JO"/>
+      <xs:enumeration value="KZ"/>
+      <xs:enumeration value="KE"/>
+      <xs:enumeration value="KI"/>
+      <xs:enumeration value="KP"/>
+      <xs:enumeration value="KR"/>
+      <xs:enumeration value="KW"/>
+      <xs:enumeration value="KG"/>
+      <xs:enumeration value="LA"/>
+      <xs:enumeration value="LV"/>
+      <xs:enumeration value="LB"/>
+      <xs:enumeration value="LS"/>
+      <xs:enumeration value="LR"/>
+      <xs:enumeration value="LY"/>
+      <xs:enumeration value="LI"/>
+      <xs:enumeration value="LT"/>
+      <xs:enumeration value="LU"/>
+      <xs:enumeration value="MO"/>
+      <xs:enumeration value="MK"/>
+      <xs:enumeration value="MG"/>
+      <xs:enumeration value="MW"/>
+      <xs:enumeration value="MY"/>
+      <xs:enumeration value="MV"/>
+      <xs:enumeration value="ML"/>
+      <xs:enumeration value="MT"/>
+      <xs:enumeration value="MH"/>
+      <xs:enumeration value="MQ"/>
+      <xs:enumeration value="MR"/>
+      <xs:enumeration value="MU"/>
+      <xs:enumeration value="YT"/>
+      <xs:enumeration value="MX"/>
+      <xs:enumeration value="FM"/>
+      <xs:enumeration value="MD"/>
+      <xs:enumeration value="MC"/>
+      <xs:enumeration value="MN"/>
+      <xs:enumeration value="ME"/>
+      <xs:enumeration value="MS"/>
+      <xs:enumeration value="MA"/>
+      <xs:enumeration value="MZ"/>
+      <xs:enumeration value="MM"/>
+      <xs:enumeration value="NA"/>
+      <xs:enumeration value="NR"/>
+      <xs:enumeration value="NP"/>
+      <xs:enumeration value="NL"/>
+      <xs:enumeration value="NC"/>
+      <xs:enumeration value="NZ"/>
+      <xs:enumeration value="NI"/>
+      <xs:enumeration value="NE"/>
+      <xs:enumeration value="NG"/>
+      <xs:enumeration value="NU"/>
+      <xs:enumeration value="NF"/>
+      <xs:enumeration value="MP"/>
+      <xs:enumeration value="NO"/>
+      <xs:enumeration value="OM"/>
+      <xs:enumeration value="PK"/>
+      <xs:enumeration value="PW"/>
+      <xs:enumeration value="PS"/>
+      <xs:enumeration value="PA"/>
+      <xs:enumeration value="PG"/>
+      <xs:enumeration value="PY"/>
+      <xs:enumeration value="PE"/>
+      <xs:enumeration value="PH"/>
+      <xs:enumeration value="PN"/>
+      <xs:enumeration value="PL"/>
+      <xs:enumeration value="PT"/>
+      <xs:enumeration value="PR"/>
+      <xs:enumeration value="QA"/>
+      <xs:enumeration value="RE"/>
+      <xs:enumeration value="RO"/>
+      <xs:enumeration value="RU"/>
+      <xs:enumeration value="RW"/>
+      <xs:enumeration value="BL"/>
+      <xs:enumeration value="SH"/>
+      <xs:enumeration value="KN"/>
+      <xs:enumeration value="LC"/>
+      <xs:enumeration value="MF"/>
+      <xs:enumeration value="PM"/>
+      <xs:enumeration value="VC"/>
+      <xs:enumeration value="WS"/>
+      <xs:enumeration value="SM"/>
+      <xs:enumeration value="ST"/>
+      <xs:enumeration value="SA"/>
+      <xs:enumeration value="SN"/>
+      <xs:enumeration value="RS"/>
+      <xs:enumeration value="SC"/>
+      <xs:enumeration value="SL"/>
+      <xs:enumeration value="SG"/>
+      <xs:enumeration value="SX"/>
+      <xs:enumeration value="SK"/>
+      <xs:enumeration value="SI"/>
+      <xs:enumeration value="SB"/>
+      <xs:enumeration value="SO"/>
+      <xs:enumeration value="ZA"/>
+      <xs:enumeration value="GS"/>
+      <xs:enumeration value="SS"/>
+      <xs:enumeration value="ES"/>
+      <xs:enumeration value="LK"/>
+      <xs:enumeration value="SD"/>
+      <xs:enumeration value="SR"/>
+      <xs:enumeration value="SJ"/>
+      <xs:enumeration value="SZ"/>
+      <xs:enumeration value="SE"/>
+      <xs:enumeration value="CH"/>
+      <xs:enumeration value="SY"/>
+      <xs:enumeration value="TW"/>
+      <xs:enumeration value="TJ"/>
+      <xs:enumeration value="TZ"/>
+      <xs:enumeration value="TH"/>
+      <xs:enumeration value="TL"/>
+      <xs:enumeration value="TG"/>
+      <xs:enumeration value="TK"/>
+      <xs:enumeration value="TO"/>
+      <xs:enumeration value="TT"/>
+      <xs:enumeration value="TN"/>
+      <xs:enumeration value="TR"/>
+      <xs:enumeration value="TM"/>
+      <xs:enumeration value="TC"/>
+      <xs:enumeration value="TV"/>
+      <xs:enumeration value="UG"/>
+      <xs:enumeration value="UA"/>
+      <xs:enumeration value="AE"/>
+      <xs:enumeration value="GB"/>
+      <xs:enumeration value="US"/>
+      <xs:enumeration value="UM"/>
+      <xs:enumeration value="UY"/>
+      <xs:enumeration value="UZ"/>
+      <xs:enumeration value="VU"/>
+      <xs:enumeration value="VE"/>
+      <xs:enumeration value="VN"/>
+      <xs:enumeration value="VG"/>
+      <xs:enumeration value="VI"/>
+      <xs:enumeration value="WF"/>
+      <xs:enumeration value="EH"/>
+      <xs:enumeration value="YE"/>
+      <xs:enumeration value="ZM"/>
+      <xs:enumeration value="ZW"/>
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>

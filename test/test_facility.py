@@ -1,6 +1,8 @@
-import flmx, unittest
+import unittest
 from datetime import datetime
 from bs4 import BeautifulSoup
+
+import flmx.facility as flmx
 
 class TestFacilityParser(unittest.TestCase):
 
