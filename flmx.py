@@ -2,6 +2,8 @@ from datetime import datetime as dt
 from datetime import timedelta
 from bs4 import BeautifulSoup, Tag
 from operator import attrgetter
+from StringIO import StringIO
+import xmlvalidation
 
 # These helper methods take XML, strip the tags and
 # convert the contents to the required type
@@ -44,7 +46,7 @@ def datetime(isoDate):
     if not isoDate:
         return None
 
-    d = dt.strptime(isoDate[:19], "%Y-%m-%dT%H:%M:%S")
+    date = dt.strptime(isoDate[:19], "%Y-%m-%dT%H:%M:%S")
     # 19 is up to and including seconds.
     rest = isoDate[19:]
 
@@ -56,8 +58,8 @@ def datetime(isoDate):
     # must be millis - 3 extra digits. datetime doesn't store that precision so 
     # we'll just round up so as not to miss this entry when updating
     if rest.startswith('.'):
-        d += timedelta(seconds = 1)
-        # timezone starts after millis
+        date += timedelta(seconds = 1)
+        #timezone starts after millis
         startTimezone = 4
 
     hrs = 0
@@ -72,8 +74,7 @@ def datetime(isoDate):
         if hrs < 0:
             mins = -mins
 
-    # convert to UTC by subtracting timedelta
-    return d - timedelta(hours=hrs, minutes=mins)
+    return date - timedelta(hours=hrs, minutes=mins)
 
 # Parses a KDM or DCP delivery list
 def deliveries(xml):
@@ -92,6 +93,21 @@ def deliveries(xml):
         deliveries['physical'] = string(xml.MediaType)
 
     return deliveries
+
+class FlmxParseError(Exception):
+    """ An exception that is raised when an errors is encountered within the validation of the xml document
+    against its schema.
+
+    : param value: The contained error message object or string.
+
+    """
+
+
+    def __init__(self, value):
+        self.msg = value
+
+    def __str__(self):
+        return self.msg
 
 class FacilityLink(object): 
     """A link to a facility FLM-x file, as contained within a SiteList.
@@ -115,8 +131,6 @@ class FacilityLink(object):
                 link_href: ' + self.xlink_href + ' \
                 link_type: ' + self.xlink_type
 
-
-
 class SiteList(object):
     """Contains a list of facilities, and metadata about the site list itself.
 
@@ -129,33 +143,65 @@ class SiteList(object):
     system_name = ""
     facilities = []
 
+def validate_XML(xml, xsd):
+    """Validates an xml object against a given .xsd XML Schema.
+
+    Will raise an `FlmxParseError` if any errors are encountered during the validation process.
+
+    :param xml: A string or file-like object containing the xml file to validate. 
+
+    :param xsd: A string or file-like object containing the xsd file to validate against. 
+
+    """
+    v = xmlvalidation.XMLValidator()
+    with open('schema_sitelist.xsd', 'r') as xsd:
+        xml_file = xml
+
+        # If xml is a string, we wrap it in a StringIO object so validate and lxml
+        # will work nicely with it
+        if isinstance(xml, str):
+            xml = StringIO(xml)
+
+        if isinstance(xsd, str):
+            xsd = StringIO(xsd)
+                            
+        if not v.validate(xml, xsd):
+            raise FlmxParseError(v.get_messages())
+
 class SiteListParser(object):
     """Parses an XML sitelist, and constructs a container holding the the XML document's data.
 
     :param string xml: Either the contents of an XML file, or a file handle.
         This will parse the contents and construct ``sites``.
-    :param boolean validate: 
+    :param boolean validate: Defaults to true. If set, will validate the given
+        XML file against the Sitelist XML Schema xsd file, as found on the `FLM-x Homepage`.
 
     """
     def __init__(self, xml='', validate=True):
         self.contents = xml
         self.sites = SiteList()
 
+        if validate:
+            validate_XML(xml, 'schema_sitelist.xsd')
+
         soup = BeautifulSoup(xml, "xml")
-        self.sites.originator = soup.SiteList.Originator.string
-        self.sites.systemName = soup.SiteList.SystemName.string
-        facilities = []
-        for facility in soup.find_all('Facility'):
-            facLink = FacilityLink()
-            facLink.id_code = facility['id']
-            # strip the timezone from the ISO timecode
-            facLink.last_modified = datetime(facility['modified'])
-            facLink.xlink_href = facility['xlink:href']
-            facLink.xlink_type = facility['xlink:type']
 
-            facilities.append(facLink)
+        try:
+            self.sites.originator = soup.SiteList.Originator.string
+            self.sites.systemName = soup.SiteList.SystemName.string
+            facilities = []
+            for facility in soup.find_all('Facility'):
+                facLink = FacilityLink()
+                facLink.id_code = facility['id']
+                # strip  the timezone from the ISO timecode
+                facLink.last_modified = datetime(facility['modified'])
+                facLink.xlink_href = facility['xlink:href']
+                facLink.xlink_type = facility['xlink:type']
 
-        self.sites.facilities = sorted(facilities, key=attrgetter('last_modified'))
+                facilities.append(facLink)
+            self.sites.facilities = sorted(facilities, key=attrgetter('last_modified'))
+        except Exception, e:
+            raise FlmxParseError(repr(e))
 
     def get_sites(self, last_ran=dt.min):
         """Returns a dictionary mapping URLs as keys to the date that FLM was last modified as a value.
@@ -173,11 +219,12 @@ class SiteListParser(object):
                     for link in self.sites.facilities
                     if link.last_modified >= last_ran)
 
-
 class FacilityParser(object):
     """A class to parse a single FLM feed.
 
     :param xml: an XML string or an open, readable XML file containing an FLM feed.
+
+    :param bool validate: If true, will validate the XML file against the FLM XML Schema provided by FoxPico.
 
     Any of the values in the FLM feed can be accessed through the objects given in the next section.
     For example, the screen colour of the 3D system installed in screen #1 can be accessed using
@@ -199,8 +246,12 @@ class FacilityParser(object):
     ...   print(certs[3])
 
     """
-    def __init__(self, xml=''):
+    def __init__(self, xml='', validate=True):
         self.contents = xml
+
+        if validate:
+            validate_XML(xml, 'schema_facility.xsd')
+
         flm = BeautifulSoup(self.contents, 'xml')
 
         if flm.FLMPartial and boolean(flm.FLMPartial):
