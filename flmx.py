@@ -95,6 +95,14 @@ def deliveries(xml):
     return deliveries
 
 class FlmxParseError(Exception):
+    """ An exception that is raised when an errors is encountered within the validation of the xml document
+    against its schema.
+
+    : param value: The contained error message object or string.
+
+    """
+
+
     def __init__(self, value):
         self.msg = value
 
