@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet href="/static/flm-to-xhtml.xsl" type="text/xsl"?>
 <FacilityListMessage xmlns="http://isdcf.com/2010/06/FLM" xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
-  <MessageId>urn:uuid:2c87026f-0ec6-4490-8668-bd7647f8</MessageId>
+  <MessageId>urn:uuid:2c87026f-0ec6-4490-8668-bd7647f82e90</MessageId>
   <IssueDate>2013-07-19T09:24:10-10:00</IssueDate>
   <FacilityInfo>
     <FacilityID>urn:x-facilityID:smpte.com:5132</FacilityID>
@@ -33,7 +33,7 @@
         <DeviceGroup>
           <Device>
             <DeviceTypeID>PLY</DeviceTypeID>
-            <DeviceIdentifier idtype="CertThumbprint">certificate</DeviceIdentifier>
+            <DeviceIdentifier idtype="CertThumbprint">OthN+QPcj6n9v5dhCtTDsnN2v6A=</DeviceIdentifier>
             <DeviceSerial>serial</DeviceSerial>
             <ManufacturerName>Christie</ManufacturerName>
             <ModelNumber>Solaria One+</ModelNumber>
