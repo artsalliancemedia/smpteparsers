@@ -32,7 +32,7 @@ class XMLValidator(object):
 
         #Not mission critical if the xml file does not parse - just return false as does not validate. 
         try:
-            xml_doc= etree.parse(xml)
+            xml_doc = etree.parse(xml)
         except XMLSyntaxError, e:
             self.messages = ["XML document could not be parsed: " + repr(e)]
             return False
