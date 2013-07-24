@@ -249,11 +249,8 @@ class FacilityParser(object):
     def __init__(self, xml='', validate=True):
         self.contents = xml
 
-
-
         if validate:
             validate_XML(xml, 'schema_facility.xsd')
-
 
         flm = BeautifulSoup(self.contents, 'xml')
 
