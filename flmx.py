@@ -19,7 +19,7 @@ def string(s):
 
 def date(s):
     s = strip_tags(s)
-    return datetime.strptime(s, "%Y-%m-%d") if s else None
+    return dt.strptime(s, "%Y-%m-%d") if s else None
 
 def uint(s):
     s = strip_tags(s)
@@ -323,7 +323,7 @@ class Address(object):
         self.city = string(address.City)
         self.province = string(address.Province)
         self.postal_code = string(address.PostalCode)
-        self.country = string(address.CountryCode)
+        self.country = string(address.Country)
 
 class Auditorium(object):
     """Represents a screen or auditorium.
@@ -360,8 +360,9 @@ class Auditorium(object):
         self.install_date = datetime(auditorium.AuditoriumInstallDate)
         self.large_format_type = string(auditorium.LargeFormatType)
 
+        self.digital_3d_system = None
         if auditorium.Digital3DSystem:
-            self.digital_3d_system = Digital3DSystem(auditorium.digital_3d_system)
+            self.digital_3d_system = Digital3DSystem(auditorium.Digital3DSystem)
 
         self.devices = [Device(device) for device in auditorium.DeviceGroupList("Device")]
 
@@ -448,10 +449,14 @@ class Device(object):
         self.type = string(device.DeviceTypeID)
         self.id = string(device.DeviceIdentifier)
         self.serial = string(device.DeviceSerial)
-        self.manufacturer_id = string(device.ManufacturerID)
+
+        self.manufacturer_id = None
+        if device.ManufacturerID:
+            self.manufacturer_id = device.ManufacturerID.get_text().split(":", 2)[2]
         self.manufacturer_name = string(device.ManufacturerName)
+
         self.model_number = string(device.ModelNumber)
-        self.install_date = datetime(device.InstallDate.get_text())
+        self.install_date = datetime(device.InstallDate)
         self.resolution = string(device.Resolution)
         self.active = boolean(device.IsActive)
 
@@ -467,7 +472,7 @@ class Device(object):
 
         self.software = []
         if device.SoftwareList:
-            self.sotware = [Software(program) for program in device.SoftwareList("Software")]
+            self.software = [Software(program) for program in device.SoftwareList("Software")]
 
         self.certificates = []
         if device.KeyInfoList:
@@ -500,13 +505,13 @@ class Digital3DSystem(object):
 
     """
     def __init__(self, system):
-        self.active = boolean(auditorium.IsActive)
-        self.configuration = string(auditorium.Digital3DConfiguration)
-        self.install_date = datetime(auditorium.InstallDate.get_text())
-        self.screen_color = string(auditorium.ScreenColor) # enum
-        self.screen_luminance = uint(auditorium.ScreenLuminance) # 1 to 29
-        self.ghostbusting = boolean(auditorium.ghostbusting)
-        self.ghostbusting_configuration = string(auditorium.GhostbustingConfiguration)
+        self.active = boolean(system.IsActive)
+        self.configuration = string(system.Digital3DConfiguration)
+        self.install_date = datetime(system.InstallDate)
+        self.screen_color = string(system.ScreenColor) # enum
+        self.screen_luminance = uint(system.ScreenLuminance) # 1 to 29
+        self.ghostbusting = boolean(system.Ghostbusting)
+        self.ghostbusting_configuration = string(system.GhostbustingConfiguration)
 
 class IPAddress(object):
     """Represents an IPv4 or IPv6 address.
@@ -585,4 +590,4 @@ class Watermarking(object):
         self.manufacturer = string(watermarking.WatermarkManufacturer)
         self.kind = string(watermarking.WatermarkKind) # enum
         self.model = string(watermarking.WatermarkModel)
-        self.version = string(watermarking.WatermarkModel)
+        self.version = string(watermarking.WatermarkVersion)

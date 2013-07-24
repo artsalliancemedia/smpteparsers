@@ -3,23 +3,57 @@
 <FacilityListMessage xmlns="http://isdcf.com/2010/06/FLM" xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
   <MessageId>urn:uuid:2c87026f-0ec6-4490-8668-bd7647f8</MessageId>
   <IssueDate>2013-07-19T09:24:10-10:00</IssueDate>
+  <AnnotationText>some annotation</AnnotationText>
   <FacilityInfo>
-    <FacilityID>urn:x-facilityID:smpte.com:5132</FacilityID>
+    <FacilityID>urn:x-facilityID:fox.com:5132</FacilityID>
     <AlternateFacilityIDList>
-      <AlternateFacilityID>urn:x-facilityID:smpte.com:4115</AlternateFacilityID>
+      <AlternateFacilityID>urn:x-facilityID:fox.com:4115</AlternateFacilityID>
+      <AlternateFacilityID>urn:x-facilityID:fox.com:4116</AlternateFacilityID>
     </AlternateFacilityIDList>
+    <BookingPartnerFacilityID>urn:x-facilityID:fox.com:924</BookingPartnerFacilityID>
     <FacilityName>A Cinema</FacilityName>
     <FacilityTimeZone>Pacific/Johnston</FacilityTimeZone>
     <Circuit>Independent</Circuit>
     <FLMPartial>false</FLMPartial>
+    <ContactList>
+      <Contact>
+        <Name>John Smith</Name>
+        <CountryCode>UM</CountryCode>
+        <Phone1>+56614326431</Phone1>
+        <Phone2>0052345322355</Phone2>
+        <Email>john@johnstoncinemas.com</Email>
+        <Type>Manager</Type>
+      </Contact>
+    </ContactList>
     <AddressList>
       <Address>
         <Physical>
+          <Addressee>John Smith</Addressee>
           <StreetAddress>A Street</StreetAddress>
+          <StreetAddress2>At the corner of another street</StreetAddress2>
           <City>A City</City>
           <Province>North Island</Province>
+          <PostalCode>10</PostalCode>
           <Country>UM</Country>
         </Physical>
+        <Shipping>
+          <Addressee>John Smith</Addressee>
+          <StreetAddress>A Street</StreetAddress>
+          <StreetAddress2>At the corner of another street</StreetAddress2>
+          <City>A City</City>
+          <Province>North Island</Province>
+          <PostalCode>10</PostalCode>
+          <Country>UM</Country>
+        </Shipping>
+        <Billing>
+          <Addressee>John Smith</Addressee>
+          <StreetAddress>A Street</StreetAddress>
+          <StreetAddress2>At the corner of another street</StreetAddress2>
+          <City>A City</City>
+          <Province>North Island</Province>
+          <PostalCode>10</PostalCode>
+          <Country>UM</Country>
+        </Billing>
       </Address>
     </AddressList>
   </FacilityInfo>
@@ -28,19 +62,50 @@
       <AuditoriumNumber>1</AuditoriumNumber>
       <AuditoriumName>Auditorium 1</AuditoriumName>
       <Supports35MM>false</Supports35MM>
+      <ScreenAspectRatio>1.39</ScreenAspectRatio>
+      <AdjustableScreenMask>Bottom</AdjustableScreenMask>
+      <AudioFormat>13.2</AudioFormat>
       <AuditoriumInstallDate>2013-06-30T16:54:51-10:00</AuditoriumInstallDate>
+      <LargeFormatType>Large</LargeFormatType>
+      <Digital3DSystem>
+        <IsActive>1</IsActive>
+        <Digital3DConfiguration>3D</Digital3DConfiguration>
+        <InstallDate>2013-06-30T16:54:51-10:00</InstallDate>
+        <ScreenColor>Silver</ScreenColor>
+        <ScreenLuminance>23</ScreenLuminance>
+        <Ghostbusting>true</Ghostbusting>
+        <GhostbustingConfiguration>Good</GhostbustingConfiguration>
+      </Digital3DSystem>
       <DeviceGroupList>
         <DeviceGroup>
           <Device>
             <DeviceTypeID>PLY</DeviceTypeID>
             <DeviceIdentifier idtype="CertThumbprint">certificate</DeviceIdentifier>
             <DeviceSerial>serial</DeviceSerial>
+            <ManufacturerID>urn:x-manufacturerId:fox.com:1560</ManufacturerID>
             <ManufacturerName>Christie</ManufacturerName>
             <ModelNumber>Solaria One+</ModelNumber>
             <InstallDate>2013-06-30T16:54:51-10:00</InstallDate>
             <Resolution>2K</Resolution>
             <IsActive>true</IsActive>
-            <Integrator>AAM</Integrator>
+            <Integrator>FOX</Integrator>
+            <VPFFinanceEntity>FOX</VPFFinanceEntity>
+            <VPFStartDate>2013-07-01</VPFStartDate>
+            <IPAddressList>
+              <IPAddress>
+                <Address>1.1.1.2</Address>
+                <Host>host</Host>
+              </IPAddress>
+            </IPAddressList>
+            <SoftwareList>
+              <SoftwareKind>Software</SoftwareKind>
+              <SoftwareProducer>AAM</SoftwareProducer>
+              <Description>Quantum telecommunication device</Description>
+              <Version>0.3b6</Version>
+              <FileName>qcomm.exe</Filename>
+              <FileSize>1024</FileSize>
+              <FileDateTime>3000-01-01T00:00:01-00:00</FileDateTime>
+            </SoftwareList>
             <KeyInfoList>
               <ds:KeyInfo>
                 <ds:X509Data>
@@ -53,6 +118,46 @@
                 </ds:X509Data>
               </ds:KeyInfo>
             </KeyInfoList>
+            <WatermarkingList>
+              <Watermarking>
+                <WatermarkManufacturer>Watermarks Inc.</WatermarkManufacturer>
+                <WatermarkKind>Picture</WatermarkKind>
+                <WatermarkModel>Super Watermarker</WatermarkModel>
+                <WatermarkVersion>3</WatermarkVersion>
+              </Watermarking>
+              <Watermarking>
+                <WatermarkManufacturer>Watermarks Inc.</WatermarkManufacturer>
+                <WatermarkKind>Audio</WatermarkKind>
+                <WatermarkModel>Super Watermarker</WatermarkModel>
+                <WatermarkVersion>3</WatermarkVersion>
+              </Watermarking>
+            </WatermarkingList>
+            <KDMDeliveryMethodList>
+              <DeliveryMethod>
+                <Email>
+                  <EmailAddress>john@johnstoncinemas.com</EmailAddress>
+                </Email>
+              </DeliveryMethod>
+              <DeliveryMethod>
+                <Physical>
+                  <MediaType>USB</MediaType>
+                </Physical>
+              </DeliveryMethod>
+            </KDMDeliveryMethodList>
+            <DCPDeliveryMethodList>
+              <DeliveryMethod>
+                <Modem>
+                  <PhoneNumber>+198074718152987</PhoneNumber>
+                </Modem>
+              </DeliveryMethod>
+            </DCPDeliveryMethodList>
+          </Device>
+          <Device>
+            <DeviceTypeID>DEC</DeviceTypeID>
+            <DeviceIdentifier idtype="DeviceUID">299572</DeviceIdentifier>
+            <ManufacturerName>A Company</ManufacturerName>
+            <ModelNumber>Decoder</ModelNumber>
+            <IsActive>true</IsActive>
           </Device>
         </DeviceGroup>
       </DeviceGroupList>
