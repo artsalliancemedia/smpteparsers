@@ -52,7 +52,7 @@ class SiteListParser(object):
         self.sites = SiteList()
 
         if validate:
-            validate_XML(xml, 'schema_sitelist.xsd')
+            validate_XML(xml, 'schema/schema_sitelist.xsd')
 
         soup = BeautifulSoup(xml, "xml")
 

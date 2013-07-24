@@ -31,7 +31,7 @@ class FacilityParser(object):
         self.contents = xml
 
         if validate:
-            validate_XML(xml, 'schema_facility.xsd')
+            validate_XML(xml, 'schema/schema_facility.xsd')
 
         flm = BeautifulSoup(self.contents, 'xml')
 
