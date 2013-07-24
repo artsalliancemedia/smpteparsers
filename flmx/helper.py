@@ -99,21 +99,16 @@ def validate_XML(xml, xsd):
 
     Will raise an `FlmxParseError` if any errors are encountered during the validation process.
 
-    :param xml: A string or file-like object containing the xml file to validate. 
-    :param xsd: A string or file-like object containing the xsd file to validate against. 
+    :param string xml: A string object containing the contents of the xml file to validate. 
+    :param string xsd: A filename of a .xsd schema file to validate against. 
 
     """
     v = xmlvalidation.XMLValidator()
-    with open('schema_sitelist.xsd', 'r') as xsd:
-        xml_file = xml
-
+    with open(xsd, 'r') as xsd:
         # If xml is a string, we wrap it in a StringIO object so validate and lxml
         # will work nicely with it
         if isinstance(xml, str):
             xml = StringIO(xml)
-
-        if isinstance(xsd, str):
-            xsd = StringIO(xsd)
                             
         if not v.validate(xml, xsd):
             raise error.FlmxParseError(v.get_messages())
