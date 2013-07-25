@@ -20,7 +20,7 @@ def string(s):
 
 def date(s):
     s = strip_tags(s)
-    return datetime.strptime(s, "%Y-%m-%d") if s else None
+    return dt.strptime(s, "%Y-%m-%d") if s else None
 
 def uint(s):
     s = strip_tags(s)

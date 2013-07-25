@@ -29,7 +29,7 @@ class XMLValidator(object):
         # except IOError, e:
         #     raise FlmxParseError("Schema could not be opened: " + repr(e))
 
-        #Not mission critical if the xml file does not parse - just return false as does not validate. 
+        # Not mission critical if the xml file does not parse - just return false as does not validate. 
         try:
             xml_doc = etree.parse(xml)
         except XMLSyntaxError, e:
