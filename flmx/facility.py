@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 from helper import boolean, string, date, uint, datetime, deliveries, validate_XML
+import error
 
 class FacilityParser(object):
     """A class to parse a single FLM feed.
@@ -26,12 +27,14 @@ class FacilityParser(object):
     ...   print(certs[3])
 
     """
-    def __init__(self, xml=''):
-        self.contents = xml
-        flm = BeautifulSoup(self.contents, 'xml')
+    def __init__(self, xml):
+        # validate_XML throws an error if validation fails
+        validate_XML(xml, 'schema/schema_facility.xsd')
+
+        flm = BeautifulSoup(xml, 'xml')
 
         if flm.FLMPartial and boolean(flm.FLMPartial):
-            pass # Warning for partial FLM?
+            raise error.FlmxPartialError("Partial FLMs are not supported by this parser.")
 
         self.facility = Facility(flm)
 

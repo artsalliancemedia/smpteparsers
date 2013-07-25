@@ -3,8 +3,9 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 
 import flmx.facility as flmx
+import flmx.error as error
 
-class TestFacilityParser(unittest.TestCase):
+class TestFacilityParserMethods(unittest.TestCase):
 
     def setUp(self):
         self.f = open('test/testFLM.xml')
@@ -49,6 +50,60 @@ class TestFacilityParser(unittest.TestCase):
 
                 self.assertEqual(certs[screen_index][i].name, cert.name)
                 self.assertEqual(certs[screen_index][i].certificate, cert.certificate)
+
+
+class TestFacilityParser(unittest.TestCase):
+
+    # Minimal validating XML which has FLM partial
+    partialXML = """<?xml version="1.0" encoding="UTF-8"?>
+        <FacilityListMessage xmlns="http://isdcf.com/2010/06/FLM" xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+          <MessageId>urn:uuid:2c87026f-0ec6-4490-8668-bd7647f82e90</MessageId>
+          <IssueDate>2013-07-19T09:24:10-10:00</IssueDate>
+          <FacilityInfo>
+            <FacilityID>urn:x-facilityID:fox.com:5132</FacilityID>
+            <FacilityName>A Cinema</FacilityName>
+            <Circuit>Independent</Circuit>
+            <FLMPartial>1</FLMPartial>
+            <AddressList>
+              <Address>
+                <Physical>
+                  <StreetAddress>A Street</StreetAddress>
+                  <City>A City</City>
+                  <Province>North Island</Province>
+                  <Country>UM</Country>
+                </Physical>
+              </Address>
+            </AddressList>
+          </FacilityInfo>
+          <AuditoriumList>
+            <Auditorium>
+              <AuditoriumNumber>1</AuditoriumNumber>
+              <Supports35MM>false</Supports35MM>
+              <DeviceGroupList>
+                <DeviceGroup>
+                  <Device>
+                    <DeviceTypeID>PLY</DeviceTypeID>
+                    <DeviceIdentifier idtype="DeviceUID">00000000-0000-0000-0000-000000000000</DeviceIdentifier>
+                    <ManufacturerName>Christie</ManufacturerName>
+                    <ModelNumber>Solaria One+</ModelNumber>
+                    <IsActive>true</IsActive>
+                  </Device>
+                </DeviceGroup>
+              </DeviceGroupList>
+            </Auditorium>
+          </AuditoriumList>
+        </FacilityListMessage>
+        """
+
+    emptyXML = """
+        """
+
+    def test_partial_FLM(self):
+        self.assertRaises(error.FlmxPartialError, flmx.FacilityParser, TestFacilityParser.partialXML)
+
+    def test_empty_FLM(self):
+        # This will fail schema validation
+        self.assertRaises(error.FlmxParseError, flmx.FacilityParser, TestFacilityParser.emptyXML)
 
 
 class TestAddress(unittest.TestCase):
@@ -290,7 +345,7 @@ class TestDevice(unittest.TestCase):
     minimalXML = """
         <Device>
           <DeviceTypeID>MDA</DeviceTypeID>
-          <DeviceIdentifier idtype="DeviceUUID">5a8743a0-f43e-11e2-b778-0800200c9a66</DeviceIdentifier>
+          <DeviceIdentifier idtype="DeviceUID">5a8743a0-f43e-11e2-b778-0800200c9a66</DeviceIdentifier>
           <ManufacturerName>A Company</ManufacturerName>
           <ModelNumber>IMB-3000</ModelNumber>
           <IsActive>false</IsActive>
@@ -301,7 +356,7 @@ class TestDevice(unittest.TestCase):
     fullXML = """
           <Device>
             <DeviceTypeID>PLY</DeviceTypeID>
-            <DeviceIdentifier idtype="CertThumbprint">certificate</DeviceIdentifier>
+            <DeviceIdentifier idtype="CertThumbprint">OthN+QPcj6n9v5dhCtTDsnN2v6A=</DeviceIdentifier>
             <DeviceSerial>serial</DeviceSerial>
             <ManufacturerID>urn:x-manufacturerId:fox.com:1560</ManufacturerID>
             <ManufacturerName>Manufacturer</ManufacturerName>
@@ -338,9 +393,6 @@ class TestDevice(unittest.TestCase):
           </Device>
           """
 
-    emptyXML = """<Device></Device>"""
-
-
     def test_mandatory(self):
         minimal = BeautifulSoup(TestDevice.minimalXML, 'xml')
         device = flmx.Device(minimal)
@@ -370,7 +422,7 @@ class TestDevice(unittest.TestCase):
         device = flmx.Device(optional)
 
         self.assertEqual(device.type, "PLY")
-        self.assertEqual(device.id, "certificate")
+        self.assertEqual(device.id, "OthN+QPcj6n9v5dhCtTDsnN2v6A=")
         self.assertEqual(device.manufacturer_name, "Manufacturer")
         self.assertEqual(device.model_number, "Model")
         self.assertEqual(device.active, True)
@@ -463,7 +515,7 @@ class TestAuditorium(unittest.TestCase):
           <AuditoriumName>Screen 2</AuditoriumName>
           <Supports35MM>0</Supports35MM>
           <ScreenAspectRatio>1.85</ScreenAspectRatio>
-          <AdjustableScreenMask>Bottom</AdjustableScreenMask>
+          <AdjustableScreenMask>Side</AdjustableScreenMask>
           <AudioFormat>13.2</AudioFormat>
           <AuditoriumInstallDate>2013-06-30T16:54:51-10:00</AuditoriumInstallDate>
           <LargeFormatType>Large</LargeFormatType>
@@ -513,7 +565,7 @@ class TestAuditorium(unittest.TestCase):
 
         self.assertEqual(auditorium.name, "Screen 2")
         self.assertEqual(auditorium.screen_aspect_ratio, "1.85")
-        self.assertEqual(auditorium.adjustable_screen_mask, "Bottom")
+        self.assertEqual(auditorium.adjustable_screen_mask, "Side")
         self.assertEqual(auditorium.audio_format, "13.2")
         self.assertEqual(auditorium.install_date, datetime(2013, 07, 01, 02, 54, 51))
         self.assertEqual(auditorium.large_format_type, "Large")

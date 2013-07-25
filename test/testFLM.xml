@@ -36,6 +36,8 @@
           <PostalCode>10</PostalCode>
           <Country>UM</Country>
         </Physical>
+      </Address>
+      <Address>
         <Shipping>
           <Addressee>John Smith</Addressee>
           <StreetAddress>A Street</StreetAddress>
@@ -45,6 +47,8 @@
           <PostalCode>10</PostalCode>
           <Country>UM</Country>
         </Shipping>
+      </Address>
+      <Address>
         <Billing>
           <Addressee>John Smith</Addressee>
           <StreetAddress>A Street</StreetAddress>
@@ -62,8 +66,8 @@
       <AuditoriumNumber>1</AuditoriumNumber>
       <AuditoriumName>Auditorium 1</AuditoriumName>
       <Supports35MM>false</Supports35MM>
-      <ScreenAspectRatio>1.39</ScreenAspectRatio>
-      <AdjustableScreenMask>Bottom</AdjustableScreenMask>
+      <ScreenAspectRatio>2.39</ScreenAspectRatio>
+      <AdjustableScreenMask>Both</AdjustableScreenMask>
       <AudioFormat>13.2</AudioFormat>
       <AuditoriumInstallDate>2013-06-30T16:54:51-10:00</AuditoriumInstallDate>
       <LargeFormatType>Large</LargeFormatType>
@@ -98,13 +102,15 @@
               </IPAddress>
             </IPAddressList>
             <SoftwareList>
-              <SoftwareKind>Software</SoftwareKind>
-              <SoftwareProducer>AAM</SoftwareProducer>
-              <Description>Quantum telecommunication device</Description>
-              <Version>0.3b6</Version>
-              <FileName>qcomm.exe</Filename>
-              <FileSize>1024</FileSize>
-              <FileDateTime>3000-01-01T00:00:01-00:00</FileDateTime>
+              <Software>
+                <SoftwareKind>Software</SoftwareKind>
+                <SoftwareProducer>AAM</SoftwareProducer>
+                <Description>Quantum telecommunication device</Description>
+                <Version>0.3b6</Version>
+                <FileName>qcomm.exe</FileName>
+                <FileSize>1024</FileSize>
+                <FileDateTime>3000-01-01T00:00:01-00:00</FileDateTime>
+              </Software>
             </SoftwareList>
             <KeyInfoList>
               <ds:KeyInfo>
@@ -154,7 +160,7 @@
           </Device>
           <Device>
             <DeviceTypeID>DEC</DeviceTypeID>
-            <DeviceIdentifier idtype="DeviceUID">299572</DeviceIdentifier>
+            <DeviceIdentifier idtype="DeviceUID">urn:uuid:00000000-0000-0000-0000-000000000000</DeviceIdentifier>
             <ManufacturerName>A Company</ManufacturerName>
             <ModelNumber>Decoder</ModelNumber>
             <IsActive>true</IsActive>
