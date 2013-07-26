@@ -48,7 +48,6 @@ class SiteListParser(object):
 
     """
     def __init__(self, xml):
-        self.contents = xml
         self.sites = SiteList()
 
         validate_XML(xml, 'schema/schema_sitelist.xsd')
