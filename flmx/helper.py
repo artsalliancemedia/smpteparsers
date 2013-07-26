@@ -111,4 +111,8 @@ def validate_XML(xml, xsd):
             xml = StringIO(xml)
                             
         if not v.validate(xml, xsd):
-            raise error.FlmxParseError(v.get_messages())
+            error_msg = ""
+            # v.get_messages returns a lxml.etree._ListErrorLog object
+            for entry in v.get_messages():
+                error_msg += repr(entry) + "\n"
+            raise error.FlmxParseError(error_msg)
