@@ -1,8 +1,7 @@
 from datetime import datetime
 from optparse import OptionParser
 from lxml.etree import XMLSyntaxError
-import logging, requests, json
-from requests.exceptions import HTTPError
+import logging, requests, json, os
 
 from flmx.facility import FacilityParser
 from flmx.sitelist import SiteListParser
@@ -30,7 +29,7 @@ def parse_flmx(sitelist_url, username=u'', password=u'', last_ran=datetime.min, 
 
     facilities = []
 
-    with open(failures_file, u'w+') as f:
+    with open(os.path.join(os.path.dirname(__file__), failures_file), u'w+') as f:
         try:
             failures = json.load(f)
         # If failures.json is not a valid json file then assume no failures
@@ -43,7 +42,7 @@ def parse_flmx(sitelist_url, username=u'', password=u'', last_ran=datetime.min, 
         for site in set(prev_failures) | set(sites.keys()):
             try:
                 fp = get_facility(site, sitelist_url, username=username, password=password)
-            except (HTTPError, FlmxParseError, FlmxPartialError, XMLSyntaxError):
+            except (requests.exceptions.RequestException, FlmxParseError, FlmxPartialError, XMLSyntaxError):
                 new_failures.append(site)
             else:
                 facilities.append(fp)

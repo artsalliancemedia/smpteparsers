@@ -1,4 +1,5 @@
-import unittest
+# -*- coding: UTF-8 -*-
+import unittest, os
 from datetime import datetime
 from bs4 import BeautifulSoup
 
@@ -8,7 +9,7 @@ import flmx.error as error
 class TestFacilityParserMethods(unittest.TestCase):
 
     def setUp(self):
-        self.f = open(u'test/testFLM.xml')
+        self.f = open(os.path.join(os.path.dirname(__file__), os.pardir, u'test', u'testFLM.xml'))
         self.xml = self.f.read()
         self.fp = flmx.FacilityParser(self.xml)
 
@@ -98,12 +99,55 @@ class TestFacilityParser(unittest.TestCase):
     emptyXML = """
         """
 
+    unicodeXML = u"""<?xml version="1.0"?>
+        <FacilityListMessage xmlns="http://isdcf.com/2010/06/FLM" xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+          <MessageId>urn:uuid:2c87026f-0ec6-4490-8668-bd7647f82e90</MessageId>
+          <IssueDate>2013-07-19T09:24:10-10:00</IssueDate>
+          <FacilityInfo>
+            <FacilityID>urn:x-facilityID:fox.com:5132</FacilityID>
+            <FacilityName>Cinema</FacilityName>
+            <Circuit>Independent</Circuit>
+            <AddressList>
+              <Address>
+                <Physical>
+                  <StreetAddress>A Street</StreetAddress>
+                  <City>A City</City>
+                  <Province>Moscow</Province>
+                  <Country>RU</Country>
+                </Physical>
+              </Address>
+            </AddressList>
+          </FacilityInfo>
+          <AuditoriumList>
+            <Auditorium>
+              <AuditoriumName>\u2603</AuditoriumName>
+              <Supports35MM>false</Supports35MM>
+              <DeviceGroupList>
+                <DeviceGroup>
+                  <Device>
+                    <DeviceTypeID>PLY</DeviceTypeID>
+                    <DeviceIdentifier idtype="DeviceUID">00000000-0000-0000-0000-000000000000</DeviceIdentifier>
+                    <ManufacturerName>Christie</ManufacturerName>
+                    <ModelNumber>Solaria One+</ModelNumber>
+                    <IsActive>true</IsActive>
+                  </Device>
+                </DeviceGroup>
+              </DeviceGroupList>
+            </Auditorium>
+          </AuditoriumList>
+        </FacilityListMessage>
+        """
+
     def test_partial_FLM(self):
         self.assertRaises(error.FlmxPartialError, flmx.FacilityParser, TestFacilityParser.partialXML)
 
     def test_empty_FLM(self):
         # This will fail schema validation
         self.assertRaises(error.FlmxParseError, flmx.FacilityParser, TestFacilityParser.emptyXML)
+
+    def test_unicode_FLM(self):
+        fp = flmx.FacilityParser(TestFacilityParser.unicodeXML)
+        self.assertTrue(u'☃' in fp.facility.auditoriums)
 
 
 class TestAddress(unittest.TestCase):
@@ -627,7 +671,7 @@ class TestFacility(unittest.TestCase):
         self.assertEqual(facility.contacts, [])
 
     def test_optional(self):
-        with open(u'test/testFLM.xml') as flm:
+        with open(os.path.join(os.path.dirname(__file__), os.pardir, u'test', u'testFLM.xml')) as flm:
             optional = BeautifulSoup(flm, u'xml')
             facility = flmx.Facility(optional)
 
