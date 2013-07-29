@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
 from helper import get_boolean, get_string, get_date, get_uint, get_datetime, deliveries, validate_XML
-import error
+import error, os
 
 class FacilityParser(object):
     u"""A class to parse a single FLM feed.
@@ -29,7 +29,7 @@ class FacilityParser(object):
     """
     def __init__(self, xml):
         # validate_XML throws an error if validation fails
-        validate_XML(xml, u'schema/schema_facility.xsd')
+        validate_XML(xml, os.path.join(os.path.dirname(__file__), os.pardir, u'schema', u'schema_facility.xsd'))
 
         flm = BeautifulSoup(xml, u'xml')
 

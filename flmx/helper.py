@@ -2,7 +2,7 @@ from datetime import datetime as dt
 from datetime import timedelta
 from bs4 import Tag
 from StringIO import StringIO
-import error, xmlvalidation
+import error, xmlvalidation, os
 
 # These helper methods take XML, strip the tags and
 # convert the contents to the required type
@@ -12,11 +12,13 @@ def strip_tags(s):
 def get_boolean(s):
     s = strip_tags(s)
     # Only boolean values in XML are 0 and 1, false and true
+    # These string comparisons work as these characters are single byte
     return s != u"0" and s.lower() != u"false" if s else None
 
 def get_string(s):
-    # XML contents are already a string so we only need to strip the tags
-    return strip_tags(s)
+    # XML contents are already a string so we need to strip the tags
+    # and convert to unicode
+    return unicode(strip_tags(s)) if s is not None else None
 
 def get_date(s):
     s = strip_tags(s)
@@ -28,7 +30,7 @@ def get_uint(s):
     # int constructor returns a long if it doesn't fit in an int
     return int(s) if s else None
 
-def get_datetime(isoDate):
+def get_datetime(s):
     u"""Returns the utc datetime for a given ISO8601 date string.
 
     Format must be as follows: YYYY-mm-ddTHH:MM:SS, with the following optional components
@@ -41,30 +43,29 @@ def get_datetime(isoDate):
         * +/-HH
 
     """
-    isoDate = strip_tags(isoDate)
-    if not isoDate:
+    iso_date = strip_tags(s)
+    if not iso_date:
         return None
 
-    date = dt.strptime(isoDate[:19], u"%Y-%m-%dT%H:%M:%S")
+    date = dt.strptime(iso_date[:19], u"%Y-%m-%dT%H:%M:%S")
     # 19 is up to and including seconds.
-    rest = isoDate[19:]
-
+    rest = iso_date[19:]
 
     # rest could be none, any, or all of the following: '.mmm' (millisecs) and '+00:00'
     # Additionally timezone might be in a different format, either +01:00, +0100, or +01
-    startTimezone = 0
+    start_timezone = 0
 
     # must be millis - 3 extra digits. datetime doesn't store that precision so 
     # we'll just round up so as not to miss this entry when updating
     if rest.startswith(u'.'):
         date += timedelta(seconds = 1)
         # timezone starts after millis
-        startTimezone = 4
+        start_timezone = 4
 
     hrs = 0
     mins = 0
 
-    timezone = rest[startTimezone:]
+    timezone = rest[start_timezone:]
     if timezone:
         hrs = int(timezone[:3]) # always should be there
         if len(timezone) > 3:
@@ -104,10 +105,13 @@ def validate_XML(xml, xsd):
 
     """
     v = xmlvalidation.XMLValidator()
+
+    # It is the calling method's responsibility to ensure the pathname works
+    # across platforms and OSes
     with open(xsd, u'r') as xsd:
         # If xml is a string, we wrap it in a StringIO object so validate and lxml
         # will work nicely with it
-        if isinstance(xml, str):
+        if isinstance(xml, str) or isinstance(xml, unicode):
             xml = StringIO(xml)
                             
         if not v.validate(xml, xsd):

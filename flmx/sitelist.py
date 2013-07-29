@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 from helper import get_datetime, validate_XML
 from operator import attrgetter
 from error import FlmxParseError
+import os
 
 class FacilityLink(object): 
     u"""A link to a facility FLM-x file, as contained within a SiteList.
@@ -50,7 +51,7 @@ class SiteListParser(object):
     def __init__(self, xml):
         self.sites = SiteList()
 
-        validate_XML(xml, u'schema/schema_sitelist.xsd')
+        validate_XML(xml, os.path.join(os.path.dirname(__file__), os.pardir, u'schema', u'schema_sitelist.xsd'))
 
         soup = BeautifulSoup(xml, u"xml")
 
