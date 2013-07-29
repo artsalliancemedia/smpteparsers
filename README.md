@@ -33,7 +33,7 @@ To parse a non-protected site-list XML file, and then fetch all keys for all cin
 
     {'screen 1', 'ABC123', ....}
 
-where `facility` is a Facility object, as defined in `facility.py`. Facility contains a variety of member variables to help you access any of the data it contains within it.
+where `facility` is a *Facility* object, as defined in `facility.py`. *Facility* contains a variety of member variables to help you access any of the data contained within it.
 
 #### Other options
 
