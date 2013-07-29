@@ -9,8 +9,8 @@ from flmx.sitelist import SiteListParser
 from flmx.error import FlmxParseError, FlmxPartialError
 
 # FLM-x shortcut parser
-def parse_flmx(sitelist_url, username='', password='', last_ran=datetime.min, failures_file='failures.json'):
-    """Parse the FLM site list at the URL provided, and return a list of Facility objects.
+def parse_flmx(sitelist_url, username=u'', password=u'', last_ran=datetime.min, failures_file=u'failures.json'):
+    u"""Parse the FLM site list at the URL provided, and return a list of Facility objects.
 
     This 'shortcut' parser will get all the facilities referenced by a site list URL and
     present them as a list of Facility objects.  The `last_ran` parameter can be given to
@@ -30,7 +30,7 @@ def parse_flmx(sitelist_url, username='', password='', last_ran=datetime.min, fa
 
     facilities = []
 
-    with open(failures_file, 'w+') as f:
+    with open(failures_file, u'w+') as f:
         try:
             failures = json.load(f)
         # If failures.json is not a valid json file then assume no failures
@@ -53,7 +53,7 @@ def parse_flmx(sitelist_url, username='', password='', last_ran=datetime.min, fa
 
     return facilities
 
-def request(url, username='', password=''):
+def request(url, username=u'', password=u''):
     res = None
     if username and password:
         res = requests.get(url, auth=(username, password), stream=True)
@@ -62,7 +62,7 @@ def request(url, username='', password=''):
 
     return res
 
-def get_sitelist(sitelist_url, username='', password=''):
+def get_sitelist(sitelist_url, username=u'', password=u''):
     # Get sitelist from URL using authentication if necessary
     res = request(sitelist_url, username=username, password=password)
 
@@ -76,7 +76,7 @@ def get_sitelist(sitelist_url, username='', password=''):
     # If efficiency becomes a problem this is an obvious bottleneck.
     return SiteListParser(res.raw.read())
 
-def get_facility(site, sitelist_url, username='', password=''):
+def get_facility(site, sitelist_url, username=u'', password=u''):
     res = request(sitelist_url + site, username=username, password=password)
 
     # If there's a problem with obtaining an FLM
@@ -87,27 +87,27 @@ def get_facility(site, sitelist_url, username='', password=''):
     try:
         return FacilityParser(res.raw.read())
     except FlmxParseError, e:
-        raise FlmxParseError("Problem parsing FLM at " + site + ". Error message: " + e.msg)
+        raise FlmxParseError(u"Problem parsing FLM at " + site + u". Error message: " + e.msg)
     except FlmxPartialError:
         raise
     except XMLSyntaxError, e:
-        raise XMLSyntaxError("FLM at " + site + " failed validation.  Error message: " + e.msg)
+        raise XMLSyntaxError(u"FLM at " + site + u" failed validation.  Error message: " + e.msg)
 
 # This main method runs the parser, useful for testing
 # but doesn't actually output anything on success 
 def main():
-    parser = OptionParser(usage="%prog [options] url")
-    parser.add_option("-u", "--username", dest="username", default="", help="username for authentication")
-    parser.add_option("-p", "--password", dest="password", default="", help="password for authentication")
-    parser.add_option("-f", "--failures", dest="failures", default="failures.json", help="failures file")
+    parser = OptionParser(usage=u"%prog [options] url")
+    parser.add_option(u"-u", u"--username", dest=u"username", default=u"", help=u"username for authentication")
+    parser.add_option(u"-p", u"--password", dest=u"password", default=u"", help=u"password for authentication")
+    parser.add_option(u"-f", u"--failures", dest=u"failures", default=u"failures.json", help=u"failures file")
 
     options, args = parser.parse_args()
     if len(args) != 1:
-        print("Only one argument is required: the site list URL.")
+        print(u"Only one argument is required: the site list URL.")
         exit(1)
 
     facilities = parse_flmx(*args, username=options.username,
                             password=options.password, failures_file=options.failures)
 
-if __name__ == '__main__':
+if __name__ == u'__main__':
     main()

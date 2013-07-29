@@ -8,7 +8,7 @@ import flmx.error as error
 class TestFacilityParserMethods(unittest.TestCase):
 
     def setUp(self):
-        self.f = open('test/testFLM.xml')
+        self.f = open(u'test/testFLM.xml')
         self.xml = self.f.read()
         self.fp = flmx.FacilityParser(self.xml)
 
@@ -19,7 +19,7 @@ class TestFacilityParserMethods(unittest.TestCase):
         screens = self.fp.get_screens()
 
         # Auditorium object created directly using constructor
-        auditorium = flmx.Auditorium(BeautifulSoup(self.xml, 'xml').Auditorium)
+        auditorium = flmx.Auditorium(BeautifulSoup(self.xml, u'xml').Auditorium)
 
         # Check two objects have same values for all fields
         self.assertEqual(screens[1].number, auditorium.number)
@@ -34,7 +34,7 @@ class TestFacilityParserMethods(unittest.TestCase):
     def test_get_certificates(self):
         certs = self.fp.get_certificates()
 
-        soup = BeautifulSoup(self.xml, 'xml')("Auditorium")
+        soup = BeautifulSoup(self.xml, u'xml')(u"Auditorium")
         for auditorium in soup:
             screen_index = None
             if auditorium.AuditoriumNumber:
@@ -44,7 +44,7 @@ class TestFacilityParserMethods(unittest.TestCase):
             else:
                 self.fail()
 
-            for i, cert_xml in enumerate(auditorium("X509Data")):
+            for i, cert_xml in enumerate(auditorium(u"X509Data")):
                 # Make certificate object directly from XML snippet
                 cert = flmx.Certificate(cert_xml)
 
@@ -134,30 +134,30 @@ class TestAddress(unittest.TestCase):
         """
 
     def test_mandatory(self):
-        minimal = BeautifulSoup(TestAddress.minimalXML, 'xml')
+        minimal = BeautifulSoup(TestAddress.minimalXML, u'xml')
         address = flmx.Address(minimal)
 
-        self.assertEqual(address.street_address, "A Street")
-        self.assertEqual(address.city, "A City")
-        self.assertEqual(address.province, "North Island")
-        self.assertEqual(address.country, "UM")
+        self.assertEqual(address.street_address, u"A Street")
+        self.assertEqual(address.city, u"A City")
+        self.assertEqual(address.province, u"North Island")
+        self.assertEqual(address.country, u"UM")
 
         self.assertEqual(address.addressee, None)
         self.assertEqual(address.street_address2, None)
         self.assertEqual(address.postal_code, None)
 
     def test_optional(self):
-        optional = BeautifulSoup(TestAddress.fullXML, 'xml')
+        optional = BeautifulSoup(TestAddress.fullXML, u'xml')
         address = flmx.Address(optional)
 
-        self.assertEqual(address.street_address, "A Street")
-        self.assertEqual(address.city, "A City")
-        self.assertEqual(address.province, "North Island")
-        self.assertEqual(address.country, "UM")
+        self.assertEqual(address.street_address, u"A Street")
+        self.assertEqual(address.city, u"A City")
+        self.assertEqual(address.province, u"North Island")
+        self.assertEqual(address.country, u"UM")
 
-        self.assertEqual(address.addressee, "John Smith")
-        self.assertEqual(address.street_address2, "At the corner of another street")
-        self.assertEqual(address.postal_code, "10")
+        self.assertEqual(address.addressee, u"John Smith")
+        self.assertEqual(address.street_address2, u"At the corner of another street")
+        self.assertEqual(address.postal_code, u"10")
 
 
 class TestContact(unittest.TestCase):
@@ -180,10 +180,10 @@ class TestContact(unittest.TestCase):
         """
 
     def test_mandatory(self):
-        minimal = BeautifulSoup(TestContact.minimalXML, 'xml')
+        minimal = BeautifulSoup(TestContact.minimalXML, u'xml')
         contact = flmx.Contact(minimal)
 
-        self.assertEqual(contact.name, "John Smith")
+        self.assertEqual(contact.name, u"John Smith")
 
         self.assertEqual(contact.country, None)
         self.assertEqual(contact.phone1, None)
@@ -192,16 +192,16 @@ class TestContact(unittest.TestCase):
         self.assertEqual(contact.type, None)
 
     def test_optional(self):
-        optional = BeautifulSoup(TestContact.fullXML, 'xml')
+        optional = BeautifulSoup(TestContact.fullXML, u'xml')
         contact = flmx.Contact(optional)
 
-        self.assertEqual(contact.name, "John Smith")
+        self.assertEqual(contact.name, u"John Smith")
 
-        self.assertEqual(contact.country, "UM")
-        self.assertEqual(contact.phone1, "+56614326431")
-        self.assertEqual(contact.phone2, "0052345322355")
-        self.assertEqual(contact.email, "a@a.com")
-        self.assertEqual(contact.type, "Manager")
+        self.assertEqual(contact.country, u"UM")
+        self.assertEqual(contact.phone1, u"+56614326431")
+        self.assertEqual(contact.phone2, u"0052345322355")
+        self.assertEqual(contact.email, u"a@a.com")
+        self.assertEqual(contact.type, u"Manager")
 
 
 class TestSoftware(unittest.TestCase):
@@ -226,11 +226,11 @@ class TestSoftware(unittest.TestCase):
         """
 
     def test_mandatory(self):
-        minimal = BeautifulSoup(TestSoftware.minimalXML, 'xml')
+        minimal = BeautifulSoup(TestSoftware.minimalXML, u'xml')
         software = flmx.Software(minimal)
 
-        self.assertEqual(software.description, "A Program")
-        self.assertEqual(software.version, "3")
+        self.assertEqual(software.description, u"A Program")
+        self.assertEqual(software.version, u"3")
 
         self.assertEqual(software.kind, None)
         self.assertEqual(software.producer, None)
@@ -239,15 +239,15 @@ class TestSoftware(unittest.TestCase):
         self.assertEqual(software.file_time, None)
 
     def test_optional(self):
-        optional = BeautifulSoup(TestSoftware.fullXML, 'xml')
+        optional = BeautifulSoup(TestSoftware.fullXML, u'xml')
         software = flmx.Software(optional)
 
-        self.assertEqual(software.description, "Quantum telecommunication device")
-        self.assertEqual(software.version, "0.3b6")
+        self.assertEqual(software.description, u"Quantum telecommunication device")
+        self.assertEqual(software.version, u"0.3b6")
 
-        self.assertEqual(software.kind, "Software")
-        self.assertEqual(software.producer, "AAM")
-        self.assertEqual(software.filename, "qcomm.exe")
+        self.assertEqual(software.kind, u"Software")
+        self.assertEqual(software.producer, u"AAM")
+        self.assertEqual(software.filename, u"qcomm.exe")
         self.assertEqual(software.file_size, 1024)
         self.assertEqual(software.file_time, datetime(3000, 1, 1, 0, 0, 1))
 
@@ -268,20 +268,20 @@ class TestIPAddress(unittest.TestCase):
         """
 
     def test_mandatory(self):
-        minimal = BeautifulSoup(TestIPAddress.minimalXML, 'xml')
+        minimal = BeautifulSoup(TestIPAddress.minimalXML, u'xml')
         ip = flmx.IPAddress(minimal)
 
-        self.assertEqual(ip.address, "1.1.1.1")
+        self.assertEqual(ip.address, u"1.1.1.1")
 
         self.assertEqual(ip.host, None)
 
     def test_optional(self):
-        optional = BeautifulSoup(TestIPAddress.fullXML, 'xml')
+        optional = BeautifulSoup(TestIPAddress.fullXML, u'xml')
         ip = flmx.IPAddress(optional)
 
-        self.assertEqual(ip.address, "1.1.1.2")
+        self.assertEqual(ip.address, u"1.1.1.2")
 
-        self.assertEqual(ip.host, "host")
+        self.assertEqual(ip.host, u"host")
 
 
 class TestCertificate(unittest.TestCase):
@@ -294,11 +294,11 @@ class TestCertificate(unittest.TestCase):
         """
 
     def test_optional(self):
-        optional = BeautifulSoup(TestCertificate.fullXML, 'xml')
+        optional = BeautifulSoup(TestCertificate.fullXML, u'xml')
         cert = flmx.Certificate(optional)
 
-        self.assertEqual(cert.name, "THIS IS A CERTIFICATE")
-        self.assertEqual(cert.certificate, "certificate1")
+        self.assertEqual(cert.name, u"THIS IS A CERTIFICATE")
+        self.assertEqual(cert.certificate, u"certificate1")
 
 
 class TestWatermarking(unittest.TestCase):
@@ -319,24 +319,24 @@ class TestWatermarking(unittest.TestCase):
         """
 
     def test_mandatory(self):
-        minimal = BeautifulSoup(TestWatermarking.minimalXML, 'xml')
+        minimal = BeautifulSoup(TestWatermarking.minimalXML, u'xml')
         watermarking = flmx.Watermarking(minimal)
 
-        self.assertEqual(watermarking.manufacturer, "Watermarks Inc.")
+        self.assertEqual(watermarking.manufacturer, u"Watermarks Inc.")
 
         self.assertEqual(watermarking.kind, None)
         self.assertEqual(watermarking.model, None)
         self.assertEqual(watermarking.version, None)
 
     def test_optional(self):
-        optional = BeautifulSoup(TestWatermarking.fullXML, 'xml')
+        optional = BeautifulSoup(TestWatermarking.fullXML, u'xml')
         watermarking = flmx.Watermarking(optional)
 
-        self.assertEqual(watermarking.manufacturer, "Watermarks Inc.")
+        self.assertEqual(watermarking.manufacturer, u"Watermarks Inc.")
 
-        self.assertEqual(watermarking.kind, "Picture")
-        self.assertEqual(watermarking.model, "Super Watermarker")
-        self.assertEqual(watermarking.version, "3")
+        self.assertEqual(watermarking.kind, u"Picture")
+        self.assertEqual(watermarking.model, u"Super Watermarker")
+        self.assertEqual(watermarking.version, u"3")
 
 
 class TestDevice(unittest.TestCase):
@@ -394,13 +394,13 @@ class TestDevice(unittest.TestCase):
           """
 
     def test_mandatory(self):
-        minimal = BeautifulSoup(TestDevice.minimalXML, 'xml')
+        minimal = BeautifulSoup(TestDevice.minimalXML, u'xml')
         device = flmx.Device(minimal)
 
-        self.assertEqual(device.type, "MDA")
-        self.assertEqual(device.id, "5a8743a0-f43e-11e2-b778-0800200c9a66")
-        self.assertEqual(device.manufacturer_name, "A Company")
-        self.assertEqual(device.model_number, "IMB-3000")
+        self.assertEqual(device.type, u"MDA")
+        self.assertEqual(device.id, u"5a8743a0-f43e-11e2-b778-0800200c9a66")
+        self.assertEqual(device.manufacturer_name, u"A Company")
+        self.assertEqual(device.model_number, u"IMB-3000")
         self.assertEqual(device.active, False)
 
         self.assertEqual(device.serial, None)
@@ -418,21 +418,21 @@ class TestDevice(unittest.TestCase):
         self.assertEqual(device.dcp_deliveries, {})
 
     def test_optional(self):
-        optional = BeautifulSoup(TestDevice.fullXML, 'xml')
+        optional = BeautifulSoup(TestDevice.fullXML, u'xml')
         device = flmx.Device(optional)
 
-        self.assertEqual(device.type, "PLY")
-        self.assertEqual(device.id, "OthN+QPcj6n9v5dhCtTDsnN2v6A=")
-        self.assertEqual(device.manufacturer_name, "Manufacturer")
-        self.assertEqual(device.model_number, "Model")
+        self.assertEqual(device.type, u"PLY")
+        self.assertEqual(device.id, u"OthN+QPcj6n9v5dhCtTDsnN2v6A=")
+        self.assertEqual(device.manufacturer_name, u"Manufacturer")
+        self.assertEqual(device.model_number, u"Model")
         self.assertEqual(device.active, True)
 
-        self.assertEqual(device.serial, "serial")
-        self.assertEqual(device.manufacturer_id, "fox.com:1560")
+        self.assertEqual(device.serial, u"serial")
+        self.assertEqual(device.manufacturer_id, u"fox.com:1560")
         self.assertEqual(device.install_date, datetime(2013, 07, 01, 02, 54, 51))
-        self.assertEqual(device.resolution, "2K")
-        self.assertEqual(device.integrator, "FOX")
-        self.assertEqual(device.vpf_finance_entity, "FOX")
+        self.assertEqual(device.resolution, u"2K")
+        self.assertEqual(device.integrator, u"FOX")
+        self.assertEqual(device.vpf_finance_entity, u"FOX")
         self.assertEqual(device.vpf_start_date, datetime(2013, 07, 01))
 
         self.assertEqual(len(device.ip_addresses), 1)
@@ -445,9 +445,9 @@ class TestDevice(unittest.TestCase):
         self.assertTrue(isinstance(device.watermarking[0], flmx.Watermarking))
 
         self.assertEqual(len(device.kdm_deliveries), 2)
-        self.assertTrue('email' in device.kdm_deliveries and 'physical' in device.kdm_deliveries)
+        self.assertTrue(u'email' in device.kdm_deliveries and u'physical' in device.kdm_deliveries)
         self.assertEqual(len(device.dcp_deliveries), 1)
-        self.assertTrue('modem' in device.dcp_deliveries)
+        self.assertTrue(u'modem' in device.dcp_deliveries)
 
 
 class TestDigital3DSystem(unittest.TestCase):
@@ -471,7 +471,7 @@ class TestDigital3DSystem(unittest.TestCase):
         """
 
     def test_mandatory(self):
-        minimal = BeautifulSoup(TestDigital3DSystem.minimalXML, 'xml')
+        minimal = BeautifulSoup(TestDigital3DSystem.minimalXML, u'xml')
         system = flmx.Digital3DSystem(minimal)
 
         self.assertEqual(system.active, False)
@@ -484,17 +484,17 @@ class TestDigital3DSystem(unittest.TestCase):
         self.assertEqual(system.ghostbusting_configuration, None)
 
     def test_optional(self):
-        optional = BeautifulSoup(TestDigital3DSystem.fullXML, 'xml')
+        optional = BeautifulSoup(TestDigital3DSystem.fullXML, u'xml')
         system = flmx.Digital3DSystem(optional)
 
         self.assertEqual(system.active, True)
         
-        self.assertEqual(system.configuration, "3D")
+        self.assertEqual(system.configuration, u"3D")
         self.assertEqual(system.install_date, datetime(2013, 07, 01, 02, 54, 51))
-        self.assertEqual(system.screen_color, "Silver")
+        self.assertEqual(system.screen_color, u"Silver")
         self.assertEqual(system.screen_luminance, 23)
         self.assertEqual(system.ghostbusting, True)
-        self.assertEqual(system.ghostbusting_configuration, "Good")
+        self.assertEqual(system.ghostbusting_configuration, u"Good")
 
 
 class TestAuditorium(unittest.TestCase):
@@ -538,7 +538,7 @@ class TestAuditorium(unittest.TestCase):
         """
 
     def test_mandatory(self):
-        minimal = BeautifulSoup(TestAuditorium.minimalXML, 'xml')
+        minimal = BeautifulSoup(TestAuditorium.minimalXML, u'xml')
         auditorium = flmx.Auditorium(minimal)
 
         self.assertEqual(auditorium.number, 1)
@@ -555,7 +555,7 @@ class TestAuditorium(unittest.TestCase):
         self.assertEqual(auditorium.digital_3d_system, None)
 
     def test_optional(self):
-        optional = BeautifulSoup(TestAuditorium.fullXML, 'xml')
+        optional = BeautifulSoup(TestAuditorium.fullXML, u'xml')
         auditorium = flmx.Auditorium(optional)
 
         self.assertEqual(auditorium.number, 2)
@@ -563,19 +563,19 @@ class TestAuditorium(unittest.TestCase):
         self.assertEqual(len(auditorium.devices), 1)
         self.assertTrue(isinstance(auditorium.devices[0], flmx.Device))
 
-        self.assertEqual(auditorium.name, "Screen 2")
-        self.assertEqual(auditorium.screen_aspect_ratio, "1.85")
-        self.assertEqual(auditorium.adjustable_screen_mask, "Side")
-        self.assertEqual(auditorium.audio_format, "13.2")
+        self.assertEqual(auditorium.name, u"Screen 2")
+        self.assertEqual(auditorium.screen_aspect_ratio, u"1.85")
+        self.assertEqual(auditorium.adjustable_screen_mask, u"Side")
+        self.assertEqual(auditorium.audio_format, u"13.2")
         self.assertEqual(auditorium.install_date, datetime(2013, 07, 01, 02, 54, 51))
-        self.assertEqual(auditorium.large_format_type, "Large")
+        self.assertEqual(auditorium.large_format_type, u"Large")
         self.assertTrue(isinstance(auditorium.digital_3d_system, flmx.Digital3DSystem))
 
     def test_no_number(self):
-        no_number = BeautifulSoup(TestAuditorium.noNumberXML, 'xml')
+        no_number = BeautifulSoup(TestAuditorium.noNumberXML, u'xml')
         auditorium = flmx.Auditorium(no_number)
 
-        self.assertEqual(auditorium.name, "Auditorium")
+        self.assertEqual(auditorium.name, u"Auditorium")
         self.assertEqual(auditorium.supports_35mm, False)
         self.assertEqual(len(auditorium.devices), 1)
         self.assertTrue(isinstance(auditorium.devices[0], flmx.Device))
@@ -605,15 +605,15 @@ class TestFacility(unittest.TestCase):
         """
 
     def test_mandatory(self):
-        minimal = BeautifulSoup(TestFacility.minimalXML, 'xml')
+        minimal = BeautifulSoup(TestFacility.minimalXML, u'xml')
         facility = flmx.Facility(minimal)
 
-        self.assertEqual(facility.id, "fox.com:5132")
-        self.assertEqual(facility.name, "A Cinema")
-        self.assertEqual(facility.circuit, "Independent")
+        self.assertEqual(facility.id, u"fox.com:5132")
+        self.assertEqual(facility.name, u"A Cinema")
+        self.assertEqual(facility.circuit, u"Independent")
 
-        self.assertTrue(facility.addresses.keys() <= ('physical', 'shipping', 'billing'))
-        for address_type in ('physical', 'shipping', 'billing'):
+        self.assertTrue(facility.addresses.keys() <= (u'physical', u'shipping', u'billing'))
+        for address_type in (u'physical', u'shipping', u'billing'):
             if address_type in facility.addresses:
                 self.assertTrue(isinstance(facility.addresses[address_type], flmx.Address))
 
@@ -627,16 +627,16 @@ class TestFacility(unittest.TestCase):
         self.assertEqual(facility.contacts, [])
 
     def test_optional(self):
-        with open('test/testFLM.xml') as flm:
-            optional = BeautifulSoup(flm, 'xml')
+        with open(u'test/testFLM.xml') as flm:
+            optional = BeautifulSoup(flm, u'xml')
             facility = flmx.Facility(optional)
 
-            self.assertEqual(facility.id, "fox.com:5132")
-            self.assertEqual(facility.name, "A Cinema")
-            self.assertEqual(facility.circuit, "Independent")
+            self.assertEqual(facility.id, u"fox.com:5132")
+            self.assertEqual(facility.name, u"A Cinema")
+            self.assertEqual(facility.circuit, u"Independent")
 
-            self.assertTrue(facility.addresses.keys() <= ('physical', 'shipping', 'billing'))
-            for address_type in ('physical', 'shipping', 'billing'):
+            self.assertTrue(facility.addresses.keys() <= (u'physical', u'shipping', u'billing'))
+            for address_type in (u'physical', u'shipping', u'billing'):
                 if address_type in facility.addresses:
                     self.assertTrue(isinstance(facility.addresses[address_type], flmx.Address))
 
@@ -645,7 +645,7 @@ class TestFacility(unittest.TestCase):
             self.assertTrue(isinstance(facility.auditoriums[number], flmx.Auditorium))
 
             self.assertEqual(len(facility.alternate_ids), 2)
-            self.assertEqual(facility.booking_partner_id, "fox.com:924")
-            self.assertEqual(facility.timezone, "Pacific/Johnston")
+            self.assertEqual(facility.booking_partner_id, u"fox.com:924")
+            self.assertEqual(facility.timezone, u"Pacific/Johnston")
             self.assertEqual(len(facility.contacts), 1)
             self.assertTrue(isinstance(facility.contacts[0], flmx.Contact))

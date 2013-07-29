@@ -1,11 +1,11 @@
 from datetime import datetime as dt
 from bs4 import BeautifulSoup
-from helper import boolean, string, date, uint, datetime, validate_XML
+from helper import get_datetime, validate_XML
 from operator import attrgetter
 from error import FlmxParseError
 
 class FacilityLink(object): 
-    """A link to a facility FLM-x file, as contained within a SiteList.
+    u"""A link to a facility FLM-x file, as contained within a SiteList.
 
     :var string id_code: The ID of the facility, eg. *"aam.com:UK-ABC-123456-01"*.
     :var datetime last_modified: Last time modified.
@@ -14,32 +14,32 @@ class FacilityLink(object):
 
     """
 
-    id_code = ''
+    id_code = u''
     last_modified = dt.min
-    xlink_href = ''
-    xlink_type = "simple"
+    xlink_href = u''
+    xlink_type = u"simple"
 
     def __str__(self):
-        return 'FacilityLink: \
-                id: ' + self.id_code + ', \
-                modified: ' + self.last_modified.strftime('%Y-%m-%dT%H:%M:%S') + ' \
-                link_href: ' + self.xlink_href + ' \
-                link_type: ' + self.xlink_type
+        return u'FacilityLink: ' + \
+               u'id: ' + self.id_code + u', ' + \
+               u'modified: ' + self.last_modified.strftime(u'%Y-%m-%dT%H:%M:%S') + u' ' + \
+               u'link_href: ' + self.xlink_href + u' ' + \
+               u'link_type: ' + self.xlink_type
 
 class SiteList(object):
-    """Contains a list of facilities, and metadata about the site list itself.
+    u"""Contains a list of facilities, and metadata about the site list itself.
 
     :var string originator: URL of the original FLM file.
     :var string system_name: The name of the system that created this file.
     :var [FacilityLink] facilities: List of ``FacilityLink`` objects.
 
     """
-    originator = ""
-    system_name = ""
+    originator = u""
+    system_name = u""
     facilities = []
 
 class SiteListParser(object):
-    """Parses an XML sitelist, and constructs a container holding the the XML document's data.
+    u"""Parses an XML sitelist, and constructs a container holding the the XML document's data.
 
     :param string xml: Either the contents of an XML file, or a file handle.
         This will parse the contents and construct ``sites``.
@@ -50,39 +50,35 @@ class SiteListParser(object):
     def __init__(self, xml):
         self.sites = SiteList()
 
-        validate_XML(xml, 'schema/schema_sitelist.xsd')
+        validate_XML(xml, u'schema/schema_sitelist.xsd')
 
-        soup = BeautifulSoup(xml, "xml")
+        soup = BeautifulSoup(xml, u"xml")
 
         try:
             self.sites.originator = soup.SiteList.Originator.string
-            self.sites.systemName = soup.SiteList.SystemName.string
+            self.sites.system_name = soup.SiteList.SystemName.string
             facilities = []
-            for facility in soup.find_all('Facility'):
+            for facility in soup.find_all(u'Facility'):
                 facLink = FacilityLink()
-                facLink.id_code = facility['id']
+                facLink.id_code = facility[u'id']
                 # strip the timezone from the ISO timecode
-                facLink.last_modified = datetime(facility['modified'])
-                facLink.xlink_href = facility['xlink:href']
-                facLink.xlink_type = facility['xlink:type']
+                facLink.last_modified = get_datetime(facility[u'modified'])
+                facLink.xlink_href = facility[u'xlink:href']
+                facLink.xlink_type = facility[u'xlink:type']
 
                 facilities.append(facLink)
-            self.sites.facilities = sorted(facilities, key=attrgetter('last_modified'))
+            self.sites.facilities = sorted(facilities, key=attrgetter(u'last_modified'))
         except Exception, e:
             raise FlmxParseError(repr(e))
 
     def get_sites(self, last_ran=dt.min):
-        """Returns a dictionary mapping URLs as keys to the date that FLM was last modified as a value.
+        u"""Returns a dictionary mapping URLs as keys to the date that FLM was last modified as a value.
 
         :param datetime last_ran: a datetime object, with the time given as UTC time, with
             which to search for last_modified times after. defaults to
             ``datetime.min``, that is, to return all FacilityLinks.
 
         """
-
-        if not last_ran:
-            last_ran = dt.min
-
         return dict((link.xlink_href, link.last_modified)
                     for link in self.sites.facilities
                     if link.last_modified >= last_ran)
