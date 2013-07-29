@@ -50,16 +50,18 @@ class FacilityParser(object):
     def get_certificates(self):
         """Returns all certificates for all of the screens in the facility.
 
-        The certificates are provided in a dictionary keyed by screen number.
+        If the screens have numbers, then the certificates are returned in 
+        a dictionary keyed by screen number.  Otherwise they are keyed by the screen name.
 
         """
         screens = {}
 
-        for key, auditorium in self.facility.auditoriums.iteritems():
+        for identifier, auditorium in self.facility.auditoriums.iteritems():
             # Flatten certificates for all devices in same auditorium into one list
             certs = [cert for device in auditorium.devices for cert in device.certificates]
 
-            screens[key] = certs
+            # identifier could be the auditorium name or number
+            screens[identifier] = certs
 
         return screens
 
