@@ -1,6 +1,8 @@
 from datetime import datetime
+from optparse import OptionParser
 from lxml.etree import XMLSyntaxError
 import logging, requests, json
+from urllib2 import HTTPError
 
 from flmx.facility import FacilityParser
 from flmx.sitelist import SiteListParser
@@ -34,14 +36,14 @@ def parse_flmx(sitelist_url, username='', password='', last_ran=datetime.min, fa
         # If failures.json is not a valid json file then assume no failures
         except ValueError:
             failures = {}
-        prev_failures = failures[sitelist_url] if failures.get(sitelist_url) else []
+        prev_failures = failures[sitelist_url] if sitelist_url in failures else []
         new_failures = []
 
         # Ensure we don't check the failures twice
         for site in set(prev_failures) | set(sites.keys()):
-            fp = get_facility(site, sitelist_url, username=username, password=password)
-
-            if fp is None:
+            try:
+                fp = get_facility(site, sitelist_url, username=username, password=password)
+            except (HTTPError, FlmxParseError, FlmxPartialError, XMLSyntaxError):
                 new_failures.append(site)
             else:
                 facilities.append(fp)
@@ -75,22 +77,30 @@ def get_sitelist(sitelist_url, username='', password=''):
     return SiteListParser(res.raw.read())
 
 def get_facility(site, sitelist_url, username='', password=''):
-    # This logger needs to be initialised somewhere else
-    logger = logging.getLogger("flmx")
-
     res = request(sitelist_url + site, username=username, password=password)
 
-    # If there's a problem with obtaining an FLM,
-    # log the problem instead of raising an error
+    # If there's a problem with obtaining an FLM
     if res.status_code != 200:
-        logger.error("HTTPError: Cannot get FLM at " + site)
-        return None
+        # This reraises a HTTPError stored by the requests API
+        res.raise_for_status()
 
     try:
         return FacilityParser(res.raw.read())
     except FlmxParseError, e:
-        logger.error("Problem parsing FLM at " + site + ". Error message: " + e.msg)
+        raise FlmxParseError("Problem parsing FLM at " + site + ". Error message: " + e.msg)
     except FlmxPartialError:
-        logger.error("Partial FLM at " + site + " not supported by parser")
+        raise
     except XMLSyntaxError, e:
-        logger.error("FLM at " + site + " failed validation.  Error message: " + e.msg)
+        raise XMLSyntaxError("FLM at " + site + " failed validation.  Error message: " + e.msg)
+
+def main():
+    parser = OptionParser(usage="%prog [options] url")
+    parser.add_option("-u", "--username", dest="username", help="username for authentication")
+    parser.add_option("-p", "--password", dest="password", help="password for authentication")
+    parser.add_option("-f", "--failures", dest="failures", help="failures file")
+
+    options, args = parser.parse_args()
+    parse_flmx(*args, username=options.username, password=options.password, failures_file=options.failures)
+
+if __name__ == 'main':
+    main()
