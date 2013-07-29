@@ -6,9 +6,10 @@ class XMLValidator(object):
     u"""Tool to validate XML documents against schemas using lxml.
 
     Example usage:
+
     >>> # Open files
-    ... with open('example.xsd') as xsd:
-    ...   with open('example.xml') as xml:
+    ... with open(u'example.xsd') as xsd:
+    ...   with open(u'example.xml') as xml:
     ...     validator = XMLValidator()
     ...     if not validator.validate(xml, xsd):
     ...         print validator.get_messages()
@@ -22,14 +23,14 @@ class XMLValidator(object):
     def validate(self, xml, xsd):
         u"""Validates a given XML document *xml* against a given schema *xsd*.
 
-        :param xml An open file-like object containing the xml file.
-        :param xsd An open file-like object containing the xsd schema to validate against.
+        :param file xml: An open file-like object containing the xml file.
+        :param file xsd: An open file-like object containing the xsd schema to validate against.
 
         validate uses ``lxml`` to parse and validate the xml. *xml* and *xsd*
         should be passed in as strings. Any errors encountered can be retrieved
         by using the ``get_messages()`` function.
 
-        :return boolean Validation success. If false, get_messages will contain any provided error messages.
+        :return: *boolean* - Validation success. If false, `get_messages` will contain any provided error messages.
         """
         if not xml or not xsd:
             raise FlmxParseError(u'Must provide both xml and xsd files.')
@@ -57,7 +58,7 @@ class XMLValidator(object):
 
     def get_messages(self):
         u"""
-        :return list(string) A list of found error messages, stored sequentially.
+        : return list(string) A list of found error messages, stored sequentially.
 
         An empty list if there were no error messages.
         """
