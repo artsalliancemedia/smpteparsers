@@ -58,9 +58,7 @@ class XMLValidator(object):
 
     def get_messages(self):
         u"""
-        : return list(string) A list of found error messages, stored sequentially.
-
-        An empty list if there were no error messages.
+        :return: *list(string)* A list of found error messages, stored sequentially. Will be an empty list if there were no error messages.
         """
 
         return self.messages
