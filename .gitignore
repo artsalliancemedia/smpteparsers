@@ -3,3 +3,6 @@ doc/_build/*
 
 # No point committing compiled .pyc files
 *.pyc
+
+# Don't commit settings file with authentication details
+settings.json
