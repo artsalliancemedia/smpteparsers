@@ -30,8 +30,7 @@ To parse a non-protected site-list XML file, and then fetch all keys for all cin
         screen_keys = facility.get_certificates()
     
         print screen_keys
-
-    {'screen 1', 'ABC123', ....}
+    # can expect to see: {'screen 1', 'ABC123', ....}
 
 where `facility` is a *Facility* object, as defined in `facility.py`. *Facility* contains a variety of member variables to help you access any of the data contained within it.
 
