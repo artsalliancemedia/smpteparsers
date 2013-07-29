@@ -2,7 +2,7 @@ from datetime import datetime
 from optparse import OptionParser
 from lxml.etree import XMLSyntaxError
 import logging, requests, json
-from urllib2 import HTTPError
+from requests.exceptions import HTTPError
 
 from flmx.facility import FacilityParser
 from flmx.sitelist import SiteListParser
@@ -93,14 +93,21 @@ def get_facility(site, sitelist_url, username='', password=''):
     except XMLSyntaxError, e:
         raise XMLSyntaxError("FLM at " + site + " failed validation.  Error message: " + e.msg)
 
+# This main method runs the parser, useful for testing
+# but doesn't actually output anything on success 
 def main():
     parser = OptionParser(usage="%prog [options] url")
-    parser.add_option("-u", "--username", dest="username", help="username for authentication")
-    parser.add_option("-p", "--password", dest="password", help="password for authentication")
-    parser.add_option("-f", "--failures", dest="failures", help="failures file")
+    parser.add_option("-u", "--username", dest="username", default="", help="username for authentication")
+    parser.add_option("-p", "--password", dest="password", default="", help="password for authentication")
+    parser.add_option("-f", "--failures", dest="failures", default="failures.json", help="failures file")
 
     options, args = parser.parse_args()
-    parse_flmx(*args, username=options.username, password=options.password, failures_file=options.failures)
+    if len(args) != 1:
+        print("Only one argument is required: the site list URL.")
+        exit(1)
 
-if __name__ == 'main':
+    facilities = parse_flmx(*args, username=options.username,
+                            password=options.password, failures_file=options.failures)
+
+if __name__ == '__main__':
     main()
