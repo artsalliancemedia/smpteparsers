@@ -12,11 +12,12 @@ For more information on the FLM-x format, including examples and schema document
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
-   intro
    sitelistparser
    facilityparser
+   xmlvalidator
+
 
 
 

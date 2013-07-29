@@ -1,5 +1,5 @@
 from bs4 import BeautifulSoup
-from helper import boolean, string, date, uint, datetime, deliveries, validate_XML
+from helper import get_boolean, get_string, get_date, get_uint, get_datetime, deliveries, validate_XML
 
 class FacilityParser(object):
     """A class to parse a single FLM feed.
@@ -35,7 +35,7 @@ class FacilityParser(object):
 
         flm = BeautifulSoup(self.contents, 'xml')
 
-        if flm.FLMPartial and boolean(flm.FLMPartial):
+        if flm.FLMPartial and get_boolean(flm.FLMPartial):
             pass # Warning for partial FLM?
 
         self.facility = Facility(flm)
@@ -90,7 +90,7 @@ class Facility(object):
     def __init__(self, flm):
         # Strip the 'urn:x-facilityID' tag from the front of the ID
         self.id = flm.FacilityID.get_text().split(":", 2)[2]
-        self.name = string(flm.FacilityName)
+        self.name = get_string(flm.FacilityName)
 
         self.alternate_ids = []
         if flm.AlternateFacilityIDList:
@@ -102,8 +102,8 @@ class Facility(object):
         if flm.BookingPartnerFacilityID:
             self.booking_partner_id = flm.BookingPartnerFacilityID.get_text().split(":", 2)[2]
 
-        self.timezone = string(flm.FacilityTimeZone)
-        self.circuit = string(flm.Circuit)
+        self.timezone = get_string(flm.FacilityTimeZone)
+        self.circuit = get_string(flm.Circuit)
 
         self.addresses = {}
         address_list = flm.AddressList
@@ -149,13 +149,13 @@ class Address(object):
 
     """
     def __init__(self, address):
-        self.addressee = string(address.Addressee)
-        self.street_address = string(address.StreetAddress)
-        self.street_address2 = string(address.StreetAddress2)
-        self.city = string(address.City)
-        self.province = string(address.Province)
-        self.postal_code = string(address.PostalCode)
-        self.country = string(address.CountryCode)
+        self.addressee = get_string(address.Addressee)
+        self.street_address = get_string(address.StreetAddress)
+        self.street_address2 = get_string(address.StreetAddress2)
+        self.city = get_string(address.City)
+        self.province = get_string(address.Province)
+        self.postal_code = get_string(address.PostalCode)
+        self.country = get_string(address.CountryCode)
 
 class Auditorium(object):
     """Represents a screen or auditorium.
@@ -182,15 +182,15 @@ class Auditorium(object):
 
     """
     def __init__(self, auditorium):
-        self.number = uint(auditorium.AuditoriumNumber)
-        self.name = string(auditorium.AuditoriumName)
+        self.number = get_uint(auditorium.AuditoriumNumber)
+        self.name = get_string(auditorium.AuditoriumName)
 
-        self.supports_35mm = boolean(auditorium.Supports35MM)
-        self.screen_aspect_ratio = string(auditorium.ScreenAspectRatio) # enum
-        self.adjustable_screen_mask = string(auditorium.AdjustableScreenMask) # enum
-        self.audio_format = string(auditorium.AudioFormat)
-        self.install_date = datetime(auditorium.AuditoriumInstallDate)
-        self.large_format_type = string(auditorium.LargeFormatType)
+        self.supports_35mm = get_boolean(auditorium.Supports35MM)
+        self.screen_aspect_ratio = get_string(auditorium.ScreenAspectRatio) # enum
+        self.adjustable_screen_mask = get_string(auditorium.AdjustableScreenMask) # enum
+        self.audio_format = get_string(auditorium.AudioFormat)
+        self.install_date = get_datetime(auditorium.AuditoriumInstallDate)
+        self.large_format_type = get_string(auditorium.LargeFormatType)
 
         if auditorium.Digital3DSystem:
             self.digital_3d_system = Digital3DSystem(auditorium.digital_3d_system)
@@ -214,12 +214,12 @@ class Contact(object):
 
     """
     def __init__(self, contact):
-        self.name = string(contact.Name)
-        self.country = string(contact.CountryCode)
-        self.phone1 = string(contact.Phone1)
-        self.phone2 = string(contact.Phone2)
-        self.email = string(contact.Email)
-        self.type = string(contact.Type)
+        self.name = get_string(contact.Name)
+        self.country = get_string(contact.CountryCode)
+        self.phone1 = get_string(contact.Phone1)
+        self.phone2 = get_string(contact.Phone2)
+        self.email = get_string(contact.Email)
+        self.type = get_string(contact.Type)
 
 class Device(object):
     """Represents a device in an auditorium.
@@ -277,21 +277,21 @@ class Device(object):
 
     """
     def __init__(self, device):
-        self.type = string(device.DeviceTypeID)
-        self.id = string(device.DeviceIdentifier)
-        self.serial = string(device.DeviceSerial)
-        self.manufacturer_id = string(device.ManufacturerID)
-        self.manufacturer_name = string(device.ManufacturerName)
-        self.model_number = string(device.ModelNumber)
-        self.install_date = datetime(device.InstallDate.get_text())
-        self.resolution = string(device.Resolution)
-        self.active = boolean(device.IsActive)
+        self.type = get_string(device.DeviceTypeID)
+        self.id = get_string(device.DeviceIdentifier)
+        self.serial = get_string(device.DeviceSerial)
+        self.manufacturer_id = get_string(device.ManufacturerID)
+        self.manufacturer_name = get_string(device.ManufacturerName)
+        self.model_number = get_string(device.ModelNumber)
+        self.install_date = get_datetime(device.InstallDate.get_text())
+        self.resolution = get_string(device.Resolution)
+        self.active = get_boolean(device.IsActive)
 
-        self.integrator = string(device.Integrator)
-        self.vpf_finance_entity = string(device.VPFFinanceEntity)
+        self.integrator = get_string(device.Integrator)
+        self.vpf_finance_entity = get_string(device.VPFFinanceEntity)
         self.vpf_start_date = None
         if device.VPFStartDate:
-            self.vpf_start_date = date(device.VPFStartDate)
+            self.vpf_start_date = get_date(device.VPFStartDate)
 
         self.ip_addresses = []
         if device.IPAddressList:
@@ -332,13 +332,13 @@ class Digital3DSystem(object):
 
     """
     def __init__(self, system):
-        self.active = boolean(system.IsActive)
-        self.configuration = string(system.Digital3DConfiguration)
-        self.install_date = datetime(system.InstallDate.get_text())
-        self.screen_color = string(system.ScreenColor) # enum
-        self.screen_luminance = uint(system.ScreenLuminance) # 1 to 29
-        self.ghostbusting = boolean(system.ghostbusting)
-        self.ghostbusting_configuration = string(system.GhostbustingConfiguration)
+        self.active = get_boolean(system.IsActive)
+        self.configuration = get_string(system.Digital3DConfiguration)
+        self.install_date = get_datetime(system.InstallDate.get_text())
+        self.screen_color = get_string(system.ScreenColor) # enum
+        self.screen_luminance = get_uint(system.ScreenLuminance) # 1 to 29
+        self.ghostbusting = get_boolean(system.ghostbusting)
+        self.ghostbusting_configuration = get_string(system.GhostbustingConfiguration)
 
 class IPAddress(object):
     """Represents an IPv4 or IPv6 address.
@@ -353,8 +353,8 @@ class IPAddress(object):
 
     """
     def __init__(self, ip_address):
-        self.address = string(ip_address.Address)
-        self.host = string(ip_address.Host)
+        self.address = get_string(ip_address.Address)
+        self.host = get_string(ip_address.Host)
 
 class Software(object):
     """Represents a version of a device.
@@ -377,13 +377,13 @@ class Software(object):
 
     """
     def __init__(self, software):
-        self.kind = string(software.SoftwareKind) # enum
-        self.producer = string(software.SoftwareProducer)
-        self.description = string(software.Description)
-        self.version = string(software.Version)
-        self.filename = string(software.FileName)
-        self.file_size = uint(software.FileSize)
-        self.file_time = datetime(software.FileDateTime)
+        self.kind = get_string(software.SoftwareKind) # enum
+        self.producer = get_string(software.SoftwareProducer)
+        self.description = get_string(software.Description)
+        self.version = get_string(software.Version)
+        self.filename = get_string(software.FileName)
+        self.file_size = get_uint(software.FileSize)
+        self.file_time = get_datetime(software.FileDateTime)
 
 class Certificate(object):
     """Represents an X509 certificate.
@@ -395,8 +395,8 @@ class Certificate(object):
 
     """
     def __init__(self, cert):
-        self.name = string(cert.X509SubjectName)
-        self.certificate = string(cert.X509Certificate)
+        self.name = get_string(cert.X509SubjectName)
+        self.certificate = get_string(cert.X509Certificate)
 
 class Watermarking(object):
     """Represents information about watermarking associated with a device.
@@ -414,7 +414,7 @@ class Watermarking(object):
 
     """
     def __init__(self, watermarking):
-        self.manufacturer = string(watermarking.WatermarkManufacturer)
-        self.kind = string(watermarking.WatermarkKind) # enum
-        self.model = string(watermarking.WatermarkModel)
-        self.version = string(watermarking.WatermarkModel)
+        self.manufacturer = get_string(watermarking.WatermarkManufacturer)
+        self.kind = get_string(watermarking.WatermarkKind) # enum
+        self.model = get_string(watermarking.WatermarkModel)
+        self.version = get_string(watermarking.WatermarkModel)

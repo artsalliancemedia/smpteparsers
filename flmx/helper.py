@@ -9,26 +9,26 @@ import error, xmlvalidation
 def strip_tags(s):
     return s.get_text() if isinstance(s, Tag) else s
 
-def boolean(s):
+def get_boolean(s):
     s = strip_tags(s)
     # Only boolean values in XML are 0 and 1, false and true
     return s != "0" and s.lower() != "false" if s else None
 
-def string(s):
+def get_string(s):
     # XML contents are already a string so we only need to strip the tags
     return strip_tags(s)
 
-def date(s):
+def get_date(s):
     s = strip_tags(s)
     return datetime.strptime(s, "%Y-%m-%d") if s else None
 
-def uint(s):
+def get_uint(s):
     s = strip_tags(s)
     # No unsigned int in Python
     # int constructor returns a long if it doesn't fit in an int
     return int(s) if s else None
 
-def datetime(isoDate):
+def get_datetime(isoDate):
     """Returns the utc datetime for a given ISO8601 date string.
 
     Format must be as follows: YYYY-mm-ddTHH:MM:SS, with the following optional components
@@ -84,13 +84,13 @@ def deliveries(xml):
         return deliveries
 
     if xml.Email:
-        deliveries['email'] = string(xml.EmailAddress)
+        deliveries['email'] = get_string(xml.EmailAddress)
     if xml.Modem: # Modem, seriously?
-        deliveries['modem'] = string(xml.PhoneNumber)
+        deliveries['modem'] = get_string(xml.PhoneNumber)
     if xml.Network:
-        deliveries['network'] = string(xml.URL)
+        deliveries['network'] = get_string(xml.URL)
     if xml.Physical:
-        deliveries['physical'] = string(xml.MediaType)
+        deliveries['physical'] = get_string(xml.MediaType)
 
     return deliveries
 

@@ -1,6 +1,6 @@
 from datetime import datetime as dt
 from bs4 import BeautifulSoup
-from helper import boolean, string, date, uint, datetime, validate_XML
+from helper import get_datetime, validate_XML
 from operator import attrgetter
 from error import FlmxParseError
 
@@ -58,13 +58,13 @@ class SiteListParser(object):
 
         try:
             self.sites.originator = soup.SiteList.Originator.string
-            self.sites.systemName = soup.SiteList.SystemName.string
+            self.sites.system_name = soup.SiteList.SystemName.string
             facilities = []
             for facility in soup.find_all('Facility'):
                 facLink = FacilityLink()
                 facLink.id_code = facility['id']
                 # strip the timezone from the ISO timecode
-                facLink.last_modified = datetime(facility['modified'])
+                facLink.last_modified = get_datetime(facility['modified'])
                 facLink.xlink_href = facility['xlink:href']
                 facLink.xlink_type = facility['xlink:type']
 
@@ -81,10 +81,6 @@ class SiteListParser(object):
             ``datetime.min``, that is, to return all FacilityLinks.
 
         """
-
-        if not last_ran:
-            last_ran = dt.min
-
         return dict((link.xlink_href, link.last_modified)
                     for link in self.sites.facilities
                     if link.last_modified >= last_ran)
