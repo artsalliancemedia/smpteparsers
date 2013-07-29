@@ -37,7 +37,7 @@ class FacilityParser(object):
             raise error.FlmxPartialError("Partial FLMs are not supported by this parser.")
 
         self.facility = Facility(flm)
-
+        
     # Add some more consuming methods, these are just ideas of what data you'd need to get back.
     def get_screens(self):
         """Returns the Auditorium objects corresponding to the screens in the facility.
