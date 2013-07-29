@@ -47,12 +47,10 @@ class SiteListParser(object):
         XML file against the Sitelist XML Schema xsd file, as found on the `FLM-x Homepage`.
 
     """
-    def __init__(self, xml='', validate=True):
-        self.contents = xml
+    def __init__(self, xml):
         self.sites = SiteList()
 
-        if validate:
-            validate_XML(xml, 'schema/schema_sitelist.xsd')
+        validate_XML(xml, 'schema/schema_sitelist.xsd')
 
         soup = BeautifulSoup(xml, "xml")
 

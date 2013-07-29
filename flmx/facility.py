@@ -1,11 +1,11 @@
 from bs4 import BeautifulSoup
 from helper import get_boolean, get_string, get_date, get_uint, get_datetime, deliveries, validate_XML
+import error
 
 class FacilityParser(object):
     """A class to parse a single FLM feed.
 
     :param xml: an XML string or an open, readable XML file containing an FLM feed.
-    :param boolean validate: If true, will validate the XML file against the FLM XML Schema provided by FoxPico.
 
     Any of the values in the FLM feed can be accessed through the objects given in the next section.
     For example, the screen colour of the 3D system installed in screen #1 can be accessed using
@@ -27,16 +27,14 @@ class FacilityParser(object):
     ...   print(certs[3])
 
     """
-    def __init__(self, xml='', validate=True):
-        self.contents = xml
+    def __init__(self, xml):
+        # validate_XML throws an error if validation fails
+        validate_XML(xml, 'schema/schema_facility.xsd')
 
-        if validate:
-            validate_XML(xml, 'schema/schema_facility.xsd')
-
-        flm = BeautifulSoup(self.contents, 'xml')
+        flm = BeautifulSoup(xml, 'xml')
 
         if flm.FLMPartial and get_boolean(flm.FLMPartial):
-            pass # Warning for partial FLM?
+            raise error.FlmxPartialError("Partial FLMs are not supported by this parser.")
 
         self.facility = Facility(flm)
         
@@ -52,16 +50,18 @@ class FacilityParser(object):
     def get_certificates(self):
         """Returns all certificates for all of the screens in the facility.
 
-        The certificates are provided in a dictionary keyed by screen number.
+        If the screens have numbers, then the certificates are returned in 
+        a dictionary keyed by screen number.  Otherwise they are keyed by the screen name.
 
         """
         screens = {}
 
-        for key, auditorium in self.facility.auditoriums.iteritems():
+        for identifier, auditorium in self.facility.auditoriums.iteritems():
             # Flatten certificates for all devices in same auditorium into one list
             certs = [cert for device in auditorium.devices for cert in device.certificates]
 
-            screens[key] = certs
+            # identifier could be the auditorium name or number
+            screens[identifier] = certs
 
         return screens
 
@@ -155,7 +155,7 @@ class Address(object):
         self.city = get_string(address.City)
         self.province = get_string(address.Province)
         self.postal_code = get_string(address.PostalCode)
-        self.country = get_string(address.CountryCode)
+        self.country = get_string(address.Country)
 
 class Auditorium(object):
     """Represents a screen or auditorium.
@@ -192,8 +192,9 @@ class Auditorium(object):
         self.install_date = get_datetime(auditorium.AuditoriumInstallDate)
         self.large_format_type = get_string(auditorium.LargeFormatType)
 
+        self.digital_3d_system = None
         if auditorium.Digital3DSystem:
-            self.digital_3d_system = Digital3DSystem(auditorium.digital_3d_system)
+            self.digital_3d_system = Digital3DSystem(auditorium.Digital3DSystem)
 
         self.devices = [Device(device) for device in auditorium.DeviceGroupList("Device")]
 
@@ -280,10 +281,14 @@ class Device(object):
         self.type = get_string(device.DeviceTypeID)
         self.id = get_string(device.DeviceIdentifier)
         self.serial = get_string(device.DeviceSerial)
-        self.manufacturer_id = get_string(device.ManufacturerID)
+
+        self.manufacturer_id = None
+        if device.ManufacturerID:
+            self.manufacturer_id = device.ManufacturerID.get_text().split(":", 2)[2]
         self.manufacturer_name = get_string(device.ManufacturerName)
+
         self.model_number = get_string(device.ModelNumber)
-        self.install_date = get_datetime(device.InstallDate.get_text())
+        self.install_date = get_datetime(device.InstallDate)
         self.resolution = get_string(device.Resolution)
         self.active = get_boolean(device.IsActive)
 
@@ -299,7 +304,7 @@ class Device(object):
 
         self.software = []
         if device.SoftwareList:
-            self.sotware = [Software(program) for program in device.SoftwareList("Software")]
+            self.software = [Software(program) for program in device.SoftwareList("Software")]
 
         self.certificates = []
         if device.KeyInfoList:
@@ -334,10 +339,10 @@ class Digital3DSystem(object):
     def __init__(self, system):
         self.active = get_boolean(system.IsActive)
         self.configuration = get_string(system.Digital3DConfiguration)
-        self.install_date = get_datetime(system.InstallDate.get_text())
+        self.install_date = get_datetime(system.InstallDate)
         self.screen_color = get_string(system.ScreenColor) # enum
         self.screen_luminance = get_uint(system.ScreenLuminance) # 1 to 29
-        self.ghostbusting = get_boolean(system.ghostbusting)
+        self.ghostbusting = get_boolean(system.Ghostbusting)
         self.ghostbusting_configuration = get_string(system.GhostbustingConfiguration)
 
 class IPAddress(object):
@@ -417,4 +422,5 @@ class Watermarking(object):
         self.manufacturer = get_string(watermarking.WatermarkManufacturer)
         self.kind = get_string(watermarking.WatermarkKind) # enum
         self.model = get_string(watermarking.WatermarkModel)
-        self.version = get_string(watermarking.WatermarkModel)
+        self.version = get_string(watermarking.WatermarkVersion)
+
