@@ -17,13 +17,36 @@ pip install -r requirements.txt
 
 ### Usage
 
-# !!!TBA TBA REMEMBER TO WRITE THIS UP!!!
+#### Typical usage
+
+To parse a non-protected site-list XML file, and then fetch all keys for all cinemas that its constituent FLM files contain, do the following:
+
+    >>>from smpte-parsers import flmxparser
+    ...import facility
+    ...
+    ...facilities = flmxparser.parse_flmx(u'http://example.com/FLMX.xml')
+    ...
+    ...for facility in facilities:
+    ...    screen_keys = facility.get_certificates()
+    ...
+    ...    print screen_keys
+    {'screen 1', 'ABC123', ....}
+
+where `facility` is a Facility object, as defined in `facility.py`. Facility contains a variety of member variables to help you access any of the data it contains within it.
+
+#### Other options
+
+To parse and manipulate the sitelist on its own, you must instead use the `SiteListParser` object, or if you already have an FLM file, you can use the `FacilityParser` object.
+
+Please refer to the documentation for all details on the composition of these classes and objects.
+
+
 
 ### Documentation
 
-Documentation is provided with [Sphinx](http://sphinx-doc.org/). To generate the documentation, using a commmand prompt or terminal navigate to `/doc/`, and then call `make html`. Sphinx provides many other formats to build in (by calling `make` followed by a keyword), including `text`, `latex`, `man` and more. Please see the Sphinx website for more suggestions. The documentation can then be viewed by navigating to `/doc/_build/html`, and then opening `index.html`
+Full documentation is provided with [Sphinx](http://sphinx-doc.org/). To generate the documentation, using a commmand prompt or terminal navigate to `/doc/`, and then call `make html`. Sphinx provides many other formats to build in (by calling `make` followed by a keyword), including `text`, `latex`, `man` and more. Please see the Sphinx website for more suggestions. The documentation can then be viewed by navigating to `/doc/_build/html`, and then opening `index.html`
 
 
 ### Testing
 
-Unit tests have been provided, and can be run by calling run_tests.py
+Unit tests have been provided, and can be run with the command `python run_tests.py`
