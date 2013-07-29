@@ -57,18 +57,18 @@ class TestSiteListXMLParsing(unittest.TestCase):
                 <Facility id="C" modified="2013-06-09T12: 
         """
 
-    def test_goodxml(self):
+    def test_good_xml(self):
         s = SiteListParser(self.good)
         dict = s.get_sites()
         self.assertEqual(len(dict), 3)
 
-    def test_malformedxml(self):
+    def test_malformed_xml(self):
         # will look for the key xlink , and raise a keyerror
         self.assertRaises(FlmxParseError, SiteListParser, self.malformedA)
         # value error as the modified field won't pass strptime
         self.assertRaises(FlmxParseError, SiteListParser, self.malformedB)
 
-    def test_emptyxml(self):
+    def test_empty_xml(self):
         # will look for the attribute 'Originator', which ofc isn't there
         self.assertRaises(FlmxParseError, SiteListParser, self.empty)
 
@@ -80,7 +80,7 @@ class TestSiteListDateHandling(unittest.TestCase):
         #bad date (month 13)
         self.assertRaises(ValueError, helper.get_datetime, u'2012-13-13T12:30:00+00:00')
 
-    def test_goodtimezones(self):        
+    def test_good_timezones(self):        
         date = u'2012-01-01T12:20:00'
         dt = datetime(2012, 1, 1, 12, 20, 0)
         #utc
@@ -94,7 +94,7 @@ class TestSiteListDateHandling(unittest.TestCase):
         self.assertEqual(helper.get_datetime(date + u'-01:30'),
                          dt - timedelta(hours=-1, minutes = -30))
 
-    def test_badtimezones(self):
+    def test_bad_timezones(self):
         date = u'2012-01-01T12:20:00'
         #invalid timezones
         self.assertRaises(ValueError, helper.get_datetime, date + u'aaaaaa')
@@ -102,7 +102,7 @@ class TestSiteListDateHandling(unittest.TestCase):
         self.assertRaises(ValueError, helper.get_datetime, date + u'+15:a0')
 
 class TestSiteListUnusualTimes(unittest.TestCase):
-    def test_noMillis_noTimezone(self):
+    def test_no_millis_no_timezone(self):
         # missing "+00:00" or similar
         self.assertEqual(helper.get_datetime(u'2012-01-01T12:30:00'),
                          datetime(2012, 1, 1, 12, 30, 0))
@@ -112,20 +112,20 @@ class TestSiteListUnusualTimes(unittest.TestCase):
         self.assertEqual(helper.get_datetime(u'2012-01-01T12:30:00.123+01:00'),
                          datetime(2012, 1, 1, 11, 30, 1))
 
-    def test_millis_noTimezone(self):
+    def test_millis_no_timezone(self):
         # with millis and no tz
         self.assertEqual(helper.get_datetime(u'2012-01-01T12:30:00.123'),
                          datetime(2012, 1, 1, 12, 30, 1))
 
 
-    def test_noColonTimezone(self):
+    def test_no_colon_timezone(self):
         #timezone as +0000
         self.assertEqual(helper.get_datetime(u'2012-01-01T12:30:00+0130'),
                          datetime(2012, 1, 1, 11, 00, 0))
         self.assertEqual(helper.get_datetime(u'2012-01-01T12:30:00-0130'),
                          datetime(2012, 1, 1, 14, 00, 0))
 
-    def test_noMinutesTimezone(self):
+    def test_no_minutes_timezone(self):
         #timezone as +00 (no minutes)
         self.assertEqual(helper.get_datetime(u'2012-01-01T12:30:00+01'),
                          datetime(2012, 1, 1, 11, 30, 0))
@@ -153,7 +153,7 @@ class TestSiteListFetchHandling(unittest.TestCase):
     def setUp(self):
         self.sites = SiteListParser(self.goodxml)
 
-    def test_noDate(self):
+    def test_no_date(self):
         dict = self.sites.get_sites()
         self.assertEqual(len(dict), 3)
         #datetimes should be correct, given that TestSiteListDateHandling worked
@@ -161,7 +161,7 @@ class TestSiteListFetchHandling(unittest.TestCase):
         self.assertEqual(dict[u'linkB'], self.datetimeB)
         self.assertEqual(dict[u'linkC'], self.datetimeC)
 
-    def test_middleDate(self):
+    def test_middle_date(self):
         #beginning of 2012, should only return B and C
         dict = self.sites.get_sites(datetime(2012,01,01,12,0,0))
         self.assertEqual(len(dict), 2)
@@ -169,7 +169,7 @@ class TestSiteListFetchHandling(unittest.TestCase):
         self.assertEqual(dict[u'linkB'], self.datetimeB)
         self.assertEqual(dict[u'linkC'], self.datetimeC)
 
-    def test_beforeDate(self):
+    def test_before_date(self):
         #beginning of 2011, should return all
         dict = self.sites.get_sites(datetime(2011,01,01,12,0,0))
         self.assertEqual(len(dict), 3)
@@ -177,7 +177,7 @@ class TestSiteListFetchHandling(unittest.TestCase):
         self.assertEqual(dict[u'linkB'], self.datetimeB)
         self.assertEqual(dict[u'linkC'], self.datetimeC)
 
-    def test_middleDate(self):
+    def test_middle_date(self):
         #beginning of 2014, should not return anything
         dict = self.sites.get_sites(datetime(2014,01,01,12,0,0))
         self.assertEqual(len(dict), 0)
