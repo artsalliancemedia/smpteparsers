@@ -48,7 +48,7 @@ Please refer to the full documentation for all details on the composition of the
 
 #### Documentation
 
-Full documentation is provided with [Sphinx](http://sphinx-doc.org/). To generate the documentation, using a commmand prompt or terminal navigate to `/doc/`, and then call `make html`. Sphinx provides many other formats to build in (by calling `make` followed by a keyword), including `text`, `latex`, `man` and more. Please see the Sphinx website for more suggestions. The documentation can then be viewed by navigating to `/doc/_build/html`, and then opening `index.html`
+Full documentation is provided with [Sphinx](http://sphinx-doc.org/). To generate the documentation using a commmand prompt or terminal, navigate to `/doc/`, and then call `make html`. Sphinx provides many other formats to build in (by calling `make` followed by a keyword), including `text`, `latex`, `man` and more. Please see the Sphinx website for more suggestions. The documentation can then be viewed by navigating to `/doc/_build/html`, and then opening `index.html`
 
 
 #### Testing
