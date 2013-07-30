@@ -29,7 +29,7 @@ class FacilityParser(object):
     """
     def __init__(self, xml):
         # validate_XML throws an error if validation fails
-        validate_XML(xml, os.path.join(os.path.dirname(__file__), os.pardir, u'schema', u'schema_facility.xsd'))
+        validate_XML(xml, os.path.join(os.path.dirname(__file__), os.pardir, u'schema', u'flmx', u'schema_facility.xsd'))
 
         flm = BeautifulSoup(xml, u'xml')
 
