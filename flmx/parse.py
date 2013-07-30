@@ -11,7 +11,7 @@ def parse(sitelist_url, username=u'', password=u'', last_ran=datetime.min, failu
     sp = get_sitelist(sitelist_url, username=username, password=password)
     sites = sp.get_sites(last_ran)
 
-    facilities = []
+    facilities = {}
 
     with open(os.path.join(os.path.dirname(__file__), failures_file), u'w+') as f:
         try:
@@ -29,7 +29,7 @@ def parse(sitelist_url, username=u'', password=u'', last_ran=datetime.min, failu
             except (requests.exceptions.RequestException, FlmxParseError, FlmxPartialError, XMLSyntaxError):
                 new_failures.append(site)
             else:
-                facilities.append(fp)
+                facilities[site] = fp
 
         failures[sitelist_url] = new_failures
         json.dump(failures, f)

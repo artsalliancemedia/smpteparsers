@@ -14,7 +14,8 @@ Basic usage:
 
 >>> from smpteparsers import flmx
 >>> facilities = flmx.parse('http://example.com/FLMX.xml')
->>> # Process FacilityParser objects as necessary
+>>> # Get the certificates for facility with id 'fox.com:5132'
+... facilities[u'fox.com:5132'].get_certificates()
 
 .. autofunction:: parse
 

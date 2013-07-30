@@ -3,7 +3,7 @@ from datetime import datetime
 from optparse import OptionParser
 
 def parse(sitelist_url, username='', password='', last_ran=datetime.min, failures_file='failures.json'):
-    u"""Parse the FLM site list at the URL provided, and return a list of FacilityParser objects.
+    u"""Parse the FLM site list at the URL provided, and return a dict of FacilityParser objects.
 
     :param string sitelist_url: The URL of the FLM site list.
     :param string username: Username (if required) for authentication at the URL provided.
@@ -12,11 +12,11 @@ def parse(sitelist_url, username='', password='', last_ran=datetime.min, failure
         will be returned.  By default all FLMs will be returned.
     :param string failures_file: The path of a JSON file to write the failures to.
 
-    :return: *[FacilityParser]* -- Each FacilityParser object corresponds to
-        an FLM in the site list.
+    :return: *{string,FacilityParser}* -- The FacilityParser objects are indexed by site id.
+        Each object corresponds to a single FLM in the site list.
 
     This parser will get all the facilities referenced by a site list URL and
-    present them as a list of Facility objects.  The `last_ran` parameter can be given to
+    present them as a dict of Facility objects.  The `last_ran` parameter can be given to
     specify a date to prune the facilities so that only facilities in the site list which
     have been updated since `last_ran` will be returned.  If the URL endpoint requires
     authentication then a `username` and `password` can be given.
