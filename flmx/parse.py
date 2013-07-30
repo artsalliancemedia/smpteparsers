@@ -1,14 +1,13 @@
 from datetime import datetime
-from optparse import OptionParser
 from lxml.etree import XMLSyntaxError
 import logging, requests, json, os
 
-from flmx.facility import FacilityParser
-from flmx.sitelist import SiteListParser
-from flmx.error import FlmxParseError, FlmxPartialError
+from facility import FacilityParser
+from sitelist import SiteListParser
+from error import FlmxParseError, FlmxPartialError
 
 # FLM-x shortcut parser
-def parse_flmx(sitelist_url, username=u'', password=u'', last_ran=datetime.min, failures_file=u'failures.json'):
+def parse(sitelist_url, username=u'', password=u'', last_ran=datetime.min, failures_file=u'failures.json'):
     u"""Parse the FLM site list at the URL provided, and return a list of Facility objects.
 
     This 'shortcut' parser will get all the facilities referenced by a site list URL and
@@ -91,22 +90,3 @@ def get_facility(site, sitelist_url, username=u'', password=u''):
         raise
     except XMLSyntaxError, e:
         raise XMLSyntaxError(u"FLM at " + site + u" failed validation.  Error message: " + e.msg)
-
-# This main method runs the parser, useful for testing
-# but doesn't actually output anything on success 
-def main():
-    parser = OptionParser(usage=u"%prog [options] url")
-    parser.add_option(u"-u", u"--username", dest=u"username", default=u"", help=u"username for authentication")
-    parser.add_option(u"-p", u"--password", dest=u"password", default=u"", help=u"password for authentication")
-    parser.add_option(u"-f", u"--failures", dest=u"failures", default=u"failures.json", help=u"failures file")
-
-    options, args = parser.parse_args()
-    if len(args) != 1:
-        print(u"Only one argument is required: the site list URL.")
-        exit(1)
-
-    facilities = parse_flmx(*args, username=options.username,
-                            password=options.password, failures_file=options.failures)
-
-if __name__ == u'__main__':
-    main()

@@ -9,7 +9,7 @@ import flmx.error as error
 class TestFacilityParserMethods(unittest.TestCase):
 
     def setUp(self):
-        self.f = open(os.path.join(os.path.dirname(__file__), os.pardir, u'test', u'testFLM.xml'))
+        self.f = open(os.path.join(os.path.dirname(__file__), u'testFLM.xml'))
         self.xml = self.f.read()
         self.fp = flmx.FacilityParser(self.xml)
 
@@ -671,7 +671,7 @@ class TestFacility(unittest.TestCase):
         self.assertEqual(facility.contacts, [])
 
     def test_optional(self):
-        with open(os.path.join(os.path.dirname(__file__), os.pardir, u'test', u'testFLM.xml')) as flm:
+        with open(os.path.join(os.path.dirname(__file__), u'testFLM.xml')) as flm:
             optional = BeautifulSoup(flm, u'xml')
             facility = flmx.Facility(optional)
 
