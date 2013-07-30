@@ -3,22 +3,21 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to flmx's documentation!
-================================
+SMPTE Parsers
+=============
 
-An API to process, validate and manipulate FLMX feeds.
-For more information on the FLM-x format, including examples and schema documents, see the `FLM-x Homepage`__.
+The SMPTE parsers project is intended to eventually contain a range of tools for
+processing XML feeds defined by SMPTE standards.
+
+The only parser currently implemented is for FLM-x feeds; details for each parser is given
+in the contents below.
 
 Contents:
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
 
-   sitelistparser
-   facilityparser
-   xmlvalidator
-
-
+   flmx
 
 
 Indices and tables
@@ -27,6 +26,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
-
-.. __: http://flm.foxpico.com/

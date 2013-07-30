@@ -4,8 +4,8 @@
 Facility Parser
 ================================
 
-The Facility Parser takes an FLM-x feed and parses it into memory as python objects.
-It contains a range of convenience methods to access the data from the XML feed.
+The Facility Parser takes an FLM and parses it into memory as python objects.
+It contains a range of convenience methods to access the data from the XML document.
 
 .. autoclass:: FacilityParser
    :members:
