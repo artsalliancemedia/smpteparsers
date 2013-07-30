@@ -75,6 +75,10 @@ def get_sitelist(sitelist_url, username=u'', password=u''):
     return SiteListParser(res.raw.read())
 
 def get_facility(site, sitelist_url, username=u'', password=u''):
+    # Ensure site list URL ends in a /
+    if sitelist_url[-1] != u'/':
+        sitelist_url += u'/'
+
     res = request(sitelist_url + site, username=username, password=password)
 
     # If there's a problem with obtaining an FLM
