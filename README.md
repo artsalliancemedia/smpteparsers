@@ -14,6 +14,7 @@ After grabbing the code run the following to install any dependencies:
 ```
 pip install -r requirements.txt
 ```
+---------------------------------------
 
 ### FLMX 
 
@@ -44,7 +45,7 @@ To parse and manipulate the sitelist on its own, you must instead use the `SiteL
 
 Please refer to the full documentation for all details on the composition of these classes and objects.
 
-
+---------------------------------------
 
 #### Documentation
 
