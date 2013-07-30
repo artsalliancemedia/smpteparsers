@@ -21,10 +21,10 @@ pip install -r requirements.txt
 
 To parse a non-protected site-list XML file, and then fetch all keys for all cinemas that its constituent FLM files contain, do the following:
 
-    from smpte-parsers import flmxparser
-    import facility
+    from smpteparsers import flmx
+    from smpteparsers.flmx import facility
     
-    facilities = flmxparser.parse_flmx(u'http://example.com/FLMX.xml')
+    facilities = flmx.parse(u'http://example.com/FLMX.xml')
     
     for facility in facilities:
         screen_keys = facility.get_certificates()
