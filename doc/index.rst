@@ -13,6 +13,8 @@ Details for each parser is given in the contents below.
 
 .. _`SMPTE standards`: http://standards.smpte.org/
 
+-Contents:
+-
 .. toctree::
    :maxdepth: 2
 
