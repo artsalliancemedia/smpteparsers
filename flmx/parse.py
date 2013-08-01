@@ -57,7 +57,7 @@ def parse(sitelist_url, username=u'', password=u'', last_ran=datetime.min, failu
         failures[sitelist_url] = new_failures
         json.dump(failures, f)
 
-    _logger.info('returning '+len(facilities) + ' facilities for ' + sitelist_url) 
+    _logger.info('returning '+ str(len(facilities)) + ' facilities for ' + sitelist_url) 
     return facilities
 
 def request(url, username=u'', password=u''):
@@ -74,9 +74,9 @@ def get_sitelist(sitelist_url, username=u'', password=u''):
     res = request(sitelist_url, username=username, password=password)
 
     # Raise the HTTPError from requests if there was a problem
-    if res.status_code != 200:
+    if res.status_code != requests.codes.ok:
         # This reraises a HTTPError stored by the requests API
-        _logger.warning('Could not access ' + sitelist_url + ': HTTP Response code ' + res.status_code)
+        _logger.warning('Could not access ' + sitelist_url + ': HTTP Response code ' + str(res.status_code))
         res.raise_for_status()
 
     # response.text auto-converts the response body to a unicode string.
