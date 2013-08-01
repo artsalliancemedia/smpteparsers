@@ -11,28 +11,13 @@ _logger = logging.getLogger(__name__)
 
 # FLM-x shortcut parser
 def parse(sitelist_url, username=u'', password=u'', last_ran=datetime.min, failures_file=u'failures.json'):
-    u"""Parse the FLM site list at the URL provided, and return a list of Facility objects.
-
-    This 'shortcut' parser will get all the facilities referenced by a site list URL and
-    present them as a list of Facility objects.  The `last_ran` parameter can be given to
-    specify a date to prune the facilities so that only facilities in the site list which
-    have been updated since `last_ran` will be returned.  If the URL endpoint requires
-    authentication then a `username` and `password` can be given.
-
-    Any failures will be recorded in a JSON file so that the next time the parser runs
-    it will retry any failed attempts.  By default this file will be called *failures.json*.
-    Be aware that if the `failures_file` provided is corrupt or cannot be parsed as valid JSON
-    then it will be overwritten by a valid failures file on the parser's completion,
-    and any data in the original file will be lost.
-
+    """See __init__.py's parse method for documentation
     """
-
 
     sp = get_sitelist(sitelist_url, username=username, password=password)
     sites = sp.get_sites(last_ran)
 
     facilities = {}
-
 
     with open(os.path.join(os.path.dirname(__file__), failures_file), u'w+') as f:
         try:
