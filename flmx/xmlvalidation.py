@@ -34,7 +34,7 @@ class XMLValidator(object):
         should be passed in as strings. Any errors encountered can be retrieved
         by using the ``get_messages()`` function.
 
-        :return: *boolean* - Validation success. If false, `get_messages` will contain any provided error messages.
+        :return: *boolean* -- Validation success. If false, `get_messages` will contain any provided error messages.
         """
         if not xml or not xsd:
             msg = u'Must provide both xml and xsd files.'

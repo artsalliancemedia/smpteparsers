@@ -10,7 +10,7 @@ from error import FlmxParseError, FlmxPartialError
 _logger = logging.getLogger(__name__)
 
 # FLM-x shortcut parser
-def parse(sitelist_url, username=u'', password=u'', last_ran=datetime.min, failures_file=u'failures.json', logger_name=''):
+def parse(sitelist_url, username=u'', password=u'', last_ran=datetime.min, failures_file=u'failures.json'):
     u"""Parse the FLM site list at the URL provided, and return a list of Facility objects.
 
     This 'shortcut' parser will get all the facilities referenced by a site list URL and
@@ -31,7 +31,7 @@ def parse(sitelist_url, username=u'', password=u'', last_ran=datetime.min, failu
     sp = get_sitelist(sitelist_url, username=username, password=password)
     sites = sp.get_sites(last_ran)
 
-    facilities = []
+    facilities = {}
 
 
     with open(os.path.join(os.path.dirname(__file__), failures_file), u'w+') as f:
@@ -52,7 +52,7 @@ def parse(sitelist_url, username=u'', password=u'', last_ran=datetime.min, failu
                 _logger.warning(str(e))
                 new_failures.append(site)
             else:
-                facilities.append(fp.facility)
+                facilities[site] = fp
 
         failures[sitelist_url] = new_failures
         json.dump(failures, f)
