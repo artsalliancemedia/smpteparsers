@@ -3,7 +3,7 @@ from datetime import datetime
 from optparse import OptionParser
 
 def parse(sitelist_url, username=u'', password=u'', last_ran=datetime.min, failures_file=u'failures.json'):
-    flmx.parse(sitelist_url, username, password, last_ran, failures_file)
+    return flmx.parse(sitelist_url, username, password, last_ran, failures_file)
 
 # This main method runs the parser, useful for testing
 # but doesn't actually output anything on success 
