@@ -139,13 +139,13 @@ class TestXMLValidator(unittest.TestCase):
         self.assertTrue(self.v.get_messages())
 
     def test_badschema(self):
-        self.assertRaises(error.FlmxParseError, self.v.validate, StringIO(empty_str),    StringIO(bad_xsd))
-        self.assertRaises(error.FlmxParseError, self.v.validate, StringIO(good_xml),     StringIO(bad_xsd))
-        self.assertRaises(error.FlmxParseError, self.v.validate, StringIO(invalid_xml),  StringIO(bad_xsd))
-        self.assertRaises(error.FlmxParseError, self.v.validate, StringIO(corrupt_xml),  StringIO(bad_xsd))
+        self.assertRaises(error.FlmxCriticalError, self.v.validate, StringIO(empty_str),    StringIO(bad_xsd))
+        self.assertRaises(error.FlmxCriticalError, self.v.validate, StringIO(good_xml),     StringIO(bad_xsd))
+        self.assertRaises(error.FlmxCriticalError, self.v.validate, StringIO(invalid_xml),  StringIO(bad_xsd))
+        self.assertRaises(error.FlmxCriticalError, self.v.validate, StringIO(corrupt_xml),  StringIO(bad_xsd))
 
     def test_emptyschema(self):
-        self.assertRaises(error.FlmxParseError, self.v.validate, StringIO(empty_str),    StringIO(empty_str))
-        self.assertRaises(error.FlmxParseError, self.v.validate, StringIO(good_xml),     StringIO(empty_str))
-        self.assertRaises(error.FlmxParseError, self.v.validate, StringIO(invalid_xml),  StringIO(empty_str))
-        self.assertRaises(error.FlmxParseError, self.v.validate, StringIO(corrupt_xml),  StringIO(empty_str))
+        self.assertRaises(error.FlmxCriticalError, self.v.validate, StringIO(empty_str),    StringIO(empty_str))
+        self.assertRaises(error.FlmxCriticalError, self.v.validate, StringIO(good_xml),     StringIO(empty_str))
+        self.assertRaises(error.FlmxCriticalError, self.v.validate, StringIO(invalid_xml),  StringIO(empty_str))
+        self.assertRaises(error.FlmxCriticalError, self.v.validate, StringIO(corrupt_xml),  StringIO(empty_str))

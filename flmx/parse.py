@@ -6,8 +6,11 @@ from facility import FacilityParser
 from sitelist import SiteListParser
 from error import FlmxParseError, FlmxPartialError
 
+# setup logger - __ to ensure it's not accessible from outside
+_logger = logging.getLogger(__name__)
+
 # FLM-x shortcut parser
-def parse(sitelist_url, username=u'', password=u'', last_ran=datetime.min, failures_file=u'failures.json'):
+def parse(sitelist_url, username=u'', password=u'', last_ran=datetime.min, failures_file=u'failures.json', logger_name=''):
     u"""Parse the FLM site list at the URL provided, and return a list of Facility objects.
 
     This 'shortcut' parser will get all the facilities referenced by a site list URL and
@@ -23,16 +26,20 @@ def parse(sitelist_url, username=u'', password=u'', last_ran=datetime.min, failu
     and any data in the original file will be lost.
 
     """
+
+
     sp = get_sitelist(sitelist_url, username=username, password=password)
     sites = sp.get_sites(last_ran)
 
     facilities = []
+
 
     with open(os.path.join(os.path.dirname(__file__), failures_file), u'w+') as f:
         try:
             failures = json.load(f)
         # If failures.json is not a valid json file then assume no failures
         except ValueError:
+            _logger.info(failures_file + ' could not be opened, the file will be cleared')
             failures = {}
         prev_failures = failures[sitelist_url] if sitelist_url in failures else []
         new_failures = []
@@ -42,6 +49,7 @@ def parse(sitelist_url, username=u'', password=u'', last_ran=datetime.min, failu
             try:
                 fp = get_facility(site, sitelist_url, username=username, password=password)
             except (requests.exceptions.RequestException, FlmxParseError, FlmxPartialError, XMLSyntaxError):
+                _logger.warning(repr(e))
                 new_failures.append(site)
             else:
                 facilities.append(fp)
@@ -49,6 +57,7 @@ def parse(sitelist_url, username=u'', password=u'', last_ran=datetime.min, failu
         failures[sitelist_url] = new_failures
         json.dump(failures, f)
 
+    _logger.info('returning '+len(facilities) + ' facilities for ' + sitelist_url) 
     return facilities
 
 def request(url, username=u'', password=u''):
@@ -66,6 +75,8 @@ def get_sitelist(sitelist_url, username=u'', password=u''):
 
     # Raise the HTTPError from requests if there was a problem
     if res.status_code != 200:
+        # This reraises a HTTPError stored by the requests API
+        _logger.warning('Could not access ' + sitelist_url + ': HTTP Response code ' + res.status_code)
         res.raise_for_status()
 
     # response.text auto-converts the response body to a unicode string.
@@ -74,23 +85,25 @@ def get_sitelist(sitelist_url, username=u'', password=u''):
     # If efficiency becomes a problem this is an obvious bottleneck.
     return SiteListParser(res.raw.read())
 
-def get_facility(site, sitelist_url, username=u'', password=u''):
-    # Ensure site list URL ends in a /
-    if sitelist_url[-1] != u'/':
-        sitelist_url += u'/'
+def get_facility(facility, facility_url, username=u'', password=u''):
+    # Ensure facility URL ends in a /
+    if facility_url[-1] != u'/':
+        facility_url += u'/'
 
-    res = request(sitelist_url + site, username=username, password=password)
+    res = request(facility_url + facility, username=username, password=password)
 
     # If there's a problem with obtaining an FLM
     if res.status_code != 200:
         # This reraises a HTTPError stored by the requests API
+        _logger.warning('Could not access ' + facility_url + ': HTTP Response code ' + res.status_code)
         res.raise_for_status()
 
     try:
+        __loger.info('Parsing FLM at ' + facility)
         return FacilityParser(res.raw.read())
-    except FlmxParseError, e:
-        raise FlmxParseError(u"Problem parsing FLM at " + site + u". Error message: " + e.msg)
-    except FlmxPartialError:
-        raise
+    except FlmxParseError as e:
+        raise FlmxParseError(u"Problem parsing FLM at " + facility + u". Error message: " + e.msg)
     except XMLSyntaxError, e:
-        raise XMLSyntaxError(u"FLM at " + site + u" failed validation.  Error message: " + e.msg)
+        msg = u"FLM at " + facility + u" failed validation.  Error message: " + e.msg
+        _logger.warning(msg)
+        raise XMLSyntaxError(msg)

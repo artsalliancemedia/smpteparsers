@@ -4,6 +4,7 @@ from helper import get_datetime, validate_XML
 from operator import attrgetter
 from error import FlmxParseError
 import os
+import logging
 
 class FacilityLink(object): 
     u"""A link to a facility FLM-x file, as contained within a SiteList.
@@ -49,6 +50,7 @@ class SiteListParser(object):
 
     """
     def __init__(self, xml):
+
         self.sites = SiteList()
 
         validate_XML(xml, os.path.join(os.path.dirname(__file__), os.pardir, u'schema', u'flmx', u'schema_sitelist.xsd'))
@@ -69,7 +71,8 @@ class SiteListParser(object):
 
                 facilities.append(facLink)
             self.sites.facilities = sorted(facilities, key=attrgetter(u'last_modified'))
-        except Exception, e:
+        except Exception as e:
+            logger.Warning(repr(e))
             raise FlmxParseError(repr(e))
 
     def get_sites(self, last_ran=dt.min):

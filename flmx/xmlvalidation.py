@@ -1,6 +1,10 @@
 from lxml import etree
 from lxml.etree import XMLSyntaxError   
-from error import FlmxParseError
+from error import FlmxCriticalError, FlmxParseError
+import logging
+
+_logger = logging.getLogger(__name__)
+
 
 class XMLValidator(object):
     u"""Tool to validate XML documents against schemas using lxml.
@@ -33,7 +37,9 @@ class XMLValidator(object):
         :return: *boolean* - Validation success. If false, `get_messages` will contain any provided error messages.
         """
         if not xml or not xsd:
-            raise FlmxParseError(u'Must provide both xml and xsd files.')
+            msg = u'Must provide both xml and xsd files.'
+            _logger.critical(msg)
+            raise FlmxCriticalError(msg)
 
         schema_doc = None
         xml_doc = None
@@ -41,13 +47,17 @@ class XMLValidator(object):
         try:
             schema_doc = etree.parse(xsd)
         except XMLSyntaxError, e:
-            raise FlmxParseError(u"Schema could not be parsed: " + repr(e))
+            msg= u"Schema could not be parsed: " + repr(e)
+            _logger.error(msg)
+            raise FlmxCriticalError(msg)
 
         # Not mission critical if the xml file does not parse - just return false as does not validate. 
         try:
             xml_doc = etree.parse(xml)
         except XMLSyntaxError, e:
-            self.messages = [u"XML document could not be parsed: " + repr(e)]
+            msg = u"XML document could not be parsed: " + repr(e)
+            self.messages = [msg]
+            _logger.warning(msg)
             return False
 
         schema = etree.XMLSchema(schema_doc)

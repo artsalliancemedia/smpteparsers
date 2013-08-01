@@ -1,6 +1,8 @@
 from bs4 import BeautifulSoup
 from helper import get_boolean, get_string, get_date, get_uint, get_datetime, deliveries, validate_XML
-import error, os
+import error, os, logging
+
+_logger = logging.getLogger(__name__)
 
 class FacilityParser(object):
     u"""A class to parse a single FLM feed.
@@ -34,6 +36,8 @@ class FacilityParser(object):
         flm = BeautifulSoup(xml, u'xml')
 
         if flm.FLMPartial and get_boolean(flm.FLMPartial):
+            msg = u"Partial FLMs not supported"
+            _logger.error(msg)
             raise error.FlmxPartialError(u"Partial FLMs are not supported by this parser.")
 
         self.facility = Facility(flm)
