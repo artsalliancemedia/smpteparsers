@@ -27,14 +27,13 @@ The FLMX suite is used to create objects from FLM-x feeds, as specified on the [
 To parse a non-protected site-list XML file, and then fetch all keys for all cinemas that its constituent FLM files contain, do the following:
 
     from smpteparsers import flmx
-    from smpteparsers.flmx import facility
     
     facilities = flmx.parse(u'http://example.com/FLMX.xml')
     
     for facility in facilities:
         screen_keys = facility.get_certificates()
     
-        print screen_keys
+        print(screen_keys)
     # can expect to see: {'screen 1', 'ABC123', ....}
 
 where `facility` is a *Facility* object, as defined in `facility.py`. *Facility* contains a variety of member variables to help you access any of the data contained within it.
