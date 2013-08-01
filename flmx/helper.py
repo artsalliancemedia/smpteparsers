@@ -122,6 +122,6 @@ def validate_XML(xml, xsd):
             error_msg = u""
             # v.get_messages returns a lxml.etree._ListErrorLog object
             for entry in v.get_messages():
-                _logger.error('XML Validation failed: ' + entry)
+                _logger.error('XML Validation failed: ' + repr(entry))
                 error_msg += repr(entry) + u"\n"
             raise error.FlmxParseError(error_msg)

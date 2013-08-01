@@ -5,7 +5,7 @@ class FlmxError(Exception):
         self.msg = value
 
     def __str__(self):
-        return self.msg
+        return 'FlmxError' + self.msg
 
 class FlmxCriticalError(FlmxError):
     u"""A critical error that cannot be resolved, causing program running to stop

@@ -39,7 +39,7 @@ def parse(sitelist_url, username=u'', password=u'', last_ran=datetime.min, failu
             failures = json.load(f)
         # If failures.json is not a valid json file then assume no failures
         except ValueError:
-            _logger.info(failures_file + ' could not be opened, the file will be cleared')
+            _logger.warning(failures_file + ' could not be opened, the file will be cleared')
             failures = {}
         prev_failures = failures[sitelist_url] if sitelist_url in failures else []
         new_failures = []
@@ -48,8 +48,8 @@ def parse(sitelist_url, username=u'', password=u'', last_ran=datetime.min, failu
         for site in set(prev_failures) | set(sites.keys()):
             try:
                 fp = get_facility(site, sitelist_url, username=username, password=password)
-            except (requests.exceptions.RequestException, FlmxParseError, FlmxPartialError, XMLSyntaxError):
-                _logger.warning(repr(e))
+            except (requests.exceptions.RequestException, FlmxParseError, FlmxPartialError, XMLSyntaxError) as e:
+                _logger.warning(str(e))
                 new_failures.append(site)
             else:
                 facilities.append(fp)
@@ -99,7 +99,7 @@ def get_facility(facility, facility_url, username=u'', password=u''):
         res.raise_for_status()
 
     try:
-        __loger.info('Parsing FLM at ' + facility)
+        _logger.info('Parsing FLM at ' + facility)
         return FacilityParser(res.raw.read())
     except FlmxParseError as e:
         raise FlmxParseError(u"Problem parsing FLM at " + facility + u". Error message: " + e.msg)
