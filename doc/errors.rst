@@ -10,7 +10,9 @@ In case of failure, the flmx suite provides several different exception objects 
 --------------------------------
 
 .. autoclass:: FlmxError
+
 --------------------------------
+
 .. autoclass:: FlmxCriticalError
 .. autoclass:: FlmxParseError
 .. autoclass:: FlmxPartialError
