@@ -41,33 +41,6 @@ class FacilityParser(object):
             raise error.FlmxPartialError(u"Partial FLMs are not supported by this parser.")
 
         self.facility = Facility(flm)
-        
-    # Add some more consuming methods, these are just ideas of what data you'd need to get back.
-    def get_screens(self):
-        u"""Returns the Auditorium objects corresponding to the screens in the facility.
-
-        This is a dictionary keyed by screen number.
-
-        """
-        return self.facility.auditoriums
-
-    def get_certificates(self):
-        u"""Returns all certificates for all of the screens in the facility.
-
-        If the screens have numbers, then the certificates are returned in 
-        a dictionary keyed by screen number.  Otherwise they are keyed by the screen name.
-
-        """
-        screens = {}
-
-        for identifier, auditorium in self.facility.auditoriums.iteritems():
-            # Flatten certificates for all devices in same auditorium into one list
-            certs = [cert for device in auditorium.devices for cert in device.certificates]
-
-            # identifier could be the auditorium name or number
-            screens[identifier] = certs
-
-        return screens
 
 class Facility(object):
     u"""Represents the top-level facility which the FLM refers to.
@@ -131,6 +104,33 @@ class Facility(object):
                 self.auditoriums[new_auditorium.number] = new_auditorium
             else:
                 self.auditoriums[new_auditorium.name] = new_auditorium
+        
+    # Add some more consuming methods, these are just ideas of what data you'd need to get back.
+    def get_screens(self):
+        u"""Returns the Auditorium objects corresponding to the screens in the facility.
+
+        This is a dictionary keyed by screen number.
+
+        """
+        return self.auditoriums
+
+    def get_certificates(self):
+        u"""Returns all certificates for all of the screens in the facility.
+
+        If the screens have numbers, then the certificates are returned in 
+        a dictionary keyed by screen number.  Otherwise they are keyed by the screen name.
+
+        """
+        screens = {}
+
+        for identifier, auditorium in self.auditoriums.iteritems():
+            # Flatten certificates for all devices in same auditorium into one list
+            certs = [cert for device in auditorium.devices for cert in device.certificates]
+
+            # identifier could be the auditorium name or number
+            screens[identifier] = certs
+
+        return screens
 
 
 class Address(object):

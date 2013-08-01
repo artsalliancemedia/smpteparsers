@@ -52,7 +52,7 @@ def parse(sitelist_url, username=u'', password=u'', last_ran=datetime.min, failu
                 _logger.warning(str(e))
                 new_failures.append(site)
             else:
-                facilities.append(fp)
+                facilities.append(fp.facility)
 
         failures[sitelist_url] = new_failures
         json.dump(failures, f)
