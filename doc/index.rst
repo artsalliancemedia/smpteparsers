@@ -17,6 +17,7 @@ Contents:
    sitelistparser
    facilityparser
    xmlvalidator
+   errors
 
 
 
