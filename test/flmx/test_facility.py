@@ -17,7 +17,7 @@ class TestFacilityParserMethods(unittest.TestCase):
         self.f.close()
 
     def test_get_screens(self):
-        screens = self.fp.get_screens()
+        screens = self.fp.facility.get_screens()
 
         # Auditorium object created directly using constructor
         auditorium = flmx.Auditorium(BeautifulSoup(self.xml, u'xml').Auditorium)
@@ -33,7 +33,7 @@ class TestFacilityParserMethods(unittest.TestCase):
         self.assertEqual(screens[1].large_format_type, auditorium.large_format_type)
 
     def test_get_certificates(self):
-        certs = self.fp.get_certificates()
+        certs = self.fp.facility.get_certificates()
 
         soup = BeautifulSoup(self.xml, u'xml')(u"Auditorium")
         for auditorium in soup:
