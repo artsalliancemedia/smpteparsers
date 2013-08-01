@@ -6,11 +6,12 @@
 SMPTE Parsers
 =============
 
-The SMPTE parsers project is intended to eventually contain a range of tools for
-processing XML feeds defined by SMPTE standards.
+The SMPTE parsers project contains a range of tools for processing XML feeds
+defined by `SMPTE standards`_.
 
-The only parser currently implemented is for FLM-x feeds; details for each parser is given
-in the contents below.
+Details for each parser is given in the contents below.
+
+.. _`SMPTE standards`: http://standards.smpte.org/
 
 Contents:
 
