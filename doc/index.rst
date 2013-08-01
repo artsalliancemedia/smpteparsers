@@ -13,11 +13,6 @@ Details for each parser is given in the contents below.
 
 .. _`SMPTE standards`: http://standards.smpte.org/
 
-   sitelistparser
-   facilityparser
-   xmlvalidator
-   errors
-
 .. toctree::
    :maxdepth: 2
 
