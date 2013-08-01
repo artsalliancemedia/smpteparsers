@@ -49,7 +49,10 @@ class TestFacilityParserMethods(unittest.TestCase):
                 # Make certificate object directly from XML snippet
                 cert = flmx.Certificate(cert_xml)
 
-                self.assertEqual(certs[screen_index][i].name, cert.name)
+                self.assertEqual(certs[screen_index][i].root_name, cert.root_name)
+                self.assertEqual(certs[screen_index][i].organization_name, cert.organization_name)
+                self.assertEqual(certs[screen_index][i].entity_name, cert.entity_name)
+                self.assertEqual(certs[screen_index][i].thumbprint, cert.thumbprint)
                 self.assertEqual(certs[screen_index][i].certificate, cert.certificate)
 
 
@@ -332,7 +335,7 @@ class TestCertificate(unittest.TestCase):
 
     fullXML = """
         <ds:X509Data>
-          <ds:X509SubjectName>THIS IS A CERTIFICATE</ds:X509SubjectName>
+          <ds:X509SubjectName>CN=fmi.ca.a.com,O=ca.a.com,OU=ca.a.com,dnQualifier=qualifier=</ds:X509SubjectName>
           <ds:X509Certificate>certificate1</ds:X509Certificate>
         </ds:X509Data>
         """
@@ -341,7 +344,10 @@ class TestCertificate(unittest.TestCase):
         optional = BeautifulSoup(TestCertificate.fullXML, u'xml')
         cert = flmx.Certificate(optional)
 
-        self.assertEqual(cert.name, u"THIS IS A CERTIFICATE")
+        self.assertEqual(cert.root_name, u"ca.a.com")
+        self.assertEqual(cert.organization_name, u"ca.a.com")
+        self.assertEqual(cert.entity_name, u"fmi.ca.a.com")
+        self.assertEqual(cert.thumbprint, u"qualifier=")
         self.assertEqual(cert.certificate, u"certificate1")
 
 

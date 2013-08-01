@@ -115,11 +115,11 @@
             <KeyInfoList>
               <ds:KeyInfo>
                 <ds:X509Data>
-                  <ds:X509SubjectName>THIS IS A CERTIFICATE</ds:X509SubjectName>
+                  <ds:X509SubjectName>CN=fmi.ca.a.com,O=ca.a.com,OU=ca.a.com,dnQualifier=qualifier=</ds:X509SubjectName>
                   <ds:X509Certificate>certificate1</ds:X509Certificate>
                 </ds:X509Data>
                 <ds:X509Data>
-                  <ds:X509SubjectName>THIS IS ANOTHER CERTIFICATE</ds:X509SubjectName>
+                  <ds:X509SubjectName>CN=le.ca.a.com,O=ca.a.com,OU=ca.a.com,dnQualifier=qualifier2=</ds:X509SubjectName>
                   <ds:X509Certificate>certificate2</ds:X509Certificate>
                 </ds:X509Data>
               </ds:KeyInfo>

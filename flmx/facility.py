@@ -391,16 +391,46 @@ class Software(object):
         self.file_time = get_datetime(software.FileDateTime)
 
 class Certificate(object):
-    u"""Represents an X509 certificate.
+    u"""Represents an X.509 certificate.
+
+    The certificate format is defined by IETF PKIX_, with the fields used
+    in accordance with SMPTE 430-2-2006.  The latter document describes specific
+    constraints to the X.509 standard for use in digital cinema.  Specifically
+    there is a mapping of digital cinema identity attributes to commonly used
+    X.509 name attributes, which is handled by this parser.
 
     Optional fields:
 
-    :ivar string name: The X509 subject name.
-    :ivar string certificate: The X509 certificate.
+    :ivar string root_name: Name of the organization holding the root of the certificate
+        chain.  This is parsed from the X.509 *OrganizationName* attribute.
+    :ivar string organization_name: Name fo the organization to which the issuer or subject of
+        the certificate belongs.  This usually refers to the device maker.  It is parsed
+        from the X.509 *OrganizationUnitName* attribute.
+    :ivar string entity_name: Entity issuing the certificate or being issued the certificate.
+        This is parsed from the X.509 *CommonName* attribute.
+    :ivar string thumbprint: The unique thumbprint of the public key of the entity
+        issuing the certificate or being issued the certificate; also known as *dnQualifier*.
+    :ivar string certificate: The X.509 certificate.
+
+    .. _PKIX: http://www.ietf.org/rfc/rfc5280.txt
 
     """
     def __init__(self, cert):
-        self.name = get_string(cert.X509SubjectName)
+        name = get_string(cert.X509SubjectName)
+
+        fields = {}
+        if name is not None:
+            for attribute in name.split(u','):
+                t = attribute.split(u'=', 1)
+                if len(t) == 2:
+                    fields[t[0].lower()] = t[1]
+
+        # dict.get returns None if key not in dict
+        self.root_name = fields.get(u'o')
+        self.organization_name = fields.get(u'ou')
+        self.entity_name = fields.get(u'cn')
+        self.thumbprint = fields.get(u'dnqualifier')
+
         self.certificate = get_string(cert.X509Certificate)
 
 class Watermarking(object):
