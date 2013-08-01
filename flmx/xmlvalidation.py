@@ -48,7 +48,7 @@ class XMLValidator(object):
             schema_doc = etree.parse(xsd)
         except XMLSyntaxError, e:
             msg= u"Schema could not be parsed: " + repr(e)
-            _logger.error(msg)
+            _logger.critical(msg)
             raise FlmxCriticalError(msg)
 
         # Not mission critical if the xml file does not parse - just return false as does not validate. 
