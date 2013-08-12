@@ -9,15 +9,12 @@ import flmx.error as error
 class TestFacilityParserMethods(unittest.TestCase):
 
     def setUp(self):
-        self.f = open(os.path.join(os.path.dirname(__file__), u'testFLM.xml'))
-        self.xml = self.f.read()
-        self.fp = flmx.FacilityParser(self.xml)
-
-    def tearDown(self):
-        self.f.close()
+        with open(os.path.join(os.path.dirname(__file__), u'testFLM.xml')) as f:
+            self.xml = f.read()
+            self.fp = flmx.FacilityParser(self.xml)
 
     def test_get_screens(self):
-        screens = self.fp.facility.get_screens()
+        screens = self.fp.get_screens()
 
         # Auditorium object created directly using constructor
         auditorium = flmx.Auditorium(BeautifulSoup(self.xml, u'xml').Auditorium)
@@ -33,7 +30,7 @@ class TestFacilityParserMethods(unittest.TestCase):
         self.assertEqual(screens[1].large_format_type, auditorium.large_format_type)
 
     def test_get_certificates(self):
-        certs = self.fp.facility.get_certificates()
+        certs = self.fp.get_certificates()
 
         soup = BeautifulSoup(self.xml, u'xml')(u"Auditorium")
         for auditorium in soup:
@@ -147,7 +144,7 @@ class TestFacilityParser(unittest.TestCase):
 
     def test_unicode_FLM(self):
         fp = flmx.FacilityParser(TestFacilityParser.unicodeXML)
-        self.assertTrue(u'☃' in fp.facility.auditoriums)
+        self.assertTrue(u'☃' in fp.auditoriums)
 
 
 class TestAddress(unittest.TestCase):
@@ -636,8 +633,10 @@ class TestAuditorium(unittest.TestCase):
 class TestFacility(unittest.TestCase):
 
     # Not a valid FLM but enough to construct a facility
-    minimalXML = """
-        <FacilityListMessage>
+    minimalXML = """<?xml version="1.0" encoding="UTF-8"?>
+        <FacilityListMessage xmlns="http://isdcf.com/2010/06/FLM" xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+          <MessageId>urn:uuid:2c87026f-0ec6-4490-8668-bd7647f82e90</MessageId>
+          <IssueDate>2013-07-19T09:24:10-10:00</IssueDate>
           <FacilityInfo>
             <FacilityID>urn:x-facilityID:fox.com:5132</FacilityID>
             <FacilityName>A Cinema</FacilityName>
@@ -646,11 +645,11 @@ class TestFacility(unittest.TestCase):
           </FacilityInfo>
           <AuditoriumList>""" + TestAuditorium.minimalXML + """</AuditoriumList>
         </FacilityListMessage>
+
         """
 
     def test_mandatory(self):
-        minimal = BeautifulSoup(TestFacility.minimalXML, u'xml')
-        facility = flmx.Facility(minimal)
+        facility = flmx.FacilityParser(TestFacility.minimalXML)
 
         self.assertEqual(facility.id, u"fox.com:5132")
         self.assertEqual(facility.name, u"A Cinema")
@@ -661,7 +660,8 @@ class TestFacility(unittest.TestCase):
             if address_type in facility.addresses:
                 self.assertTrue(isinstance(facility.addresses[address_type], flmx.Address))
 
-        number = int(minimal.AuditoriumNumber.string)
+        # from TestAuditorium.minimalXML
+        number = 1
         self.assertEqual(len(facility.auditoriums), 1)
         self.assertTrue(isinstance(facility.auditoriums[number], flmx.Auditorium))
 
@@ -672,8 +672,7 @@ class TestFacility(unittest.TestCase):
 
     def test_optional(self):
         with open(os.path.join(os.path.dirname(__file__), u'testFLM.xml')) as flm:
-            optional = BeautifulSoup(flm, u'xml')
-            facility = flmx.Facility(optional)
+            facility = flmx.FacilityParser(flm)
 
             self.assertEqual(facility.id, u"fox.com:5132")
             self.assertEqual(facility.name, u"A Cinema")
@@ -684,7 +683,8 @@ class TestFacility(unittest.TestCase):
                 if address_type in facility.addresses:
                     self.assertTrue(isinstance(facility.addresses[address_type], flmx.Address))
 
-            number = int(optional.AuditoriumNumber.string)
+            # from TestAuditorium.minimalXML
+            number = 1
             self.assertEqual(len(facility.auditoriums), 1)
             self.assertTrue(isinstance(facility.auditoriums[number], flmx.Auditorium))
 

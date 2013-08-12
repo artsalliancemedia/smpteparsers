@@ -68,7 +68,7 @@ def get_sitelist(sitelist_url, username=u'', password=u''):
     # This is not compatible with lxml validation so we have to get the raw HTTPResponse,
     # read it, and then wrap it in StringIO so the validator can read it again.
     # If efficiency becomes a problem this is an obvious bottleneck.
-    return SiteListParser(res.raw.read())
+    return SiteListParser(res.raw)
 
 def get_facility(facility, facility_url, username=u'', password=u''):
     # Ensure facility URL ends in a /
@@ -85,7 +85,7 @@ def get_facility(facility, facility_url, username=u'', password=u''):
 
     try:
         _logger.info('Parsing FLM at ' + facility)
-        return FacilityParser(res.raw.read())
+        return FacilityParser(res.raw)
     except FlmxParseError as e:
         raise FlmxParseError(u"Problem parsing FLM at " + facility + u". Error message: " + e.msg)
     except XMLSyntaxError, e:
