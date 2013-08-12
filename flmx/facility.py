@@ -28,7 +28,7 @@ class FacilityParser(object):
     """
 
     def __init__(self, xml):
-        u"""A class to parse a single FLM feed.
+        u"""Create an object to parse a single FLM feed.
 
         :param xml: an XML string or an open, readable XML file containing an FLM feed.
 
@@ -59,7 +59,6 @@ class FacilityParser(object):
             except AttributeError as e:
                 _logger.critical(repr(e))
                 raise error.FlmxCriticalError(repr(e))
-
 
         validate_XML(xml, os.path.join(os.path.dirname(__file__), os.pardir, u'schema', u'flmx', u'schema_facility.xsd'))
 
