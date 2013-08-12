@@ -28,28 +28,27 @@ class FacilityLink(object):
                u'link_href: ' + self.xlink_href + u' ' + \
                u'link_type: ' + self.xlink_type
 
-class SiteList(object):
-    u"""Contains a list of facilities, and metadata about the site list itself.
+class SiteListParser(object):
+    u"""A SiteList contains a list of facilities, and metadata about the site list itself.
 
     :var string originator: URL of the original FLM file.
     :var string system_name: The name of the system that created this file.
-    :var [FacilityLink] facilities: List of ``FacilityLink`` objects.
+    :var [FacilityLink] facilities: A list of ``FacilityLink`` objects.
 
     """
     originator = u""
     system_name = u""
     facilities = []
 
-class SiteListParser(object):
-    u"""Parses an XML sitelist, and constructs a container holding the the XML document's data.
-
-    :param string xml: Either the contents of an XML file, or a file handle.
-        This will parse the contents and construct ``sites``.
-    :param boolean validate: Defaults to true. If set, will validate the given
-        XML file against the Sitelist XML Schema xsd file, as found on the `FLM-x Homepage`.
-
-    """
     def __init__(self, xml):
+        """Parses an XML sitelist, and constructs a container holding the the XML document's data.
+
+        :param string xml: Either the contents of an XML file, or a file handle.
+            This will parse the contents and construct ``sites``.
+        :param boolean validate: Defaults to true. If set, will validate the given
+            XML file against the Sitelist XML Schema xsd file, as found on the `FLM-x Homepage`.
+
+        """
 
         self.sites = SiteList()
 
