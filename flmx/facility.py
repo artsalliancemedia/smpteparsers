@@ -38,17 +38,6 @@ class FacilityParser(object):
         if it is not specified in the FLM.  A value marked *mandatory* is guaranteed to never be ``None``
         providing the original FLM is valid.
 
-        Example usage:
-
-        >>> # Open file handle
-        ... with open(u'flm.xml') as flm:
-        ...   # Set up FacilityParser
-        ...   fp = flmx.FacilityParser(flm)
-        ...   # Get certificates
-        ...   certs = fp.get_certificates()
-        ...   # Print out the certificates for screen #3 (for example)
-        ...   print(certs[3])
-
         """
 
         #If it's a file, we call .read() on it so that it can be consumed twice - once by XMLValidator, and once by

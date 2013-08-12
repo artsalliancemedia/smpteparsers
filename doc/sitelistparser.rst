@@ -1,4 +1,4 @@
-
+.. module:: flmx.sitelist
 ================================
 SiteList Parser
 ================================
@@ -8,5 +8,7 @@ The SiteList Parser parses an FLM-x feed, transforming the XML into a python obj
 Functions & Objects
 --------------------------------
 
-.. automodule:: flmx.sitelist
+.. autoclass:: SiteListParser
    :members:
+   
+   .. automethod:: __init__
