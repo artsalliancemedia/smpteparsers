@@ -8,7 +8,7 @@ class FlmxError(Exception):
         return 'FlmxError' + self.msg
 
 class FlmxCriticalError(FlmxError):
-    u"""A critical error that cannot be resolved, causing program running to stop
+    u"""A critical error that cannot be resolved, causing program running to stop.
 
     For example, is thrown when there is a problem with the local schema xsd files.
     """
