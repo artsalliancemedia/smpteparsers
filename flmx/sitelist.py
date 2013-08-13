@@ -4,6 +4,9 @@ from helper import get_datetime, validate_XML
 from operator import attrgetter
 from error import FlmxParseError
 import os
+import logging
+
+_logger = logging.getLogger(__name__)
 
 class FacilityLink(object): 
     u"""A link to a facility FLM-x file, as contained within a SiteList.
@@ -27,50 +30,54 @@ class FacilityLink(object):
                u'link_href: ' + self.xlink_href + u' ' + \
                u'link_type: ' + self.xlink_type
 
-class SiteList(object):
-    u"""Contains a list of facilities, and metadata about the site list itself.
+class SiteListParser(object):
+    u"""A SiteList contains a list of facilities, and metadata about the site list itself.
 
     :var string originator: URL of the original FLM file.
     :var string system_name: The name of the system that created this file.
-    :var [FacilityLink] facilities: List of ``FacilityLink`` objects.
+    :var [FacilityLink] facilities: A list of ``FacilityLink`` objects.
 
     """
     originator = u""
     system_name = u""
     facilities = []
 
-class SiteListParser(object):
-    u"""Parses an XML sitelist, and constructs a container holding the the XML document's data.
-
-    :param string xml: Either the contents of an XML file, or a file handle.
-        This will parse the contents and construct ``sites``.
-    :param boolean validate: Defaults to true. If set, will validate the given
-        XML file against the Sitelist XML Schema xsd file, as found on the `FLM-x Homepage`.
-
-    """
     def __init__(self, xml):
-        self.sites = SiteList()
+        """Parses an XML sitelist, and constructs a container holding the the XML document's data.
+
+        :param string xml: Either the contents of an XML file, or a file handle.
+            This will parse the contents and construct ``sites``.
+        :param boolean validate: Defaults to true. If set, will validate the given
+            XML file against the Sitelist XML Schema xsd file, as found on the `FLM-x Homepage`.
+
+        """
+
+        #If it's a file, we call .read() on it so that it can be consumed twice - once by XMLValidator, and once by
+        #beautiful soup
+        if not (isinstance(xml, str) or isinstance(xml, unicode)):
+            try:
+                xml = xml.read()
+            except AttributeError as e:
+                _logger.critical(repr(e))
+                raise FlmxCriticalError(repr(e))
 
         validate_XML(xml, os.path.join(os.path.dirname(__file__), os.pardir, u'schema', u'flmx', u'schema_sitelist.xsd'))
 
         soup = BeautifulSoup(xml, u"xml")
 
-        try:
-            self.sites.originator = soup.SiteList.Originator.string
-            self.sites.system_name = soup.SiteList.SystemName.string
-            facilities = []
-            for facility in soup.find_all(u'Facility'):
-                facLink = FacilityLink()
-                facLink.id_code = facility[u'id']
-                # strip the timezone from the ISO timecode
-                facLink.last_modified = get_datetime(facility[u'modified'])
-                facLink.xlink_href = facility[u'xlink:href']
-                facLink.xlink_type = facility[u'xlink:type']
+        self.originator = soup.SiteList.Originator.string
+        self.system_name = soup.SiteList.SystemName.string
+        facilities = []
+        for facility in soup.find_all(u'Facility'):
+            facLink = FacilityLink()
+            facLink.id_code = facility[u'id']
+            # strip the timezone from the ISO timecode
+            facLink.last_modified = get_datetime(facility[u'modified'])
+            facLink.xlink_href = facility[u'xlink:href']
+            facLink.xlink_type = facility[u'xlink:type']
 
-                facilities.append(facLink)
-            self.sites.facilities = sorted(facilities, key=attrgetter(u'last_modified'))
-        except Exception, e:
-            raise FlmxParseError(repr(e))
+            facilities.append(facLink)
+        self.facilities = sorted(facilities, key=attrgetter(u'last_modified'))
 
     def get_sites(self, last_ran=dt.min):
         u"""Returns a dictionary mapping URLs as keys to the date that FLM was last modified as a value.
@@ -81,5 +88,5 @@ class SiteListParser(object):
 
         """
         return dict((link.xlink_href, link.last_modified)
-                    for link in self.sites.facilities
+                    for link in self.facilities
                     if link.last_modified >= last_ran)

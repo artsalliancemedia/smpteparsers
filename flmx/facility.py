@@ -1,72 +1,21 @@
 from bs4 import BeautifulSoup
 from helper import get_boolean, get_string, get_date, get_uint, get_datetime, deliveries, validate_XML
-import error, os
+import error, os, logging
+
+_logger = logging.getLogger(__name__)
 
 class FacilityParser(object):
-    u"""A class to parse a single FLM feed.
+    u"""Represents the top-level facility which the FLM refers to.
 
     :param xml: an XML string or an open, readable XML file containing an FLM feed.
 
     Any of the values in the FLM feed can be accessed through the objects given in the next section.
     For example, the screen colour of the 3D system installed in screen #1 can be accessed using
-    ``facility.auditoriums[1].digital_3d_system.screen_color``.  Any optional value can be ``None``
+    ``auditoriums[1].digital_3d_system.screen_color``.  Any optional value can be ``None``
     if it is not specified in the FLM.  A value marked *mandatory* is guaranteed to never be ``None``
     providing the original FLM is valid.
 
-    :ivar facility: The top-level facility this FLM feed corresponds to.
-
-    Example usage:
-
-    >>> # Open file handle
-    ... with open(u'flm.xml') as flm:
-    ...   # Set up FacilityParser
-    ...   fp = flmx.FacilityParser(flm)
-    ...   # Get certificates
-    ...   certs = fp.get_certificates()
-    ...   # Print out the certificates for screen #3 (for example)
-    ...   print(certs[3])
-
-    """
-    def __init__(self, xml):
-        # validate_XML throws an error if validation fails
-        validate_XML(xml, os.path.join(os.path.dirname(__file__), os.pardir, u'schema', u'flmx', u'schema_facility.xsd'))
-
-        flm = BeautifulSoup(xml, u'xml')
-
-        if flm.FLMPartial and get_boolean(flm.FLMPartial):
-            raise error.FlmxPartialError(u"Partial FLMs are not supported by this parser.")
-
-        self.facility = Facility(flm)
-        
-    # Add some more consuming methods, these are just ideas of what data you'd need to get back.
-    def get_screens(self):
-        u"""Returns the Auditorium objects corresponding to the screens in the facility.
-
-        This is a dictionary keyed by screen number.
-
-        """
-        return self.facility.auditoriums
-
-    def get_certificates(self):
-        u"""Returns all certificates for all of the screens in the facility.
-
-        If the screens have numbers, then the certificates are returned in 
-        a dictionary keyed by screen number.  Otherwise they are keyed by the screen name.
-
-        """
-        screens = {}
-
-        for identifier, auditorium in self.facility.auditoriums.iteritems():
-            # Flatten certificates for all devices in same auditorium into one list
-            certs = [cert for device in auditorium.devices for cert in device.certificates]
-
-            # identifier could be the auditorium name or number
-            screens[identifier] = certs
-
-        return screens
-
-class Facility(object):
-    u"""Represents the top-level facility which the FLM refers to.
+    --------------------------------
 
     Mandatory fields (guaranteed to not be ``None`` for a valid FLM):
 
@@ -79,6 +28,8 @@ class Facility(object):
         If the auditorium has a number then it is indexed by number.
         Otherwise if it only has a name then it is indexed by name.
 
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
     Optional fields (may be ``None`` or empty):
 
     :ivar [string] alternate_ids: A list of alternate IDs (also unique) for the facility.
@@ -87,9 +38,32 @@ class Facility(object):
     :ivar [string] contacts: A list of people or organisations who are contacts for the facility.
 
     """
-    def __init__(self, flm):
+
+    def __init__(self, xml):
+
+        #If it's a file, we call .read() on it so that it can be consumed twice - once by XMLValidator, and once by
+        #beautiful soup
+        if not (isinstance(xml, str) or isinstance(xml, unicode)):
+            try:
+                xml = xml.read()
+            except AttributeError as e:
+                _logger.critical(repr(e))
+                raise error.FlmxCriticalError(repr(e))
+
+        validate_XML(xml, os.path.join(os.path.dirname(__file__), os.pardir, u'schema', u'flmx', u'schema_facility.xsd'))
+
+        flm = BeautifulSoup(xml, u'xml')
+
+        if flm.FLMPartial and get_boolean(flm.FLMPartial):
+            msg = u"Partial FLMs not supported"
+            _logger.error(msg)
+            raise error.FlmxPartialError(u"Partial FLMs are not supported by this parser.")
+
+        self.setup_facility(flm)
+
+    def setup_facility(self, flm):
         # Strip the 'urn:x-facilityID' tag from the front of the ID
-        self.id = flm.FacilityID.get_text().split(u":", 2)[2]
+        self.id = flm.FacilityInfo.FacilityID.get_text().split(u":", 2)[2]
         self.name = get_string(flm.FacilityName)
 
         self.alternate_ids = []
@@ -126,8 +100,34 @@ class Facility(object):
             if new_auditorium.number:
                 self.auditoriums[new_auditorium.number] = new_auditorium
             else:
-                self.auditoriums[new_auditorium.name] = new_auditorium
+                self.auditoriums[new_auditorium.name] = new_auditorium    
+        
+    # Add some more consuming methods, these are just ideas of what data you'd need to get back.
+    def get_screens(self):
+        u"""Returns the Auditorium objects corresponding to the screens in the facility.
 
+        This is a dictionary keyed by screen number.
+
+        """
+        return self.auditoriums
+
+    def get_certificates(self):
+        u"""Returns all certificates for all of the screens in the facility.
+
+        If the screens have numbers, then the certificates are returned in 
+        a dictionary keyed by screen number.  Otherwise they are keyed by the screen name.
+
+        """
+        screens = {}
+
+        for identifier, auditorium in self.auditoriums.iteritems():
+            # Flatten certificates for all devices in same auditorium into one list
+            certs = [cert for device in auditorium.devices for cert in device.certificates]
+
+            # identifier could be the auditorium name or number
+            screens[identifier] = certs
+
+        return screens
 
 class Address(object):
     u"""Represents an address.

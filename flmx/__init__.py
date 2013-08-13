@@ -28,7 +28,7 @@ def parse(sitelist_url, username='', password='', last_ran=datetime.min, failure
     and any data in the original file will be lost.
 
     """
-    flmx.parse(sitelist_url, username, password, last_ran, failures_file)
+    return flmx.parse(sitelist_url, username, password, last_ran, failures_file)
 
 # This main method runs the parser, useful for testing
 # but doesn't actually output anything on success 

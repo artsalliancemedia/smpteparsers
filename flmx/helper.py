@@ -3,6 +3,9 @@ from datetime import timedelta
 from bs4 import Tag
 from StringIO import StringIO
 import error, xmlvalidation, os
+import logging
+
+_logger = logging.getLogger(__name__)
 
 # These helper methods take XML, strip the tags and
 # convert the contents to the required type
@@ -104,6 +107,7 @@ def validate_XML(xml, xsd):
     :param string xsd: A filename of a .xsd schema file to validate against. 
 
     """
+
     v = xmlvalidation.XMLValidator()
 
     # It is the calling method's responsibility to ensure the pathname works
@@ -118,5 +122,6 @@ def validate_XML(xml, xsd):
             error_msg = u""
             # v.get_messages returns a lxml.etree._ListErrorLog object
             for entry in v.get_messages():
+                _logger.error('XML Validation failed: ' + repr(entry))
                 error_msg += repr(entry) + u"\n"
             raise error.FlmxParseError(error_msg)
