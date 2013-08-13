@@ -7,6 +7,16 @@ _logger = logging.getLogger(__name__)
 class FacilityParser(object):
     u"""Represents the top-level facility which the FLM refers to.
 
+    :param xml: an XML string or an open, readable XML file containing an FLM feed.
+
+    Any of the values in the FLM feed can be accessed through the objects given in the next section.
+    For example, the screen colour of the 3D system installed in screen #1 can be accessed using
+    ``auditoriums[1].digital_3d_system.screen_color``.  Any optional value can be ``None``
+    if it is not specified in the FLM.  A value marked *mandatory* is guaranteed to never be ``None``
+    providing the original FLM is valid.
+
+    --------------------------------
+
     Mandatory fields (guaranteed to not be ``None`` for a valid FLM):
 
     :ivar string id: The facility's unique ID type.
@@ -18,6 +28,8 @@ class FacilityParser(object):
         If the auditorium has a number then it is indexed by number.
         Otherwise if it only has a name then it is indexed by name.
 
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
     Optional fields (may be ``None`` or empty):
 
     :ivar [string] alternate_ids: A list of alternate IDs (also unique) for the facility.
@@ -28,17 +40,6 @@ class FacilityParser(object):
     """
 
     def __init__(self, xml):
-        u"""Create an object to parse a single FLM feed.
-
-        :param xml: an XML string or an open, readable XML file containing an FLM feed.
-
-        Any of the values in the FLM feed can be accessed through the objects given in the next section.
-        For example, the screen colour of the 3D system installed in screen #1 can be accessed using
-        ``facility.auditoriums[1].digital_3d_system.screen_color``.  Any optional value can be ``None``
-        if it is not specified in the FLM.  A value marked *mandatory* is guaranteed to never be ``None``
-        providing the original FLM is valid.
-
-        """
 
         #If it's a file, we call .read() on it so that it can be consumed twice - once by XMLValidator, and once by
         #beautiful soup

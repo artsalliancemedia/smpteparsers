@@ -21,8 +21,6 @@ Example usage:
 .. autoclass:: FacilityParser
    :members:
 
-   .. automethod:: __init__
-
 Objects
 --------------------------------
 
