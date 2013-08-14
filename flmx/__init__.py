@@ -30,8 +30,27 @@ def parse(sitelist_url, username='', password='', last_ran=datetime.min, failure
     """
     return flmx.parse(sitelist_url, username, password, last_ran, failures_file)
 
+def add_failure(sitelist_url, facility, failures_file='failures.json'):
+    u"""Signal to the parser that there was a problem processing a facility.
+
+    :param string sitelist_url: The URL of the site list.
+    :param FacilityParser facility: The facility object that could not be processed.
+    :param string failures_file: The path of a JSON file to write the failures to.
+
+    This will cause the parser to register the failure to the failures file.
+    It will then be retried the next time the parser runs on that site list.
+    """
+    failures = flmx.read_failures(failures_file)
+
+    if sitelist_url in failures:
+        failures[sitelist_url].append(facility.id)
+    else:
+        failures[sitelist_url] = [facility.id]
+
+    flmx.write_failures(failures_file, failures)
+
 # This main method runs the parser, useful for testing
-# but doesn't actually output anything on success 
+# but doesn't actually output anything on success
 def main():
     parser = OptionParser(usage=u"%prog [options] url")
     parser.add_option(u"-u", u"--username", dest=u"username", default=u"", help=u"username for authentication")

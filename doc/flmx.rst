@@ -18,6 +18,7 @@ Basic usage:
 ... facilities[u'fox.com:5132'].get_certificates()
 
 .. autofunction:: parse
+.. autofunction:: add_failure
 
 More information on the components which make up the FLM-x parser can be found on the
 individual module pages below:

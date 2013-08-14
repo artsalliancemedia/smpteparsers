@@ -17,33 +17,39 @@ def parse(sitelist_url, username=u'', password=u'', last_ran=datetime.min, failu
     sp = get_sitelist(sitelist_url, username=username, password=password)
     sites = sp.get_sites(last_ran)
 
-    facilities = {}
+    all_failures = read_failures(failures_file)
 
-    with open(os.path.join(os.path.dirname(__file__), failures_file), u'w+') as f:
+    prev_failures = all_failures.get(sitelist_url, [])
+    new_failures = []
+
+    # Ensure we don't check the failures twice
+    for site in set(prev_failures) | set(sites.keys()):
         try:
-            failures = json.load(f)
-        # If failures.json is not a valid json file then assume no failures
-        except ValueError:
-            _logger.warning(failures_file + ' could not be opened, the file will be cleared')
-            failures = {}
-        prev_failures = failures[sitelist_url] if sitelist_url in failures else []
-        new_failures = []
+            fp = get_facility(site, sitelist_url, username=username, password=password)
+        except (requests.exceptions.RequestException, FlmxParseError, FlmxPartialError, XMLSyntaxError) as e:
+            _logger.warning(str(e))
+            new_failures.append(site)
+        else:
+            _logger.info('returning facility ' + fp.id + ' from ' + sitelist_url)
+            yield fp
 
-        # Ensure we don't check the failures twice
-        for site in set(prev_failures) | set(sites.keys()):
-            try:
-                fp = get_facility(site, sitelist_url, username=username, password=password)
-            except (requests.exceptions.RequestException, FlmxParseError, FlmxPartialError, XMLSyntaxError) as e:
-                _logger.warning(str(e))
-                new_failures.append(site)
-            else:
-                facilities[site] = fp
+    all_failures[sitelist_url] = new_failures
+    json.dump(all_failures, f)
 
-        failures[sitelist_url] = new_failures
+def read_failures(failures_file):
+    """Read the failures file from JSON into a python dict."""
+    try:
+        with open(os.path.join(os.path.dirname(__file__), failures_file), u'r') as f:
+            return json.load(f)
+    # IOError if file does not exist, ValueError if file cannot be read or is not valid JSON
+    except IOError, ValueError:
+        _logger.warning(failures_file + ' could not be opened, the file will be cleared')
+        return {}
+
+def write_failures(failures_file, failures):
+    """Write the failures back to the failures file as JSON."""
+    with open(os.path.join(os.path.dirname(__file__), failures_file), u'w') as f:
         json.dump(failures, f)
-
-    _logger.info('returning '+ str(len(facilities)) + ' facilities for ' + sitelist_url) 
-    return facilities
 
 def request(url, username=u'', password=u''):
     res = None
