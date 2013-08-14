@@ -34,7 +34,7 @@ def parse(sitelist_url, username=u'', password=u'', last_ran=datetime.min, failu
             yield fp
 
     all_failures[sitelist_url] = new_failures
-    json.dump(all_failures, f)
+    json.dump(failures_file, all_failures)
 
 def read_failures(failures_file):
     """Read the failures file from JSON into a python dict."""

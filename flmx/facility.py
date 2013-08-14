@@ -397,9 +397,11 @@ class Certificate(object):
 
     Optional fields:
 
+    :ivar string subject_name: The entire X.509 subject name field.  This contains the root name,
+        organization name, entity name and thumbprint.
     :ivar string root_name: Name of the organization holding the root of the certificate
         chain.  This is parsed from the X.509 *OrganizationName* attribute.
-    :ivar string organization_name: Name fo the organization to which the issuer or subject of
+    :ivar string organization_name: Name of the organization to which the issuer or subject of
         the certificate belongs.  This usually refers to the device maker.  It is parsed
         from the X.509 *OrganizationUnitName* attribute.
     :ivar string entity_name: Entity issuing the certificate or being issued the certificate.
@@ -412,11 +414,11 @@ class Certificate(object):
 
     """
     def __init__(self, cert):
-        name = get_string(cert.X509SubjectName)
+        self.subject_name = get_string(cert.X509SubjectName)
 
         fields = {}
-        if name is not None:
-            for attribute in name.split(u','):
+        if self.subject_name is not None:
+            for attribute in self.subject_name.split(u','):
                 t = attribute.split(u'=', 1)
                 if len(t) == 2:
                     fields[t[0].lower()] = t[1]
