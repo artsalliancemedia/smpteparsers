@@ -11,7 +11,10 @@ from error import FlmxParseError, FlmxPartialError
 _logger = logging.getLogger(__name__)
 
 class Parser(object):
-    """Parser for an FLM-x feed."""
+    """Parser for an FLM-x feed.
+
+    There should be one parser per FLM-x feed, and its sitelist_url should not change.
+    """
 
     def __init__(self, sitelist_url):
         self.sitelist_url = sitelist_url
@@ -19,8 +22,21 @@ class Parser(object):
         self.is_parsing = False
 
     def parse(self, username=u'', password=u'', last_ran=datetime.min, failures_file=u'failures.json'):
-        """Generator to parse a site list and return the facilities."""
+        """Generator to parse a site list and return the facilities.
 
+        The generator will read the failures from the failures file the first time it is used.
+        Then it will yield each facility object in turn when requested, and write any failures
+        back at the end.  Using a generator here prevents a large number of subsequent requests
+        to the FLM-x endpoint, as processing on the current facility can be done before the next
+        is requested.  When the generator is yielded, the parser is considered to be in
+        'parsing mode' (the is_parsing flag is set to True).  While in this mode, other methods
+        should not change anything which the parser relies on for correct operation.
+        Since the failures file is written when the generator exits, any changes
+        to the file while the parser is in parsing mode will be overwritten.
+
+        More documentation on the arguments can be found in __init__.py, which provides the public
+        interface to this method.
+        """
         sp = self.get_sitelist(username=username, password=password)
         sites = sp.get_sites(last_ran)
 
@@ -47,10 +63,15 @@ class Parser(object):
         self.is_parsing = False
 
     def add_failure(self, site, failures_file=u'failures.json'):
-        """Add a failure to the current failures list."""
+        """Add a failure to the current failures list.
+
+        If the parser is not currently parsing (the parse method is yielded),
+        then the failure will be written immediately, otherwise the failure will be written
+        by the parse method when it exits.  This is to prevent write conflicts.
+        """
         self.current_failures.append(site)
 
-        # If parser is not in parsing mode then persist the failure
+        # If parser is not in parsing mode then write the failure
         # Otherwise it will be written when the parser exits parsing mode
         if not self.is_parsing:
             failures = self.read_failures(failures_file)
