@@ -1,5 +1,5 @@
 from lxml import etree
-from lxml.etree import XMLSyntaxError   
+from lxml.etree import XMLSyntaxError
 from error import FlmxCriticalError, FlmxParseError
 import logging
 
@@ -51,7 +51,7 @@ class XMLValidator(object):
             _logger.critical(msg)
             raise FlmxCriticalError(msg)
 
-        # Not mission critical if the xml file does not parse - just return false as does not validate. 
+        # Not mission critical if the xml file does not parse - just return false as does not validate.
         try:
             xml_doc = etree.parse(xml)
         except XMLSyntaxError, e:
@@ -61,14 +61,14 @@ class XMLValidator(object):
             return False
 
         schema = etree.XMLSchema(schema_doc)
-        out = schema.validate(xml_doc)    
+        out = schema.validate(xml_doc)
         self.messages = schema.error_log
         return out
 
 
     def get_messages(self):
         u"""
-        :return: *list(string)* A list of found error messages, stored sequentially. Will be an empty list if there were no error messages.
+        :return: *list(string)* -- A list of found error messages, stored sequentially. Will be an empty list if there were no error messages.
         """
 
         return self.messages

@@ -1,4 +1,5 @@
 .. module:: flmx.sitelist
+
 ================================
 SiteList Parser
 ================================
@@ -10,5 +11,5 @@ Functions & Objects
 
 .. autoclass:: SiteListParser
    :members:
-   
+
    .. automethod:: __init__
