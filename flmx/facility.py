@@ -128,8 +128,6 @@ class FacilityParser(object):
     def __repr__(self):
         return str(self.__dict__)
 
-
-
 class Address(object):
     u"""Represents an address.
 
@@ -157,6 +155,7 @@ class Address(object):
         self.province = get_string(address.Province)
         self.postal_code = get_string(address.PostalCode)
         self.country = get_string(address.Country)
+
     def __repr__(self):
         return str(self.__dict__)
 
@@ -200,6 +199,7 @@ class Auditorium(object):
             self.digital_3d_system = Digital3DSystem(auditorium.Digital3DSystem)
 
         self.devices = [Device(device) for device in auditorium.DeviceGroupList(u"Device")]
+
     def __repr__(self):
         return str(self.__dict__)
 
@@ -226,6 +226,7 @@ class Contact(object):
         self.phone2 = get_string(contact.Phone2)
         self.email = get_string(contact.Email)
         self.type = get_string(contact.Type)
+
     def __repr__(self):
         return str(self.__dict__)
 
@@ -323,6 +324,7 @@ class Device(object):
 
         self.kdm_deliveries = deliveries(device.KDMDeliveryMethodList)
         self.dcp_deliveries = deliveries(device.DCPDeliveryMethodList)
+
     def __repr__(self):
         return str(self.__dict__)
 
@@ -353,6 +355,7 @@ class Digital3DSystem(object):
         self.screen_luminance = get_uint(system.ScreenLuminance) # 1 to 29
         self.ghostbusting = get_boolean(system.Ghostbusting)
         self.ghostbusting_configuration = get_string(system.GhostbustingConfiguration)
+
     def __repr__(self):
         return str(self.__dict__)
 
@@ -371,6 +374,7 @@ class IPAddress(object):
     def __init__(self, ip_address):
         self.address = get_string(ip_address.Address)
         self.host = get_string(ip_address.Host)
+
     def __repr__(self):
         return str(self.__dict__)
 
@@ -402,6 +406,7 @@ class Software(object):
         self.filename = get_string(software.FileName)
         self.file_size = get_uint(software.FileSize)
         self.file_time = get_datetime(software.FileDateTime)
+
     def __repr__(self):
         return str(self.__dict__)
 
@@ -449,16 +454,12 @@ class Certificate(object):
         self.root_name = fields.get(u'o')
         self.organization_name = fields.get(u'ou')
         self.entity_name = fields.get(u'cn')
-        self.thumbprint = fields.get(u'dnqualifier')
+        self.thumbprint = fields.get(u'dnqualifier') or fields.get(u'dnq')
 
         self.certificate = get_string(cert.X509Certificate)
+
     def __repr__(self):
-        return str({"subject_name" : self.subject_name,
-            "root_name" : self.root_name,
-            "organization_name" : self.organization_name,
-            "entity_name" : self.entity_name,
-            "thumbprint" : self.thumbprint
-        })
+        return str(self.__dict__)
 
 class Watermarking(object):
     u"""Represents information about watermarking associated with a device.
