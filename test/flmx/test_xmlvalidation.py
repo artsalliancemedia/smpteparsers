@@ -1,6 +1,5 @@
 import unittest
 from StringIO import StringIO
-from lxml.etree import XMLSyntaxError   
 
 from flmx import xmlvalidation, error
 
@@ -23,7 +22,7 @@ good_xsd = """<?xml version="1.0" encoding="utf-8"?>
             <element name="FacilityList" type="tns:FacilityListType">
                 <unique name="faclity-id">
                 <selector xpath="tns:Facility" />
-                <field xpath="@id" /> 
+                <field xpath="@id" />
             </unique>
             </element>
         </sequence>
@@ -66,7 +65,7 @@ bad_xsd = """<?xml version="1.0" encoding="utf-8"?>
             <element name="FacilityList" type="tns:FacilityListType">
                 <unique name="faclity-id">
                 <selector xpath="tns:Facility" />
-                <field xpath="@id" /> 
+                <field xpath="@id" />
             </unique>
             </element>
         </sequence>
@@ -109,6 +108,19 @@ invalid_xml = """<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet href="/2
         </FacilityList>
     </SiteList>"""
 
+#Valid XML, but does not conform to schema - in this case has an extra name field
+invalid2_xml = """<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet href="/2.4.4.19419/static/fort_nocs/xsl/flm/sitelist-to-xhtml.xsl" type="text/xsl"?>
+    <SiteList xmlns="http://isdcf.com/2010/04/SiteList" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <Originator>orig</Originator>
+        <SystemName>sysName</SystemName>
+        <DateTimeCreated>2001-01-01T15:49:40.220</DateTimeCreated>
+        <FacilityList>
+            <Facility id="A" modified="2011-04-07T12:10:01-00:00" xlink:href="linkA" xlink:type="simple" name="AAA"/>
+            <Facility id="C" modified="2013-06-09T12:12:03+03:40" xlink:href="linkC" xlink:type="simple" name="BBB"/>
+            <Facility id="B" modified="2012-05-08T12:11:02-01:20" xlink:href="linkB" xlink:type="simple" name="CCC"/>
+        </FacilityList>
+    </SiteList>"""
+
 #Invalid XML
 corrupt_xml = """<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet href="/2.4.4.19419/static/fort_nocs/xsl/flm/sitelist-to-xhtml.xsl" type="text/xsl"?>
     <SiteList xmlns="http://isdcf.com/2010/04/SiteList" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -119,15 +131,19 @@ corrupt_xml = """<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet href="/2
             <Facility id="A" modified="2011-04-07T12:10:01-00:00" xlink:href="linkA" xlink:type="simple"/>
             <Facility id="C" modified="2013-06-09T12:12:03+03:40" xlink:href="linkC" xlink:type="simple"/>"""
 
+
 empty_str = """"""
 
 class TestXMLValidator(unittest.TestCase):
     v = xmlvalidation.XMLValidator()
 
     def test_goodschema(self):
-        # We expect no messages 
+        # We expect no messages
         self.assertTrue(self.v.validate(StringIO(good_xml), StringIO(good_xsd)))
         self.assertFalse(self.v.get_messages())
+
+        self.assertFalse(self.v.validate(StringIO(invalid2_xml), StringIO(good_xsd)))
+        self.assertTrue(self.v.get_messages())
 
         self.assertFalse(self.v.validate(StringIO(invalid_xml), StringIO(good_xsd)))
         self.assertTrue(self.v.get_messages())
