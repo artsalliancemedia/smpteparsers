@@ -11,11 +11,9 @@ class FacilityParser(object):
 
     Any of the values in the FLM feed can be accessed through the objects given in the next section.
     For example, the screen colour of the 3D system installed in screen #1 can be accessed using
-    ``auditoriums[1].digital_3d_system.screen_color``.  Any optional value can be ``None``
+    ``auditoriums[1].digital_3d_system.screen_color``.  Any *optional* value can be ``None``
     if it is not specified in the FLM.  A value marked *mandatory* is guaranteed to never be ``None``
     providing the original FLM is valid.
-
-    --------------------------------
 
     Mandatory fields (guaranteed to not be ``None`` for a valid FLM):
 
@@ -28,8 +26,6 @@ class FacilityParser(object):
         If the auditorium has a number then it is indexed by number.
         Otherwise if it only has a name then it is indexed by name.
 
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
     Optional fields (may be ``None`` or empty):
 
     :ivar [string] alternate_ids: A list of alternate IDs (also unique) for the facility.
@@ -63,7 +59,7 @@ class FacilityParser(object):
 
     def setup_facility(self, flm):
         # Strip the 'urn:x-facilityID' tag from the front of the ID
-        self.id = flm.FacilityInfo.FacilityID.get_text().split(u":", 2)[2]
+        self.id = flm.FacilityID.get_text().split(u":", 2)[2]
         self.name = get_string(flm.FacilityName)
 
         self.alternate_ids = []
@@ -100,8 +96,8 @@ class FacilityParser(object):
             if new_auditorium.number:
                 self.auditoriums[new_auditorium.number] = new_auditorium
             else:
-                self.auditoriums[new_auditorium.name] = new_auditorium    
-        
+                self.auditoriums[new_auditorium.name] = new_auditorium
+
     # Add some more consuming methods, these are just ideas of what data you'd need to get back.
     def get_screens(self):
         u"""Returns the Auditorium objects corresponding to the screens in the facility.
@@ -114,7 +110,7 @@ class FacilityParser(object):
     def get_certificates(self):
         u"""Returns all certificates for all of the screens in the facility.
 
-        If the screens have numbers, then the certificates are returned in 
+        If the screens have numbers, then the certificates are returned in
         a dictionary keyed by screen number.  Otherwise they are keyed by the screen name.
 
         """
@@ -228,7 +224,7 @@ class Device(object):
     Mandatory fields:
 
     :ivar string type: The type of the device defined by SMPTE 433-2008.
-        These are given in the table below. 
+        These are given in the table below.
     :ivar string id: A unique ID for the device.  This can be a UUID or a certificate thumbprint.
     :ivar string manufacturer_name: The name of the device manufacturer.
     :ivar string model_number: The model number of the device.
@@ -323,7 +319,7 @@ class Digital3DSystem(object):
     Mandatory fields:
 
     :ivar boolean active: Whether the 3D system is active or not.
-    
+
     Optional fields:
 
     :ivar string configuration: A string describing the 3D configuration, eg. *"RealD"* or *"Dolby 3D"*.
@@ -391,16 +387,48 @@ class Software(object):
         self.file_time = get_datetime(software.FileDateTime)
 
 class Certificate(object):
-    u"""Represents an X509 certificate.
+    u"""Represents an X.509 certificate.
+
+    The certificate format is defined by IETF PKIX_, with the fields used
+    in accordance with SMPTE 430-2-2006.  The latter document describes specific
+    constraints to the X.509 standard for use in digital cinema.  Specifically
+    there is a mapping of digital cinema identity attributes to commonly used
+    X.509 name attributes, which is handled by this parser.
 
     Optional fields:
 
-    :ivar string name: The X509 subject name.
-    :ivar string certificate: The X509 certificate.
+    :ivar string subject_name: The entire X.509 subject name field.  This contains the root name,
+        organization name, entity name and thumbprint.
+    :ivar string root_name: Name of the organization holding the root of the certificate
+        chain.  This is parsed from the X.509 *OrganizationName* attribute.
+    :ivar string organization_name: Name of the organization to which the issuer or subject of
+        the certificate belongs.  This usually refers to the device maker.  It is parsed
+        from the X.509 *OrganizationUnitName* attribute.
+    :ivar string entity_name: Entity issuing the certificate or being issued the certificate.
+        This is parsed from the X.509 *CommonName* attribute.
+    :ivar string thumbprint: The unique thumbprint of the public key of the entity
+        issuing the certificate or being issued the certificate; also known as *dnQualifier*.
+    :ivar string certificate: The X.509 certificate.
+
+    .. _PKIX: http://www.ietf.org/rfc/rfc5280.txt
 
     """
     def __init__(self, cert):
-        self.name = get_string(cert.X509SubjectName)
+        self.subject_name = get_string(cert.X509SubjectName)
+
+        fields = {}
+        if self.subject_name is not None:
+            for attribute in self.subject_name.split(u','):
+                t = attribute.split(u'=', 1)
+                if len(t) == 2:
+                    fields[t[0].lower()] = t[1]
+
+        # dict.get returns None if key not in dict
+        self.root_name = fields.get(u'o')
+        self.organization_name = fields.get(u'ou')
+        self.entity_name = fields.get(u'cn')
+        self.thumbprint = fields.get(u'dnqualifier')
+
         self.certificate = get_string(cert.X509Certificate)
 
 class Watermarking(object):
@@ -409,7 +437,7 @@ class Watermarking(object):
     Mandatory fields:
 
     :ivar string manufacturer: The watermarking manufacturer.
-    
+
     Optional fields:
 
     :ivar string kind: The type of watermarking.
