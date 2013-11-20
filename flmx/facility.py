@@ -441,7 +441,7 @@ class Certificate(object):
                 # kv_pair is, for example, "OU=DLP-Cinema.TexasInstruments"
                 # We split it on the first equals (incase the val contains an equals)
                 # If there are 2 items, we store the pair in the fields dict
-                kv_pair = attribute.trim().split(u'=', 1)
+                kv_pair = attribute.strip().split(u'=', 1)
                 if len(kv_pair) == 2:
                     fields[kv_pair[0].lower()] = kv_pair[1]
 
