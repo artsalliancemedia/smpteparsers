@@ -8,7 +8,7 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
-class FacilityLink(object): 
+class FacilityLink(object):
     u"""A link to a facility FLM-x file, as contained within a SiteList.
 
     :var string id_code: The ID of the facility, eg. *"aam.com:UK-ABC-123456-01"*.
@@ -90,3 +90,5 @@ class SiteListParser(object):
         return dict((link.xlink_href, link.last_modified)
                     for link in self.facilities
                     if link.last_modified >= last_ran)
+    def __str__(self):
+        return str(self.__dict__)

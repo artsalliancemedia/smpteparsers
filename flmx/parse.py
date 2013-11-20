@@ -84,7 +84,7 @@ class Parser(object):
             with open(os.path.join(os.path.dirname(__file__), failures_file), u'r') as f:
                 return json.load(f)
         # IOError if file does not exist, ValueError if file cannot be read or is not valid JSON
-        except IOError, ValueError:
+        except (IOError, ValueError):
             _logger.warning(failures_file + ' could not be opened, the file will be cleared')
             return {}
 
