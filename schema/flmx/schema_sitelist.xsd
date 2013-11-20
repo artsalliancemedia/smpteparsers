@@ -17,7 +17,7 @@
       <element name="FacilityList" type="tns:FacilityListType">
          <unique name="faclity-id">
           <selector xpath="tns:Facility" />
-          <field xpath="@id" /> 
+          <field xpath="@id" />
         </unique>
       </element>
    </sequence>
@@ -34,6 +34,9 @@
         <attribute name="modified" type="dateTime" use="required" />
         <attribute ref="xlink:href" use="required" />
         <attribute ref="xlink:type" use="required" />
+
+        <!-- name="" included in sony's flmx feed -->
+        <attribute name="name" type="string" />
       </restriction>
     </complexContent>
   </complexType>
