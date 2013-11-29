@@ -125,6 +125,9 @@ class FacilityParser(object):
 
         return screens
 
+    def __repr__(self):
+        return str(self.__dict__)
+
 class Address(object):
     u"""Represents an address.
 
@@ -152,6 +155,9 @@ class Address(object):
         self.province = get_string(address.Province)
         self.postal_code = get_string(address.PostalCode)
         self.country = get_string(address.Country)
+
+    def __repr__(self):
+        return str(self.__dict__)
 
 class Auditorium(object):
     u"""Represents a screen or auditorium.
@@ -194,6 +200,9 @@ class Auditorium(object):
 
         self.devices = [Device(device) for device in auditorium.DeviceGroupList(u"Device")]
 
+    def __repr__(self):
+        return str(self.__dict__)
+
 class Contact(object):
     u"""Represents a point of contact.
 
@@ -217,6 +226,9 @@ class Contact(object):
         self.phone2 = get_string(contact.Phone2)
         self.email = get_string(contact.Email)
         self.type = get_string(contact.Type)
+
+    def __repr__(self):
+        return str(self.__dict__)
 
 class Device(object):
     u"""Represents a device in an auditorium.
@@ -313,6 +325,9 @@ class Device(object):
         self.kdm_deliveries = deliveries(device.KDMDeliveryMethodList)
         self.dcp_deliveries = deliveries(device.DCPDeliveryMethodList)
 
+    def __repr__(self):
+        return str(self.__dict__)
+
 class Digital3DSystem(object):
     u"""Represents a digital 3D system installed in an auditorium.
 
@@ -341,6 +356,9 @@ class Digital3DSystem(object):
         self.ghostbusting = get_boolean(system.Ghostbusting)
         self.ghostbusting_configuration = get_string(system.GhostbustingConfiguration)
 
+    def __repr__(self):
+        return str(self.__dict__)
+
 class IPAddress(object):
     u"""Represents an IPv4 or IPv6 address.
 
@@ -356,6 +374,9 @@ class IPAddress(object):
     def __init__(self, ip_address):
         self.address = get_string(ip_address.Address)
         self.host = get_string(ip_address.Host)
+
+    def __repr__(self):
+        return str(self.__dict__)
 
 class Software(object):
     u"""Represents a version of a device.
@@ -385,6 +406,9 @@ class Software(object):
         self.filename = get_string(software.FileName)
         self.file_size = get_uint(software.FileSize)
         self.file_time = get_datetime(software.FileDateTime)
+
+    def __repr__(self):
+        return str(self.__dict__)
 
 class Certificate(object):
     u"""Represents an X.509 certificate.
@@ -419,17 +443,23 @@ class Certificate(object):
         fields = {}
         if self.subject_name is not None:
             for attribute in self.subject_name.split(u','):
-                t = attribute.split(u'=', 1)
-                if len(t) == 2:
-                    fields[t[0].lower()] = t[1]
+                # kv_pair is, for example, "OU=DLP-Cinema.TexasInstruments"
+                # We split it on the first equals (incase the val contains an equals)
+                # If there are 2 items, we store the pair in the fields dict
+                kv_pair = attribute.strip().split(u'=', 1)
+                if len(kv_pair) == 2:
+                    fields[kv_pair[0].lower()] = kv_pair[1]
 
         # dict.get returns None if key not in dict
         self.root_name = fields.get(u'o')
         self.organization_name = fields.get(u'ou')
         self.entity_name = fields.get(u'cn')
-        self.thumbprint = fields.get(u'dnqualifier')
+        self.thumbprint = fields.get(u'dnqualifier') or fields.get(u'dnq')
 
         self.certificate = get_string(cert.X509Certificate)
+
+    def __repr__(self):
+        return str(self.__dict__)
 
 class Watermarking(object):
     u"""Represents information about watermarking associated with a device.
@@ -452,3 +482,5 @@ class Watermarking(object):
         self.model = get_string(watermarking.WatermarkModel)
         self.version = get_string(watermarking.WatermarkVersion)
 
+    def __repr__(self):
+        return str(self.__dict__)
