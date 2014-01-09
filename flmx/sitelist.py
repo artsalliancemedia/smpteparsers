@@ -61,7 +61,7 @@ class SiteListParser(object):
                 _logger.critical(repr(e))
                 raise FlmxCriticalError(repr(e))
 
-        validate_XML(xml, os.path.join(os.path.dirname(__file__), os.pardir, u'schema', u'flmx', u'schema_sitelist.xsd'))
+        validate_XML(xml, os.path.join(os.path.dirname(__file__), u'schema', u'schema_sitelist.xsd'))
 
         soup = BeautifulSoup(xml, u"xml")
 

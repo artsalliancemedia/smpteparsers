@@ -15,6 +15,61 @@ class FacilityParser(object):
     if it is not specified in the FLM.  A value marked *mandatory* is guaranteed to never be ``None``
     providing the original FLM is valid.
 
+    :ivar facility: The top-level facility this FLM feed corresponds to.
+
+    Example usage:
+
+    >>> # Open file handle
+    ... with open(u'flm.xml') as flm:
+    ...   # Set up FacilityParser
+    ...   fp = flmx.FacilityParser(flm)
+    ...   # Get certificates
+    ...   certs = fp.get_certificates()
+    ...   # Print out the certificates for screen #3 (for example)
+    ...   print(certs[3])
+
+    """
+    def __init__(self, xml):
+        # validate_XML throws an error if validation fails
+        validate_XML(xml, os.path.join(os.path.dirname(__file__), u'schema', u'schema_facility.xsd'))
+
+        flm = BeautifulSoup(xml, u'xml')
+
+        if flm.FLMPartial and get_boolean(flm.FLMPartial):
+            raise error.FlmxPartialError(u"Partial FLMs are not supported by this parser.")
+
+        self.facility = Facility(flm)
+        
+    # Add some more consuming methods, these are just ideas of what data you'd need to get back.
+    def get_screens(self):
+        u"""Returns the Auditorium objects corresponding to the screens in the facility.
+
+        This is a dictionary keyed by screen number.
+
+        """
+        return self.facility.auditoriums
+
+    def get_certificates(self):
+        u"""Returns all certificates for all of the screens in the facility.
+
+        If the screens have numbers, then the certificates are returned in 
+        a dictionary keyed by screen number.  Otherwise they are keyed by the screen name.
+
+        """
+        screens = {}
+
+        for identifier, auditorium in self.facility.auditoriums.iteritems():
+            # Flatten certificates for all devices in same auditorium into one list
+            certs = [cert for device in auditorium.devices for cert in device.certificates]
+
+            # identifier could be the auditorium name or number
+            screens[identifier] = certs
+
+        return screens
+
+class Facility(object):
+    u"""Represents the top-level facility which the FLM refers to.
+
     Mandatory fields (guaranteed to not be ``None`` for a valid FLM):
 
     :ivar string id: The facility's unique ID type.
