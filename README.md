@@ -53,4 +53,4 @@ Full documentation is provided with [Sphinx](http://sphinx-doc.org/). To generat
 
 #### Testing
 
-Unit tests have been provided, and can be run from `/smpteparsers/` with the command `python run_tests.py`
+Run `nosetests` from the root directory :)
