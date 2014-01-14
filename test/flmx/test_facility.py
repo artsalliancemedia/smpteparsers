@@ -3,8 +3,8 @@ import unittest, os
 from datetime import datetime
 from bs4 import BeautifulSoup
 
-import flmx.facility as flmx
-import flmx.error as error
+import smpteparsers.flmx.facility as flmx
+import smpteparsers.flmx.error as error
 
 class TestFacilityParserMethods(unittest.TestCase):
 
