@@ -1,6 +1,8 @@
 from xml.etree import ElementTree
 
-# class CPL(object):
+class CPL(object):
+    pass
+
 #     def __init__(self, path):
 #         self.dcp = dcp
 #         self.asset = asset
