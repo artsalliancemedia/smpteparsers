@@ -1,5 +1,10 @@
 from xml.etree import ElementTree
 
+class CPLError(Exception):
+    pass
+class CPLValidationError(CPLError):
+    pass
+
 class CPL(object):
     pass
 
