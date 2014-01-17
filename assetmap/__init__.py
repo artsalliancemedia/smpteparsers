@@ -12,41 +12,52 @@ class Assetmap(object):
         self.path = path
         self.dcp_path = dcp_path
 
-        self.ids_to_paths = self.parse()
+        # A dictionary mapping uuids to AssetData objects containing the path,
+        # volume index, offset and length of the asset
+        self.assets = self.parse()
 
     def parse(self):
-        # get file paths from ASSETMAP FILE
+        """
+        Parse the ASSETMAP. Extract the id, path, volume index, offset and
+        length for each asset, and the validate the paths of the downloaded
+        files against the paths from the ASSETMAP file.
+        """
+        # Get file paths from ASSETMAP FILE
         tree = ET.parse(self.path)
         root = tree.getroot()
         # ElementTree prepends the namespace to all elements, so we need to extract
         # it so that we can perform sensible searching on elements.
         right_brace = root.tag.rfind("}")
         assetmap_ns = root.tag[1:right_brace]
-        file_paths = []
-        # Get all file paths in the ASSETMAP file
-        for elem in root.getiterator("{0}{1}{2}Path".format("{", assetmap_ns, "}")):
-            # print elem.text
-            file_paths.append(elem.text)
-        # Get list of ids so we can match up entries in ASSETMAP to entries in
-        # pkl later if required
+
         asset_list = root.find("{0}{1}{2}AssetList".format("{", assetmap_ns,"}"))
-        assetmap_ids = []
-        for elem in asset_list.getiterator("{0}{1}{2}Id".format("{", assetmap_ns, "}")):
-            assetmap_ids.append(elem.text)
-            
-        full_paths = []
-        for file_path in file_paths:
-            full_path = os.path.join(self.dcp_path, file_path)
+        assets = {}
+        # Get the data from the ASSETMAP file
+        for asset in asset_list.getchildren():
+            asset_id = asset.findtext("{0}{1}{2}Id".format("{", assetmap_ns,"}"))
+            for chunklist in asset.getiterator("{0}{1}{2}ChunkList".format("{", assetmap_ns, "}")):
+                for chunk in chunklist.getchildren():
+                    path = chunk.findtext("{0}{1}{2}Path".format("{", assetmap_ns,"}"))
+                    volume_index = chunk.findtext("{0}{1}{2}VolumeIndex".format("{", assetmap_ns,"}"))
+                    offset = chunk.findtext("{0}{1}{2}Offset".format("{", assetmap_ns,"}"))
+                    length = chunk.findtext("{0}{1}{2}Length".format("{", assetmap_ns,"}"))
+
+                    asset_data = AssetData(path, volume_index, offset, length)
+                    assets[asset_id] = asset_data
+
+        # Now that we've got the data from the ASSETMAP file, validate the paths
+        for asset_data in assets.itervalues():
+            full_path = os.path.join(self.dcp_path, asset_data.path)
             if not os.path.isfile(full_path):
                 logging.info("ERROR: File not found: {0}".format(full_path))
-            else:
-                full_paths.append(full_path)
         else:
             logging.info("All file paths verified!")
 
-        # Create a dict mapping ids to paths that we can use later
-        ids_to_paths = {}
-        for assetmap_id, full_path in zip(assetmap_ids, full_paths):
-            ids_to_paths[assetmap_id] = full_path
+        return assets
 
-        return ids_to_paths
+class AssetData(object):
+    def __init__(self, path, volume_index, offset, length):
+        self.path = path
+        self.volume_index = volume_index
+        self.offset = offset
+        self.length = length

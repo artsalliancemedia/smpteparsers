@@ -13,40 +13,47 @@ class PKL(object):
         self.path = path
         self.assetmap = assetmap
 
-        self.ids_to_hashes = self.parse()
+        # A dictionary mapping uuids to PKLData objects containing the hash,
+        # size and type of the asset
+        self.assets = self.parse()
 
     def parse(self):
-        # get hashes from pkl.xml file
+        """
+        Parse the pkl.xml. Extract the id, hash, size and type for each asset,
+        and then generate hashes for the downloaded files and validate them
+        against the hashes from the pkl.xml file. (Note: only hashes for text
+        files are checked
+        """
+        # Get hashes from pkl.xml file
         tree = ET.parse(self.path)
         root = tree.getroot()
         # Again, get the namespace so we can search elements
         right_brace = root.tag.rfind("}")
         pkl_ns = root.tag[1:right_brace]
-        # Get all the hashes from the pkl files
-        hashes = []
-        for elem in root.getiterator("{0}{1}{2}Hash".format("{", pkl_ns, "}")):
-            # print elem.text
-            hashes.append(elem.text)
-        # Get list of ids so we can match up entries in ASSETMAP to entries in pkl
+
         asset_list = root.find("{0}{1}{2}AssetList".format("{", pkl_ns,"}"))
-        pkl_ids = []
-        for elem in asset_list.getiterator("{0}{1}{2}Id".format("{", pkl_ns, "}")):
-            pkl_ids.append(elem.text)
-            
+        assets = {}
+        # Get the data from the pkl file
+        for asset in asset_list.getchildren():
+            asset_id = asset.findtext("{0}{1}{2}Id".format("{", pkl_ns,"}"))
+            file_hash = asset.findtext("{0}{1}{2}Hash".format("{", pkl_ns,"}"))
+            size = asset.findtext("{0}{1}{2}Size".format("{", pkl_ns,"}"))
+            file_type = asset.findtext("{0}{1}{2}Type".format("{", pkl_ns,"}"))
 
-        ids_to_hashes = {}
-        # Create a dict mapping ids to hashes that we can use later
-        for pkl_id, filehash in zip(pkl_ids, hashes):
-            ids_to_hashes[pkl_id] = filehash
+            pkl_data = PKLData(file_hash, size, file_type)
+            assets[asset_id] = pkl_data
 
-        for pkl_id, file_hash in ids_to_hashes.items():
-            full_path = self.assetmap.ids_to_paths[pkl_id]
-            if not (full_path[-4:] == ".mxf" or file_hash == self.generate_hash(full_path)):
+        # Now that we've got the data from the pkl file, validate the hashes
+        for uuid, pkl_data in assets.iteritems():
+            full_path = os.path.join(self.assetmap.dcp_path,
+                    self.assetmap.assets[uuid].path)
+            if not (full_path[-4:] == ".mxf" or pkl_data.file_hash ==
+                    self.generate_hash(full_path)):
                 logging.info("ERROR: Hash doesn't match: {0}".format(full_path))
         else:
             logging.info("All hashes verified!")
-            
-        return ids_to_hashes
+
+        return assets
 
     def generate_hash(self, local_path):
         """
@@ -66,3 +73,8 @@ class PKL(object):
         # logging.info("Hash for {0}: {1}".format(local_path, encoded_hash))
         return encoded_hash
 
+class PKLData(object):
+    def __init__(self, file_hash, size, file_type):
+        self.file_hash = file_hash
+        self.size = size
+        self.file_type = file_type
