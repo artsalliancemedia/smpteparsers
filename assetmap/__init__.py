@@ -6,6 +6,9 @@ except ImportError:
 
 import os, logging
 
+from smpteparsers.util import (get_element, get_element_text,
+        get_element_iterator, get_namespace)
+
 
 class Assetmap(object):
     def __init__(self, path, dcp_path):
@@ -27,20 +30,19 @@ class Assetmap(object):
         root = tree.getroot()
         # ElementTree prepends the namespace to all elements, so we need to extract
         # it so that we can perform sensible searching on elements.
-        right_brace = root.tag.rfind("}")
-        assetmap_ns = root.tag[1:right_brace]
+        assetmap_ns = get_namespace(root.tag)
 
-        asset_list = root.find("{0}{1}{2}AssetList".format("{", assetmap_ns,"}"))
+        asset_list = get_element(root, "AssetList", assetmap_ns)
         assets = {}
         # Get the data from the ASSETMAP file
         for asset in asset_list.getchildren():
-            asset_id = asset.findtext("{0}{1}{2}Id".format("{", assetmap_ns,"}"))
-            for chunklist in asset.getiterator("{0}{1}{2}ChunkList".format("{", assetmap_ns, "}")):
+            asset_id = get_element_text(asset, "Id", assetmap_ns)
+            for chunklist in get_element_iterator(asset, "ChunkList", assetmap_ns):
                 for chunk in chunklist.getchildren():
-                    path = chunk.findtext("{0}{1}{2}Path".format("{", assetmap_ns,"}"))
-                    volume_index = chunk.findtext("{0}{1}{2}VolumeIndex".format("{", assetmap_ns,"}"))
-                    offset = chunk.findtext("{0}{1}{2}Offset".format("{", assetmap_ns,"}"))
-                    length = chunk.findtext("{0}{1}{2}Length".format("{", assetmap_ns,"}"))
+                    path = get_element_text(chunk, "Path", assetmap_ns)
+                    volume_index = get_element_text(chunk, "VolumeIndex", assetmap_ns)
+                    offset = get_element_text(chunk, "Offset", assetmap_ns)
+                    length = get_element_text(chunk, "Length", assetmap_ns)
 
                     asset_data = AssetData(path, volume_index, offset, length)
                     assets[asset_id] = asset_data

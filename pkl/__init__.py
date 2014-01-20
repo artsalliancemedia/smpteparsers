@@ -8,6 +8,9 @@ import os, logging
 from hashlib import sha1, md5, sha224, sha256, sha384, sha512
 import base64
 
+from smpteparsers.util import (get_element, get_element_text,
+get_element_iterator, get_namespace)
+
 class PKL(object):
     def __init__(self, path, assetmap):
         self.path = path
@@ -28,17 +31,16 @@ class PKL(object):
         tree = ET.parse(self.path)
         root = tree.getroot()
         # Again, get the namespace so we can search elements
-        right_brace = root.tag.rfind("}")
-        pkl_ns = root.tag[1:right_brace]
+        pkl_ns = get_namespace(root.tag)
 
-        asset_list = root.find("{0}{1}{2}AssetList".format("{", pkl_ns,"}"))
+        asset_list = get_element(root, "AssetList", pkl_ns)
         assets = {}
         # Get the data from the pkl file
         for asset in asset_list.getchildren():
-            asset_id = asset.findtext("{0}{1}{2}Id".format("{", pkl_ns,"}"))
-            file_hash = asset.findtext("{0}{1}{2}Hash".format("{", pkl_ns,"}"))
-            size = asset.findtext("{0}{1}{2}Size".format("{", pkl_ns,"}"))
-            file_type = asset.findtext("{0}{1}{2}Type".format("{", pkl_ns,"}"))
+            asset_id = get_element_text(asset, "Id", pkl_ns)
+            file_hash = get_element_text(asset, "Hash", pkl_ns)
+            size = get_element_text(asset, "Size", pkl_ns)
+            file_type = get_element_text(asset, "Type", pkl_ns)
 
             pkl_data = PKLData(file_hash, size, file_type)
             assets[asset_id] = pkl_data
