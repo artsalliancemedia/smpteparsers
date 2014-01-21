@@ -52,8 +52,8 @@ class DCP(object):
         # Use the list of assets generated in parse_assets to determine which ones are CPLs and therefore which ones to ingest.
         pkl = self.assets["pkl"]
         assetmap = self.assets["assetmap"]
-       # TODO get list of all cpl files using Type tag from pkl, and Path tag
-       # from ASSETMAP, matched on ID 
+        # TODO get list of all cpl files using Type tag from pkl, and Path tag
+        # from ASSETMAP, matched on ID 
 
         cpl_uuids = []
         for uuid, pkl_data in pkl.assets.iteritems():
