@@ -132,7 +132,7 @@ class CPL(object):
 
                 self.reel_list[reel_id] = reel
 
-                logging.info("Finished parsing CPL file.")
+        logging.info("Finished parsing CPL file.")
 
 
     def validate(self):
