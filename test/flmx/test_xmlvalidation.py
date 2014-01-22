@@ -1,7 +1,7 @@
 import unittest
 from StringIO import StringIO
 
-from flmx import xmlvalidation, error
+from smpteparsers.flmx import xmlvalidation, error
 
 good_xsd = """<?xml version="1.0" encoding="utf-8"?>
     <schema

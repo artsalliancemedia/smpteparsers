@@ -1,9 +1,9 @@
 import unittest
 from datetime import datetime, timedelta
 
-from flmx import helper
-from flmx.error import FlmxParseError
-from flmx.sitelist import SiteListParser
+from smpteparsers.flmx import helper
+from smpteparsers.flmx.error import FlmxParseError
+from smpteparsers.flmx.sitelist import SiteListParser
 
 class TestSiteListXMLParsing(unittest.TestCase):
 
