@@ -14,15 +14,19 @@ class Playlist(object):
     def __init__(self, playlist_contents=None, parse=True, validate=True):
         self.playlist_contents = playlist_contents
 
-        if self.playlist_contents and parse:
+        if self.playlist_contents is not None and parse:
             self.parse(self.playlist_contents, validate=validate)
 
     def parse(self, playlist_contents=None, validate=True):
-        if playlist_contents:
+        if playlist_contents is not None:
             self.playlist_contents = playlist_contents
 
         if type(self.playlist_contents) in [str, unicode]:
-            self.playlist_contents = json.loads(self.playlist_contents)
+            try:
+                self.playlist_contents = json.loads(self.playlist_contents)
+            except ValueError:
+                # Trigger if we send through something that isn't valid json
+                self.playlist_contents = {}
 
         if validate:
             self.validate()
