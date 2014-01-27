@@ -7,20 +7,21 @@ within the TMS. Thought this was the best place for the parse alongside the othe
 """
 
 class Playlist(object):
-    def __init__(self, playlist_contents=None, validate=True):
+    def __init__(self, playlist_contents=None, parse=True, validate=True):
         self.playlist_contents = playlist_contents
 
-        if self.playlist_contents and validate:
-            self.parse(self.playlist_contents)
+        if self.playlist_contents and parse:
+            self.parse(self.playlist_contents, validate=validate)
 
-    def parse(self, playlist_contents=None):
+    def parse(self, playlist_contents=None, validate=True):
         if playlist_contents:
             self.playlist_contents = playlist_contents
 
         if type(self.playlist_contents) in [str, unicode]:
             self.playlist_contents = json.loads(self.playlist_contents)
 
-        self.validate()
+        if validate:
+            self.validate()
 
         # Now we've actually got a validate playlist dictionary lets parse this out into useful structures.
         self.title = self.playlist_contents['title']
