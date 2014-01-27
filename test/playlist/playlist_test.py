@@ -1,7 +1,6 @@
 import unittest, json
 from smpteparsers.test import uuid_re
-from jsonschema import ValidationError
-from smpteparsers.playlist import Playlist
+from smpteparsers.playlist import Playlist, PlaylistValidationError
 
 # Minimal info required for a playlist to be successful.
 success_playlist = """
@@ -53,11 +52,11 @@ class TestPlaylist(unittest.TestCase):
         del(err_playlist["title"])
 
         pl = Playlist()
-        self.assertRaises(ValidationError, pl.parse, err_playlist)
+        self.assertRaises(PlaylistValidationError, pl.parse, err_playlist)
 
         # Not a string
         err_playlist["title"] = 100
-        self.assertRaises(ValidationError, pl.parse, err_playlist)
+        self.assertRaises(PlaylistValidationError, pl.parse, err_playlist)
 
         # Finally a successful test
         err_playlist["title"] = "Testing"
@@ -69,14 +68,14 @@ class TestPlaylist(unittest.TestCase):
         del(err_playlist["duration"])
 
         pl = Playlist()
-        self.assertRaises(ValidationError, pl.parse, err_playlist)
+        self.assertRaises(PlaylistValidationError, pl.parse, err_playlist)
 
         # Not an integer
         err_playlist["duration"] = "100"
-        self.assertRaises(ValidationError, pl.parse, err_playlist)
+        self.assertRaises(PlaylistValidationError, pl.parse, err_playlist)
 
         err_playlist["duration"] = 100.1
-        self.assertRaises(ValidationError, pl.parse, err_playlist)
+        self.assertRaises(PlaylistValidationError, pl.parse, err_playlist)
 
         # Finally a successful test
         err_playlist["duration"] = 100
@@ -88,10 +87,10 @@ class TestPlaylist(unittest.TestCase):
         err_playlist["events"] = []
 
         pl = Playlist()
-        self.assertRaises(ValidationError, pl.parse, err_playlist)
+        self.assertRaises(PlaylistValidationError, pl.parse, err_playlist)
 
         del(err_playlist["events"])
-        self.assertRaises(ValidationError, pl.parse, err_playlist)
+        self.assertRaises(PlaylistValidationError, pl.parse, err_playlist)
 
     def test_event_cpl_uuid(self):
         # Set up the data to start off with.
@@ -99,10 +98,10 @@ class TestPlaylist(unittest.TestCase):
         err_playlist["events"][0]["cpl_id"] = None
 
         pl = Playlist()
-        self.assertRaises(ValidationError, pl.parse, err_playlist)
+        self.assertRaises(PlaylistValidationError, pl.parse, err_playlist)
 
         err_playlist["events"][0]["cpl_id"] = "A string but not a valid uuid"
-        self.assertRaises(ValidationError, pl.parse, err_playlist)
+        self.assertRaises(PlaylistValidationError, pl.parse, err_playlist)
 
         # Finally a successful test
         err_playlist["events"][0]["cpl_id"] = "00000000-0000-0000-0000-100000000001"
@@ -114,10 +113,10 @@ class TestPlaylist(unittest.TestCase):
         err_playlist["events"][0]["type"] = None
 
         pl = Playlist()
-        self.assertRaises(ValidationError, pl.parse, err_playlist)
+        self.assertRaises(PlaylistValidationError, pl.parse, err_playlist)
 
         err_playlist["events"][0]["type"] = "not_a_composition"
-        self.assertRaises(ValidationError, pl.parse, err_playlist)
+        self.assertRaises(PlaylistValidationError, pl.parse, err_playlist)
 
         # Finally a successful test
         err_playlist["events"][0]["type"] = "composition"
@@ -129,7 +128,7 @@ class TestPlaylist(unittest.TestCase):
         err_playlist["events"][0]["text"] = None
 
         pl = Playlist()
-        self.assertRaises(ValidationError, pl.parse, err_playlist)
+        self.assertRaises(PlaylistValidationError, pl.parse, err_playlist)
 
         # Finally a successful test
         err_playlist["events"][0]["text"] = "Just some text"
@@ -141,11 +140,11 @@ class TestPlaylist(unittest.TestCase):
         err_playlist["events"][0]["duration_in_frames"] = None
 
         pl = Playlist()
-        self.assertRaises(ValidationError, pl.parse, err_playlist)
+        self.assertRaises(PlaylistValidationError, pl.parse, err_playlist)
 
         # Only allow integer values.
         err_playlist["events"][0]["duration_in_frames"] = 100.1
-        self.assertRaises(ValidationError, pl.parse, err_playlist)
+        self.assertRaises(PlaylistValidationError, pl.parse, err_playlist)
 
         # Finally a successful test
         err_playlist["events"][0]["duration_in_frames"] = 100
@@ -157,11 +156,11 @@ class TestPlaylist(unittest.TestCase):
         err_playlist["events"][0]["duration_in_seconds"] = None
 
         pl = Playlist()
-        self.assertRaises(ValidationError, pl.parse, err_playlist)
+        self.assertRaises(PlaylistValidationError, pl.parse, err_playlist)
 
         # Only allow integer values.
         err_playlist["events"][0]["duration_in_seconds"] = 100.1
-        self.assertRaises(ValidationError, pl.parse, err_playlist)
+        self.assertRaises(PlaylistValidationError, pl.parse, err_playlist)
 
         # Finally a successful test
         err_playlist["events"][0]["duration_in_seconds"] = 100
@@ -173,17 +172,17 @@ class TestPlaylist(unittest.TestCase):
         err_playlist["events"][0]["edit_rate"] = []
 
         pl = Playlist()
-        self.assertRaises(ValidationError, pl.parse, err_playlist)
+        self.assertRaises(PlaylistValidationError, pl.parse, err_playlist)
 
         # Must be exactly 2 integer values
         err_playlist["events"][0]["edit_rate"] = [100]
-        self.assertRaises(ValidationError, pl.parse, err_playlist)
+        self.assertRaises(PlaylistValidationError, pl.parse, err_playlist)
         err_playlist["events"][0]["edit_rate"] = [100, 100, 100]
-        self.assertRaises(ValidationError, pl.parse, err_playlist)
+        self.assertRaises(PlaylistValidationError, pl.parse, err_playlist)
 
         # Only allow integer values.
         err_playlist["events"][0]["edit_rate"] = [100.1, 100.1]
-        self.assertRaises(ValidationError, pl.parse, err_playlist)
+        self.assertRaises(PlaylistValidationError, pl.parse, err_playlist)
 
         # Finally a successful test
         err_playlist["events"][0]["edit_rate"] = [24, 1]

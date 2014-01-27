@@ -1,10 +1,14 @@
 import os, json
 from jsonschema import validate as validate_json
+from jsonschema import ValidationError
 
 """
 Not technically a SMPTE standard, just the format we use internally to represent a show playlist
 within the TMS. Thought this was the best place for the parse alongside the others for easy discovery :)
 """
+
+class PlaylistValidationError(ValidationError):
+    pass
 
 class Playlist(object):
     def __init__(self, playlist_contents=None, parse=True, validate=True):
@@ -36,7 +40,11 @@ class Playlist(object):
             schema = f.read()
             schema = json.loads(schema)
 
-            validate_json(self.playlist_contents, schema)
+            try:
+                validate_json(self.playlist_contents, schema)
+            except ValidationError as e:
+                # Encapsulate the error so we can hide the implementation to the client.
+                raise PlaylistValidationError(e)
 
 class PlaylistEvent(object):
     def __init__(self, cpl_id, type, text, duration_in_frames, duration_in_seconds, edit_rate):
