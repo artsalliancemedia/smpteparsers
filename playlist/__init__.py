@@ -7,30 +7,35 @@ within the TMS. Thought this was the best place for the parse alongside the othe
 """
 
 class Playlist(object):
-    def __init__(self, playlist_contents=None):
+    def __init__(self, playlist_contents=None, validate=True):
+        self.playlist_contents = playlist_contents
+
+        if self.playlist_contents and validate:
+            self.parse(self.playlist_contents)
+
+    def parse(self, playlist_contents=None):
         if playlist_contents:
-            self.parse(playlist_contents)
+            self.playlist_contents = playlist_contents
 
-    def parse(self, playlist_contents):
-        if type(playlist_contents) in [str, unicode]:
-            playlist_contents = json.loads(playlist_contents)
+        if type(self.playlist_contents) in [str, unicode]:
+            self.playlist_contents = json.loads(self.playlist_contents)
 
-        self.validate(playlist_contents)
+        self.validate()
 
         # Now we've actually got a validate playlist dictionary lets parse this out into useful structures.
-        self.title = playlist_contents['title']
-        self.duration = playlist_contents['duration']
+        self.title = self.playlist_contents['title']
+        self.duration = self.playlist_contents['duration']
 
         self.events = []
-        for event in playlist_contents['events']:
+        for event in self.playlist_contents['events']:
             self.events.append(PlaylistEvent(**event))
 
-    def validate(self, playlist_contents, schema_path=os.path.join(os.path.dirname(os.path.realpath(__file__)), 'schema.json')):
+    def validate(self, schema_path=os.path.join(os.path.dirname(os.path.realpath(__file__)), 'schema.json')):
         with open(schema_path) as f:
             schema = f.read()
             schema = json.loads(schema)
 
-            validate_json(playlist_contents, schema)
+            validate_json(self.playlist_contents, schema)
 
 class PlaylistEvent(object):
     def __init__(self, cpl_id, type, text, duration_in_frames, duration_in_seconds, edit_rate):
