@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AssetMap xmlns="http://www.digicine.com/PROTO-ASDCP-AM-20040311#">
+    <AnnotationText>TMS ASSETMAP - aea7e1f1-aa1b-4467-9002-2ff11e0f3669</AnnotationText>
+    <VolumeCount>1</VolumeCount>
+    <IssueDate>2013-05-28T10:47:08-00:00</IssueDate>
+    <Issuer>Arts Alliance Media</Issuer>
+    <Creator>TMS</Creator>
+    <AssetList>
+        <Asset>
+            <Id>urn:uuid:01658edd-edfb-4c52-beec-1f5b9616e813</Id>
+            <ChunkList>
+                <Chunk>
+                    <Path>01658edd-edfb-4c52-beec-1f5b9616e813.xml</Path>
+                    <VolumeIndex>1</VolumeIndex>
+                    <Offset>0</Offset>
+                    <Length>8075</Length>
+                </Chunk>
+            </ChunkList>
+        </Asset>
+        <Asset>
+            <Id>urn:uuid:7ec59b28-8ef4-4963-88e8-9d0a08763b4a</Id>
+            <ChunkList>
+                <Chunk>
+                    <Path>7ec59b28-8ef4-4963-88e8-9d0a08763b4a.mxf</Path>
+                    <VolumeIndex>1</VolumeIndex>
+                    <Offset>0</Offset>
+                    <Length>1335588317</Length>
+                </Chunk>
+            </ChunkList>
+        </Asset>
+    </AssetList>
+</AssetMap>
