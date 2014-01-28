@@ -45,12 +45,14 @@ class Assetmap(object):
             asset_id = get_element_text(asset, "Id", assetmap_ns)
             for chunklist in get_element_iterator(asset, "ChunkList", assetmap_ns):
                 for chunk in chunklist.getchildren():
-                    path = get_element_text(chunk, "Path", assetmap_ns)
-                    volume_index = get_element_text(chunk, "VolumeIndex", assetmap_ns)
-                    offset = get_element_text(chunk, "Offset", assetmap_ns)
-                    length = get_element_text(chunk, "Length", assetmap_ns)
+                    a = {
+                            "path": get_element_text(chunk, "Path", assetmap_ns),
+                            "volume_index": get_element_text(chunk, "VolumeIndex", assetmap_ns),
+                            "offset": get_element_text(chunk, "Offset", assetmap_ns),
+                            "length": get_element_text(chunk, "Length", assetmap_ns)
+                        }
 
-                    asset_data = AssetData(path, volume_index, offset, length)
+                    asset_data = AssetData(**a)
                     assets[asset_id] = asset_data
 
         # Now that we've got the data from the ASSETMAP file, validate the paths
