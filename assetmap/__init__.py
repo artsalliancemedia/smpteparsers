@@ -4,11 +4,15 @@ try:
 except ImportError:
     import xml.etree.ElementTree as ET
 
-import os, logging
+import os
 
 from smpteparsers.util import (get_element, get_element_text,
         get_element_iterator, get_namespace)
 
+class AssetmapError(Exception):
+    pass
+class AssetmapValidationError(AssetmapError):
+    pass
 
 class Assetmap(object):
     def __init__(self, path, dcp_path):
@@ -17,8 +21,10 @@ class Assetmap(object):
 
         # A dictionary mapping uuids to AssetData objects containing the path,
         # volume index, offset and length of the asset
-        self.assets = self.parse()
+        self.assets = {}
+        self.parse()
 
+    # TODO add in XSD validation (only triggered if 'validate' is true
     def parse(self):
         """
         Parse the ASSETMAP. Extract the id, path, volume index, offset and
@@ -51,11 +57,9 @@ class Assetmap(object):
         for asset_data in assets.itervalues():
             full_path = os.path.join(self.dcp_path, asset_data.path)
             if not os.path.isfile(full_path):
-                logging.info("ERROR: File not found: {0}".format(full_path))
-        else:
-            logging.info("All file paths verified!")
+                raise AssetmapValidationError("File not found: {0}".format(full_path)) 
 
-        return assets
+        self.assets = assets
 
 class AssetData(object):
     def __init__(self, path, volume_index, offset, length):

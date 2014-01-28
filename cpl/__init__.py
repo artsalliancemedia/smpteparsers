@@ -12,35 +12,86 @@ class CPLValidationError(CPLError):
 from smpteparsers.util import (get_element, get_element_text,
         get_element_iterator, get_namespace)
 from time import strptime
-import logging
 from dateutil import parser
+import os, sys
+
+# TODO path for testing, need to change this!
+local_ingest_path = "C:\Users\crosie\Documents\GitHub\screener\screener"
 
 class CPL(object):
-    def __init__(self, path):
+    def __init__(self, path, dcp_path=None, assetmap=None):
         self.path = path
-        self.cpl_id = ""
+        self.dcp_path = dcp_path
+        self.assetmap = assetmap
+        self.cpl_uuid = ""
         self.metadata = {}
-        self.reel_list = {}
+        self.reels = {}
         self.parse()
 
     def parse(self):
         '''
         Opens a given CPL asset, parses the XML to extract the playlist info and create a CPL object
-        which is added to the DCP's CPL list.
+        which is s to the DCP's CPL list.
         '''
-        logging.info("Parsing CPL file...")
-
         tree = ET.parse(self.path)
         root = tree.getroot()
         # ElementTree prepends the namespace to all elements, so we need to extract
         # it so that we can perform sensible searching on elements.
         cpl_ns = get_namespace(root.tag)
 
-        self.cpl_id = get_element_text(root, "Id", cpl_ns)
+        self.cpl_uuid = get_element_text(root, "Id", cpl_ns).split(":")[2]
         # TODO Rating list. Not sure what it's supposed to look like, so not
         # sure how to parse it.
         
+        # Check that we have somewhere to store CPL stuff
+        local_path = ensure_local_path(self.cpl_uuid)
+
+        cpl_link_path = os.path.join(local_path, self.path.split("\\")[-1])
+
+        if not os.path.isfile(cpl_link_path):
+            # TODO remove this after testing. catches the exception thrown
+            # when a link has already been created.
+            try:
+                cpl_real_path = os.path.join(self.dcp_path, self.path)
+                self.create_link(cpl_link_path, cpl_real_path)
+            except:
+                pass
+
+        # Change self.path to point to link file
+        self.path = cpl_link_path
+
         # Get CPL metadata
+        self.metadata = self.get_metadata(root, cpl_ns)
+        
+        # Get the picture, sound and subtitle (if applicable) info
+        tmp_reel_list = get_element(root, "ReelList", cpl_ns)
+        for reel in tmp_reel_list.getchildren():
+            reel_id = get_element_text(root, "Id", cpl_ns)
+            for asset_list in get_element_iterator(reel, "AssetList", cpl_ns):
+
+                # Get Main Picture metadata
+                main_picture = get_element(asset_list, "MainPicture", cpl_ns)
+                picture = self.get_picture_data(main_picture, local_path, cpl_ns)
+
+                # Get Main Sound metadata
+                main_sound = get_element(asset_list, "MainSound", cpl_ns)
+                sound = self.get_sound_data(main_sound, local_path, cpl_ns)
+
+                # There won't always be subtitle data, so first try and get the
+                # MainSubstitle element...
+                main_sub = get_element(asset_list, "MainSubtitle", cpl_ns)
+                # ...and if it exists, get the subtitle data...
+                subtitle = self.get_subtitle_data(main_sub, local_path, cpl_ns) if main_sub is not None else None
+
+                reel = Reel(picture, sound, subtitle)
+
+                self.reels[reel_id] = reel
+
+
+    def validate(self):
+        raise NotImplementedError
+
+    def get_metadata(self, root, cpl_ns):
         title = get_element_text(root, "ContentTitleText", cpl_ns)
         annotation = get_element_text(root, "AnnotationText", cpl_ns)
         issue_date_string = get_element_text(root, "IssueDate", cpl_ns)
@@ -48,11 +99,11 @@ class CPL(object):
         issuer = get_element_text(root, "Issuer", cpl_ns)
         creator = get_element_text(root, "Creator", cpl_ns)
         content_type = get_element_text(root, "ContentKind", cpl_ns)
-        version_id = "urn:uri:{0}_{1}".format(self.cpl_id, issue_date_string)
-        version_label = "{0}_{1}".format(self.cpl_id, issue_date_string)
+        version_id = "urn:uri:{0}_{1}".format(self.cpl_uuid, issue_date_string)
+        version_label = "{0}_{1}".format(self.cpl_uuid, issue_date_string)
 
         # Store CPL data in a dict
-        self.metadata = {"title" : title,
+        metadata = {"title" : title,
                          "annotation" : annotation,
                          "issue_date" : issue_date,
                          "issuer" : issuer,
@@ -61,83 +112,160 @@ class CPL(object):
                          "version_id" : version_id,
                          "version_label" : version_label
                         }
+        return metadata
 
-        # Get the picture, sound and subtitle (if applicable) info
-        tmp_reel_list = get_element(root, "ReelList", cpl_ns)
-        for reel in tmp_reel_list.getchildren():
-            reel_id = get_element_text(root, "Id", cpl_ns)
-            for asset_list in get_element_iterator(reel, "AssetList", cpl_ns):
-                # Get Main Picture metadata
-                main_picture = get_element(asset_list, "MainPicture", cpl_ns)
-                p_id = get_element_text(main_picture, "Id", cpl_ns)
-                p_edit_rate = get_element_text(main_picture, "EditRate",
-                        cpl_ns)
-                p_intrinsic_duration = get_element_text(main_picture,
-                    "IntrinsicDuration", cpl_ns)
-                p_entry_point = get_element_text(main_picture,
-                    "EntryPoint", cpl_ns)
-                p_duration = get_element_text(main_picture, "Duration",
-                        cpl_ns)
-                p_frame_rate = get_element_text(main_picture, "FrameRate",
-                        cpl_ns)
-                p_screen_aspect_ratio = get_element_text(main_picture,
-                    "ScreenAspectRatio", cpl_ns)
+    def get_picture_data(self, main_picture, local_path, cpl_ns):
 
-                picture = Picture(p_id, p_edit_rate, p_intrinsic_duration,
-                        p_entry_point, p_duration, p_frame_rate,
-                        p_screen_aspect_ratio)
+        p = {
+                "pic_id": get_element_text(main_picture, "Id", cpl_ns),
+                "edit_rate": get_element_text(main_picture, "EditRate", cpl_ns),
+                "intrinsic_duration": get_element_text(main_picture, "IntrinsicDuration", cpl_ns),
+                "entry_point": get_element_text(main_picture, "EntryPoint", cpl_ns),
+                "duration": get_element_text(main_picture, "Duration", cpl_ns),
+                "frame_rate": get_element_text(main_picture, "FrameRate", cpl_ns),
+                "aspect_ratio": get_element_text(main_picture, "ScreenAspectRatio", cpl_ns)
+            }
 
-                logging.info("Found Picture data.")
+        p_real_path = self.get_path(local_path, p["pic_id"], ".mxf")
 
-                # Get Main Sound metadata
-                main_sound = get_element(asset_list, "MainSound", cpl_ns)
-                s_id = get_element_text(main_sound, "Id", cpl_ns)
-                s_edit_rate = get_element_text(main_sound, "EditRate",
-                        cpl_ns)
-                s_intrinsic_duration = get_element_text(main_sound,
-                    "IntrinsicDuration", cpl_ns)
-                s_entry_point = get_element_text(main_sound,
-                    "EntryPoint", cpl_ns)
-                s_duration = get_element_text(main_sound, "Duration",
-                        cpl_ns)
+        p_link_path = os.path.join(local_path, p_real_path)
 
-                sound = Sound(s_id, s_edit_rate, s_intrinsic_duration,
-                        s_entry_point, s_duration)
+        p["path"] = p_link_path
 
-                logging.info("Found Sound data.")
+        if not os.path.isfile(p_link_path):
+            # TODO remove this after testing. catches the exception thrown
+            # when a link has already been created.
+            try:
+                p_real_path = os.path.join(self.dcp_path, p_real_path)
+                self.create_link(p_link_path, p_real_path)
+            except:
+                pass
 
-                # There won't always be subtitle data, so first try and get the
-                # MainSubstitle element...
-                main_sub = get_element(asset_list, "MainSubtitle", cpl_ns)
-                # ...and if it exists, get the subtitle data...
-                if main_sub is not None:
-                    sub_id = get_element_text(main_sub, "Id", cpl_ns)
-                    sub_edit_rate = get_element_text(main_sub, "EditRate",
-                            cpl_ns)
-                    sub_intrinsic_duration = get_element_text(main_sub,
-                        "IntrinsicDuration", cpl_ns)
-                    sub_entry_point = get_element_text(main_sub,
-                        "EntryPoint", cpl_ns)
-                    sub_duration = get_element_text(main_sub, "Duration",
-                            cpl_ns)
-                    subtitle = Subtitle(sub_id, sub_edit_rate,
-                            sub_intrinsic_duration, sub_entry_point, sub_duration)
-                    logging.info("Found Subtitle data.")
+        picture = Picture(**p)
+        
+        return picture
 
-                    reel = Reel(picture, sound, subtitle)
-                # ...else there's no subtitle data, so just create a reel with
-                # picture and sound info
+    def get_sound_data(self, main_sound, local_path, cpl_ns):
+
+        s = {
+                "sound_id": get_element_text(main_sound, "Id", cpl_ns),
+                "edit_rate": get_element_text(main_sound, "EditRate", cpl_ns),
+                "intrinsic_duration": get_element_text(main_sound, "IntrinsicDuration", cpl_ns),
+                "entry_point": get_element_text(main_sound, "EntryPoint", cpl_ns),
+                "duration": get_element_text(main_sound, "Duration", cpl_ns),
+            }
+
+        s_real_path = self.get_path(local_path, s["sound_id"], ".mxf")
+
+        s_link_path = os.path.join(local_path, s_real_path)
+
+        s["path"] = s_link_path
+
+        if not os.path.isfile(s_link_path):
+            # TODO remove this after testing. catches the exception thrown
+            # when a link has already been created.
+            try:
+                s_real_path = os.path.join(self.dcp_path, s_real_path)
+                self.create_link(s_link_path, s_real_path)
+            except:
+                pass
+
+        sound = Sound(**s)
+
+        return sound
+    
+    def get_subtitle_data(self, main_sub, local_path, cpl_ns):
+
+        sub = {
+                "sub_id": get_element_text(main_sub, "Id", cpl_ns),
+                "edit_rate": get_element_text(main_sub, "EditRate", cpl_ns),
+                "intrinsic_duration": get_element_text(main_sub, "IntrinsicDuration", cpl_ns),
+                "entry_point": get_element_text(main_sub, "EntryPoint", cpl_ns),
+                "duration": get_element_text(main_sub, "Duration", cpl_ns),
+            }
+
+        sub_real_path = self.get_path(local_path, sub["sub_id"], ".xml")
+        
+        sub_link_path = os.path.join(local_path, sub_real_path)
+
+        sub["path"] = sub_link_path
+
+        if not os.path.isfile(sub_link_path):
+            # TODO remove this after testing. catches the exception thrown
+            # when a link has already been created.
+            try:
+                sub_real_path = os.path.join(self.dcp_path, sub_real_path)
+                self.create_link(sub_link_path, sub_real_path)
+            except:
+                pass
+
+        subtitle = Subtitle(**sub)
+
+        return subtitle
+
+    def get_path(self, dir_path, asset_id, file_ext):
+        """
+        Get the path for a file by first looking in the INGEST folder for a link
+        file. If it is not found, look in ASSET 
+        """
+        search_path = asset_id.split(":")[2] + file_ext
+        for root, dirs, files in os.walk(dir_path):
+            for f in files:
+                if f == search_path:
+                    return os.path.join(root, f)
+        else:
+            return self.assetmap.assets[asset_id].path
+
+    # Code taken from theatre/serv/cinema_services/lib/linking.py
+    def create_link(self, hard_link_to, source_file):
+        """
+        Create a hardlink to a file. Should work on both Windows and Unix.
+        """
+        if sys.platform == 'win32':
+            self.check_directory(hard_link_to)
+
+            from ctypes import windll
+            from ctypes.wintypes import BOOLEAN, LPWSTR, DWORD, LPVOID
+            CreateHardLink = windll.kernel32.CreateHardLinkW
+            CreateHardLink.argtypes = (LPWSTR, LPWSTR, LPVOID,)
+            CreateHardLink.restype = BOOLEAN
+            GetLastError = windll.kernel32.GetLastError
+            GetLastError.argtypes = ()
+            GetLastError.restype = DWORD
+
+            error_dict = {
+                    0: 'The operation completed successfully',
+                    2: 'The system cannot find the file specified',
+                    3: 'The system cannot find the path specified',
+                    183: 'Cannot create a file when that file already exists',
+                    1142: 'An attempt was made to create more links on a file than the file system supports'
+            }
+
+            if not CreateHardLink(hard_link_to, source_file, None):
+                error_key = GetLastError()
+                if error_key in error_dict:
+                    error = error_dict[error_key]
                 else:
-                    reel = Reel(picture, sound)
+                    error = 'ErrorKey[%s] not in Error_dict, goto http http://msdn.microsoft.com/en-us/library/ms681382(VS.85).aspx for description '% error_key
+                error = error + '|| to: |' + str(hard_link_to) + '| source: |' + str(source_file) + '|'
+                raise Exception(error)
+        else:
+            os.link(source_file, hard_link_to)
 
-                self.reel_list[reel_id] = reel
+    def check_directory(self, file_path):
+        """
+        Check that the parent directories required for a file exist.
+        If not, create them.
+        """
+        abs_path = os.path.abspath(file_path)
 
-        logging.info("Finished parsing CPL file.")
-
-
-    def validate(self):
-        raise NotImplementedError
-
+        parts = abs_path.split("\\")
+        path = ""
+        for part in parts[:-1]:
+            path += part
+            path += "\\"
+            if not os.path.isdir(path):
+                os.mkdir(path)
 
 class Reel(object):
     def __init__(self, picture, sound, subtitle=None):
@@ -149,8 +277,9 @@ class Reel(object):
         return 'Reel({0})'.format(self.id.split(':')[2])
 
 class Picture(object):
-    def __init__(self, pic_id, edit_rate, intrinsic_duration, entry_point,
+    def __init__(self, path, pic_id, edit_rate, intrinsic_duration, entry_point,
                  duration, frame_rate, aspect_ratio, annotation=None):
+        self.path = path
         self.pic_id = pic_id
         self.edit_rate = tuple(edit_rate.split(' '))
         self.intrinsic_duration = int(intrinsic_duration)
@@ -164,8 +293,9 @@ class Picture(object):
         return 'Picture({0})'.format(self.pic_id.split(':')[2])
 
 class Sound(object):
-    def __init__(self, sound_id, edit_rate, intrinsic_duration, entry_point,
+    def __init__(self, path, sound_id, edit_rate, intrinsic_duration, entry_point,
                  duration, annotation=None, language=None):
+        self.path = path
         self.sound_id = sound_id
         self.edit_rate = tuple(edit_rate.split(' '))
         self.intrinsic_duration = int(intrinsic_duration)
@@ -178,8 +308,9 @@ class Sound(object):
         return 'Sound({0})'.format(self.sound_id.split(':')[2])
 
 class Subtitle(object):
-    def __init__(self, sub_id, edit_rate, intrinsic_duration, entry_point,
+    def __init__(self, path, sub_id, edit_rate, intrinsic_duration, entry_point,
                  duration, annotation=None, language=None):
+        self.path = path
         self.sub_id = sub_id
         self.edit_rate = tuple(edit_rate.split(' '))
         self.intrinsic_duration = int(intrinsic_duration)
@@ -191,117 +322,19 @@ class Subtitle(object):
     def __repr__(self):
         return 'Subtitle({0})'.format(self.sub_id.split(':')[2])
 
+def ensure_local_path(cpl_uuid):
+    """
+    Util function to ensure we have an INGEST folder to store CPL stuff in
+    """
+    # Just in case this is the first run, make sure we have the parent directory as well.
+    # TODO, make cpl_store configurable
+    cpl_store = os.path.join(os.getcwd(), u'screener\INGEST') 
+    if not os.path.isdir(cpl_store):
+        os.mkdir(cpl_store)
 
-"""
-class CPL(object):
-    def __init__(self, path):
-        self.dcp = dcp
-        self.asset = asset
-        self.id = id
-        self.reel_list = reel_list
-        self.rating_list = rating_list
-        self.metadata = metadata
+    local_path = os.path.join(cpl_store, cpl_uuid)
+    if not os.path.isdir(local_path):
+        os.mkdir(local_path) # Ensure we have a directory to download to.
 
-    def parse(self):
-        '''
-        Opens a given CPL asset, parses the XML to extract the playlist info and create a CPL object
-        which is added to the DCP's CPL list.
-        '''
-        cpl_dom = dom.parse(os.path.join(self.dir, cpl_asset.filename))
-        root = cpl_dom.getElementsByTagName('CompositionPlaylist')
-        cpl_id = text_from_direct_child(root, 'Id')
-        issue_date_string = text_from_direct_child(root, 'IssueDate')
-        cpl = CPL(dcp=self,
-                  asset=cpl_asset,
-                  id=cpl_id,
-                  metadata={'title': text_from_direct_child(root, 'ContentTitleText'),
-                            'annotation': text_from_direct_child(root, 'AnnotationText'),
-                            'issue_date': datetime.strptime(issue_date_string, "%Y-%m-%dT%H:%M:%S"),
-                            'issuer': text_from_direct_child(root, 'Issuer'),
-                            'creator': text_from_direct_child(root, 'Creator'),
-                            'content_type': text_from_direct_child(root, 'ContentKind'),
-                            'version_id': 'urn:uri:{0}_{1}'.format(cpl_id, issue_date_string),
-                            'version_label': '{0}_{1}'.format(cpl_id, issue_date_string)})
-      
-        # fetch and parse reel info
-        reels = root.getElementsByTagName('Reel')
-        for reel_node in reels:
-            reel_id = text_from_direct_child(reel_node, 'Id')
-          
-            # initialise the picture obj
-            picture_node = reel_node.getElementsByTagName('MainPicture')[0]
-            picture = Picture(cpl=cpl,
-                              id=text_from_node(picture_node.getElementsByTagName('Id')),
-                              edit_rate=text_from_node(picture_node.getElementsByTagName('EditRate')),
-                              intrinsic_duration=text_from_node(picture_node.getElementsByTagName('IntrinsicDuration')),
-                              entry_point=text_from_node(picture_node.getElementsByTagName('EntryPoint')),
-                              duration=text_from_node(picture_node.getElementsByTagName('Duration')),
-                              frame_rate=text_from_node(picture_node.getElementsByTagName('FrameRate')),
-                              aspect_ratio=text_from_node(picture_node.getElementsByTagName('AspectRatio')),
-                              annotation=text_from_node(picture_node.getElementsByTagName('AnnotationText')))
-          
-            # initialise the sound obj
-            sound_node = reel_node.getElementsByTagName('MainSound')[0]
-            sound = Sound(cpl=cpl,
-                          id=text_from_node(sound_node.getElementsByTagName('Id')),
-                          edit_rate=text_from_node(sound_node.getElementsByTagName('EditRate')),
-                          intrinsic_duration=text_from_node(sound_node.getElementsByTagName('IntrinsicDuration')),
-                          entry_point=text_from_node(sound_node.getElementsByTagName('EntryPoint')),
-                          duration=text_from_node(sound_node.getElementsByTagName('Duration')),
-                          annotation=text_from_node(sound_node.getElementsByTagName('AnnotationText')),
-                          language=text_from_node(sound_node.getElementsByTagName('Language')))
-          
-            # finally initialise the reel
-            reel = Reel(cpl=cpl,
-                        id=reel_id,
-                        picture=picture,
-                        sound=sound)
-            # and finally put the reel on the CPL reel_list
-            cpl.reel_list.append(reel)
-        return cpl
+    return local_path
 
-class Reel(object):
-    def __init__(self, cpl, id, picture, sound):
-        self.cpl = cpl
-        self.id = id
-        self.picture = picture
-        self.sound = sound
-
-    def __repr__(self):
-        return 'Reel({0})'.format(self.id.split(':')[2])
-
-
-class Picture(object):
-    def __init__(self, cpl, id, edit_rate, intrinsic_duration, entry_point,
-                 duration, frame_rate, aspect_ratio, annotation=None):
-        self.cpl = cpl
-        self.id = id
-        self.asset = self.cpl.dcp.assets[self.id]
-        self.edit_rate = tuple(edit_rate.split(' '))
-        self.intrinsic_duration = int(intrinsic_duration)
-        self.entry_point = int(entry_point)
-        self.duration = int(duration)
-        self.frame_rate = tuple(frame_rate.split(' '))
-        self.aspect_ratio = float(aspect_ratio)
-        self.annotation = annotation
-
-    def __repr__(self):
-        return 'Picture({0})'.format(self.id.split(':')[2])
-  
-
-class Sound(object):
-    def __init__(self, cpl, id, edit_rate, intrinsic_duration, entry_point,
-                 duration, annotation=None, language=None):
-        self.cpl = cpl
-        self.id = id
-        self.asset = self.cpl.dcp.assets[self.id]
-        self.annotation = annotation
-        self.edit_rate = tuple(edit_rate.split(' '))
-        self.intrinsic_duration = int(intrinsic_duration)
-        self.entry_point = int(entry_point)
-        self.duration = int(duration)
-        self.language = language
-
-    def __repr__(self):
-        return 'Sound({0})'.format(self.id.split(':')[2])
-"""

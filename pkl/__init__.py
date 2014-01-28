@@ -4,12 +4,17 @@ try:
 except ImportError:
     import xml.etree.ElementTree as ET
 
-import os, logging
+import os
 from hashlib import sha1, md5, sha224, sha256, sha384, sha512
 import base64
 
 from smpteparsers.util import (get_element, get_element_text,
 get_element_iterator, get_namespace)
+
+class PKLError(Exception):
+    pass
+class PKLValidationError(PKLError):
+    pass
 
 class PKL(object):
     def __init__(self, path, assetmap):
@@ -18,7 +23,8 @@ class PKL(object):
 
         # A dictionary mapping uuids to PKLData objects containing the hash,
         # size and type of the asset
-        self.assets = self.parse()
+        self.assets = {}
+        self.parse()
 
     def parse(self):
         """
@@ -49,22 +55,22 @@ class PKL(object):
         for uuid, pkl_data in assets.iteritems():
             full_path = os.path.join(self.assetmap.dcp_path,
                     self.assetmap.assets[uuid].path)
-            if not (full_path[-4:] == ".mxf" or pkl_data.file_hash ==
-                    self.generate_hash(full_path)):
-                logging.info("ERROR: Hash doesn't match: {0}".format(full_path))
-        else:
-            logging.info("All hashes verified!")
+            if not full_path.endswith('.mxf') and pkl_data.file_hash != self.generate_hash(full_path):
+                raise PKLValidationError("Hash doesn't match: {0}".format(full_path))
 
-        return assets
+        self.assets = assets
 
     def generate_hash(self, local_path):
         """
         Work out the base64 encoded sha-1 hash of the file so we can compare
-        integrity with hashes in pkl.xml file
+        integrity with hashes in pkl.xml file.
+
+        Use 'chunking' in case we have to generate hashes for potentially very
+        large .mxf files.
         """
         chunk_size = 1048576 # 1mb
         file_sha1 = sha1()
-        with open(r"{0}".format(local_path), "r") as f:
+        with open("{0}".format(local_path), "r") as f:
             chunk = f.read(chunk_size)
             file_sha1.update(chunk)
             while chunk:
@@ -72,7 +78,6 @@ class PKL(object):
                 file_sha1.update(chunk)
         file_hash = file_sha1.digest()
         encoded_hash = base64.b64encode(file_hash)
-        # logging.info("Hash for {0}: {1}".format(local_path, encoded_hash))
         return encoded_hash
 
 class PKLData(object):
