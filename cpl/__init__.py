@@ -4,35 +4,47 @@ try:
 except ImportError:
     import xml.etree.ElementTree as ET
 
+from smpteparsers.util import (get_element, get_element_text,
+        get_element_iterator, get_namespace, validate_xml)
+from time import strptime
+from dateutil import parser
+import os, sys
+
 class CPLError(Exception):
     pass
 class CPLValidationError(CPLError):
     pass
 
-from smpteparsers.util import (get_element, get_element_text,
-        get_element_iterator, get_namespace)
-from time import strptime
-from dateutil import parser
-import os, sys
-
-# TODO path for testing, need to change this!
-local_ingest_path = "C:\Users\crosie\Documents\GitHub\screener\screener"
+schema_file = "screener/XSDs/cpl.xsd"
 
 class CPL(object):
-    def __init__(self, path, dcp_path=None, assetmap=None):
+    def __init__(self, path, dcp_path=None, assetmap=None, check_xml=False):
         self.path = path
         self.dcp_path = dcp_path
         self.assetmap = assetmap
+        self.check_xml = check_xml
+
         self.cpl_uuid = ""
         self.metadata = {}
         self.reels = {}
         self.parse()
 
     def parse(self):
-        '''
+        """
         Opens a given CPL asset, parses the XML to extract the playlist info and create a CPL object
-        which is s to the DCP's CPL list.
-        '''
+        which is added to the DCP's CPL list.
+        """
+        if self.check_xml:
+            # TODO improve error handling code
+            try:
+                self.xml_validate(schema_file, self.path)
+            except Exception as e:
+                pass
+                # TODO Currently getting 'error parsing attribute name' error
+                # here - no idea why
+                # print e
+                # raise CPLError("Error validating CPL XML")
+
         tree = ET.parse(self.path)
         root = tree.getroot()
         # ElementTree prepends the namespace to all elements, so we need to extract
@@ -66,7 +78,7 @@ class CPL(object):
         # Get the picture, sound and subtitle (if applicable) info
         tmp_reel_list = get_element(root, "ReelList", cpl_ns)
         for reel in tmp_reel_list.getchildren():
-            reel_id = get_element_text(root, "Id", cpl_ns)
+            reel_id = get_element_text(root, "Id", cpl_ns).split(":")[2]
             for asset_list in get_element_iterator(reel, "AssetList", cpl_ns):
 
                 # Get Main Picture metadata
@@ -91,6 +103,13 @@ class CPL(object):
     def validate(self):
         raise NotImplementedError
 
+    def xml_validate(self, schema_file, xml_file):
+        """
+        Call the validate_xml function in util to valide the xml file against
+        the schema.
+        """
+        return validate_xml(schema_file, xml_file)
+
     def get_metadata(self, root, cpl_ns):
         title = get_element_text(root, "ContentTitleText", cpl_ns)
         annotation = get_element_text(root, "AnnotationText", cpl_ns)
@@ -103,15 +122,17 @@ class CPL(object):
         version_label = "{0}_{1}".format(self.cpl_uuid, issue_date_string)
 
         # Store CPL data in a dict
-        metadata = {"title" : title,
-                         "annotation" : annotation,
-                         "issue_date" : issue_date,
-                         "issuer" : issuer,
-                         "creator" : creator,
-                         "content_type" : content_type,
-                         "version_id" : version_id,
-                         "version_label" : version_label
-                        }
+        metadata = {
+                        "title" : title,
+                        "annotation" : annotation,
+                        "issue_date" : issue_date,
+                        "issuer" : issuer,
+                        "creator" : creator,
+                        "content_type" : content_type,
+                        "version_id" : version_id,
+                        "version_label" : version_label
+                    }
+
         return metadata
 
     def get_picture_data(self, main_picture, local_path, cpl_ns):
@@ -182,7 +203,7 @@ class CPL(object):
                 "intrinsic_duration": get_element_text(main_sub, "IntrinsicDuration", cpl_ns),
                 "entry_point": get_element_text(main_sub, "EntryPoint", cpl_ns),
                 "duration": get_element_text(main_sub, "Duration", cpl_ns),
-            }
+                }
 
         sub_real_path = self.get_path(local_path, sub["sub_id"], ".xml")
         

@@ -18,7 +18,6 @@ class DCP(object):
         """
         Reads the Assetmap and then PKL file and ensures that all the transfers have been successful.
         """
-        
         assetmap_path = ""
         assetmap_found = False
         pkl_path = ""
@@ -34,8 +33,8 @@ class DCP(object):
                     pkl_found = True
                 if assetmap_found and pkl_found:
                     break
-        assetmap = Assetmap(assetmap_path, self.path)
-        pkl = PKL(pkl_path, assetmap)
+        assetmap = Assetmap(assetmap_path, self.path, True)
+        pkl = PKL(pkl_path, assetmap, True)
 
 
         # Delegate to the Assetmap and PKL parsers.
@@ -61,7 +60,7 @@ class DCP(object):
         
         cpls = {}
         for cpl_uuid, cpl_path in cpl_paths.iteritems():
-            cpl = CPL(cpl_path, self.path, self.assetmap) 
+            cpl = CPL(cpl_path, self.path, self.assetmap, True) 
             cpls[cpl_uuid] = cpl
 
         self.cpls = cpls

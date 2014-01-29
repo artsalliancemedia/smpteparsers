@@ -6,6 +6,8 @@ try:
 except ImportError:
     import xml.etree.ElementTree as ET
 
+from lxml import etree
+
 def get_element(root, tag, namespace):
     """
     Gets the first subelement of root that matches tag. Returns an element
@@ -32,3 +34,19 @@ def get_namespace(tag):
     """
     right_brace = tag.rfind("}")
     return tag[1:right_brace]
+
+def validate_xml(schema_file, xml_file):
+    with open(schema_file, 'r') as f:
+        schema_root = etree.XML(f.read())
+
+    schema = etree.XMLSchema(schema_root)
+    xmlparser = etree.XMLParser(schema=schema)
+
+    try:
+        with open(xml_file, 'r') as f:
+            etree.fromstring(f.read(), xmlparser)
+    except etree.XMLSyntaxError as e:
+        # print e
+        raise
+    except Exception:
+        raise
