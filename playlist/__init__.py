@@ -29,6 +29,24 @@ class Playlist(object):
         if self.playlist_contents is not None and parse:
             self.parse(validate=validate)
 
+    def __str__(self):
+        return self.__unicode__()
+
+    def __repr__(self):
+        return self.__unicode__()
+
+    def __unicode__(self):
+        # Override unicode to implement JSON serialisation.
+        output = {
+            "title": self.title,
+            "duration": self.duration,
+            "events": []
+        }
+        for event in self.events:
+            output["events"].append(unicode(event))
+
+        return json.dumps(output)
+
     def parse(self, playlist_contents=None, validate=True):
         """
         Parse a playlist dict
@@ -91,3 +109,11 @@ class PlaylistEvent(object):
         self.duration_in_frames = duration_in_frames
         self.duration_in_seconds = duration_in_seconds
         self.edit_rate = edit_rate
+
+    def __unicode__(self):
+        fields = ("cpl_id", "type", "text", "duration_in_frames", "duration_in_seconds", "edit_rate")
+        output = {}
+        for field in fields:
+            output[field] = getattr(self, field)
+
+        return json.dumps(output)
