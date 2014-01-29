@@ -27,7 +27,7 @@ class Playlist(object):
         self.playlist_contents = playlist_contents
 
         if self.playlist_contents is not None and parse:
-            self.parse(self.playlist_contents, validate=validate)
+            self.parse(validate=validate)
 
     def parse(self, playlist_contents=None, validate=True):
         """
@@ -75,8 +75,7 @@ class Playlist(object):
             void
         """
         with open(schema_path) as f:
-            schema = f.read()
-            schema = json.loads(schema)
+            schema = json.load(f)
 
             try:
                 validate_json(self.playlist_contents, schema)
