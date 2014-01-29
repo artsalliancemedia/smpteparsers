@@ -39,11 +39,10 @@ class Assetmap(object):
         """
         
         if self.check_xml:
-            # TODO improve error handling code
             try:
                 self.xml_validate(schema_file, self.path)
-            except Exception:
-                raise AssetmapError("Error validating ASSETMAP XML")
+            except Exception as e:
+                raise AssetmapError(e)
 
         tree = ET.parse(self.path)
         root = tree.getroot()

@@ -36,11 +36,10 @@ class PKL(object):
         files are checked
         """
         if self.check_xml:
-            # TODO improve error handling code
             try:
                 self.xml_validate(schema_file, self.path)
-            except Exception:
-                raise PKLError("Error validating PKL XML")
+            except Exception as e:
+                raise PKLError(e)
 
         # Get hashes from pkl.xml file
         tree = ET.parse(self.path)

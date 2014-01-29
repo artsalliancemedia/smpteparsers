@@ -45,8 +45,7 @@ def validate_xml(schema_file, xml_file):
     try:
         with open(xml_file, 'r') as f:
             etree.fromstring(f.read(), xmlparser)
-    except etree.XMLSyntaxError as e:
-        # print e
+    except etree.XMLSyntaxError:
         raise
     except Exception:
         raise

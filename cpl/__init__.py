@@ -39,11 +39,13 @@ class CPL(object):
             try:
                 self.xml_validate(schema_file, self.path)
             except Exception as e:
-                pass
-                # TODO Currently getting 'error parsing attribute name' error
-                # here - no idea why
-                # print e
-                # raise CPLError("Error validating CPL XML")
+                print e
+                """
+                There are currently bugs in the cpl.xsd file, which means all
+                cpl xml files will fail validation. Therefore we only print the
+                error here, but in reality we would want to raise an error as below.
+                """
+                # raise CPLError(e)
 
         tree = ET.parse(self.path)
         root = tree.getroot()
