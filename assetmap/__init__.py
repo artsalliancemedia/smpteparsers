@@ -5,7 +5,7 @@ except ImportError:
     import xml.etree.ElementTree as ET
 
 import os
-from dateutil import parser
+from datetime import datetime
 
 from smpteparsers.util import (get_element, get_element_text,
         get_element_iterator, get_namespace, validate_xml)
@@ -53,7 +53,7 @@ class Assetmap(object):
         self.annotation_text = get_element_text(root, "AnnotationText", assetmap_ns)
         self.volume_count = get_element_text(root, "VolumeCount", assetmap_ns)
         issue_date_string = get_element_text(root, "IssueDate", assetmap_ns)
-        self.issue_date = parser.parse(issue_date_string)
+        self.issue_date = datetime.strptime(issue_date_string, "%Y-%m-%dT%H:%M:%S%z")
         self.issuer = get_element_text(root, "Issuer", assetmap_ns)
         self.creator = get_element_text(root, "Creator", assetmap_ns)
 
