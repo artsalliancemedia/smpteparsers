@@ -1,0 +1,30 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "required": ["title", "duration", "events"],
+    "properties": {
+        "title": {"type": "string"},
+        "duration": {"type": "integer"},
+        "events": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+                "type": "object",
+                "required": ["cpl_id", "type", "text", "duration_in_frames", "duration_in_seconds", "edit_rate"],
+                "properties": {
+                    "cpl_id": {"type": "string", "pattern": "^[a-fA-F\\d]{8}-[a-fA-F\\d]{4}-[a-fA-F\\d]{4}-[a-fA-F\\d]{4}-[a-fA-F\\d]{12}$"},
+                    "type": {"enum": ["composition"]},
+                    "text": {"type": "string"},
+                    "duration_in_frames": {"type": "integer"},
+                    "duration_in_seconds": {"type": "integer"},
+                    "edit_rate": {
+                        "type": "array",
+                        "minItems": 2,
+                        "maxItems": 2,
+                        "items": {"type": "integer"}
+                    }
+                }
+            }
+        }
+    }
+}
