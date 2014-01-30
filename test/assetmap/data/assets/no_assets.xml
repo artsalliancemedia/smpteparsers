@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AssetMap xmlns="http://www.digicine.com/PROTO-ASDCP-AM-20040311#">
+    <Id>urn:uuid:aea7e1f1-aa1b-4467-9002-2ff11e0f3669</Id>
+    <AnnotationText>TMS ASSETMAP - aea7e1f1-aa1b-4467-9002-2ff11e0f3669</AnnotationText>
+    <VolumeCount>1</VolumeCount>
+    <IssueDate>2013-05-28T10:47:08-00:00</IssueDate>
+    <Issuer>Arts Alliance Media</Issuer>
+    <Creator>TMS</Creator>
+    <AssetList>
+    </AssetList>
+</AssetMap>
