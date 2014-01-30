@@ -33,9 +33,15 @@ class DCP(object):
                     pkl_found = True
                 if assetmap_found and pkl_found:
                     break
-        assetmap = Assetmap(assetmap_path, self.path, True)
-        pkl = PKL(pkl_path, assetmap, True)
+        assetmap = Assetmap(assetmap_path, True)
+        pkl = PKL(pkl_path, True)
 
+        """
+        Do file and hash validation here just for testing.
+        Can/should be removed in future
+        """
+        assetmap.validate_files(self.path)
+        pkl.validate_hashes(self.path, assetmap)
 
         # Delegate to the Assetmap and PKL parsers.
         self.pkl = pkl

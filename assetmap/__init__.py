@@ -17,12 +17,11 @@ class AssetmapError(Exception):
 class AssetmapValidationError(AssetmapError):
     pass
 
-schema_file = "screener/XSDs/am.xsd"
+schema_file = os.path.join(os.path.dirname(__file__), 'am.xsd') 
 
 class Assetmap(object):
-    def __init__(self, path, dcp_path, check_xml=False):
+    def __init__(self, path, check_xml=False):
         self.path = path
-        self.dcp_path = dcp_path
         self.check_xml = check_xml
 
         # A dictionary mapping uuids to AssetData objects containing the path,
@@ -40,9 +39,9 @@ class Assetmap(object):
         
         if self.check_xml:
             try:
-                self.xml_validate(schema_file, self.path)
+                self.validate(schema_file, self.path)
             except Exception as e:
-                raise AssetmapError(e)
+                raise AssetmapError("AssetmapError: {0}".format(e))
 
         tree = ET.parse(self.path)
         root = tree.getroot()
@@ -80,22 +79,20 @@ class Assetmap(object):
                     asset_data = AssetData(**a)
                     self.assets[asset_id] = asset_data
                     
-        self.validate()
-
-    def xml_validate(self, schema_file, xml_file):
+    def validate(self, schema_file, xml_file):
         """
         Call the validate_xml function in util to validate the xml file against
         the schema.
         """
         return validate_xml(schema_file, xml_file)
 
-    def validate(self):
+    def validate_files(self, dcp_path):
         """
         Check the paths of the downloaded files against the paths specified in
         the ASSETMAP file.
         """
         for asset_data in self.assets.itervalues():
-            full_path = os.path.join(self.dcp_path, asset_data.path)
+            full_path = os.path.join(dcp_path, asset_data.path)
             if not os.path.isfile(full_path):
                 raise AssetmapValidationError("File not found: {0}".format(full_path)) 
 

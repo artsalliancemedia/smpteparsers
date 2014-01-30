@@ -16,12 +16,11 @@ class PKLError(Exception):
 class PKLValidationError(PKLError):
     pass
 
-schema_file = "screener/XSDs/pkl.xsd"
+schema_file = os.path.join(os.path.dirname(__file__), 'pkl.xsd') 
 
 class PKL(object):
-    def __init__(self, path, assetmap, check_xml=False):
+    def __init__(self, path, check_xml=False):
         self.path = path
-        self.assetmap = assetmap
         self.check_xml = check_xml
         # A dictionary mapping uuids to PKLData objects containing the hash,
         # size and type of the asset
@@ -37,9 +36,9 @@ class PKL(object):
         """
         if self.check_xml:
             try:
-                self.xml_validate(schema_file, self.path)
+                self.validate(schema_file, self.path)
             except Exception as e:
-                raise PKLError(e)
+                raise PKLError("PKLError: {0}".format(e))
 
         # Get hashes from pkl.xml file
         tree = ET.parse(self.path)
@@ -60,22 +59,19 @@ class PKL(object):
             assets[asset_id] = pkl_data
 
         self.assets = assets
-        
-        self.validate()
 
-    def validate(self):
+    def validate_hashes(self, dcp_path, assetmap):
         """
         Generate hashes for local files, and validate them against the hashes in
         the pkl file.
         Currently not checking hashes for binary (.mxf) files.
         """
         for uuid, pkl_data in self.assets.iteritems():
-            full_path = os.path.join(self.assetmap.dcp_path,
-                    self.assetmap.assets[uuid].path)
+            full_path = os.path.join(dcp_path, assetmap.assets[uuid].path)
             if not full_path.endswith('.mxf') and pkl_data.file_hash != self.generate_hash(full_path):
                 raise PKLValidationError("Hash doesn't match: {0}".format(full_path))
 
-    def xml_validate(self, schema_file, xml_file):
+    def validate(self, schema_file, xml_file):
         """
         Call the validate_xml function in util to validate the xml file against
         the schema.
