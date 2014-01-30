@@ -6,3 +6,5 @@ doc/_build/*
 
 # Don't commit settings file with authentication details
 settings.json
+/.pydevproject
+/.project
