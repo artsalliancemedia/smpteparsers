@@ -6,8 +6,7 @@
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     elementFormDefault="qualified" attributeFormDefault="unqualified">
 
-  <xs:import namespace="http://www.w3.org/2000/09/xmldsig#"
-      schemaLocation="C:/Users/crosie/Documents/GitHub/smpteparsers/sig.xsd"/>
+  <xs:import namespace="http://www.w3.org/2000/09/xmldsig#" schemaLocation="sig.xsd"/>
 
   <!-- CompositionPlaylist -->
   <xs:element name="CompositionPlaylist" type="cpl:CompositionPlaylistType"/>
