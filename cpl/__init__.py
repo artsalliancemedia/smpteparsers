@@ -1,35 +1,26 @@
-# from xml.etree import ElementTree
+from time import strptime
+from abc import ABCMeta
+import os, sys
 try:
     import xml.etree.cElementTree as ET
 except ImportError:
     import xml.etree.ElementTree as ET
 
-"""
-from smpteparsers.util import (get_element, get_element_text,
-        get_element_iterator, get_namespace, validate_xml)
-"""
-import smpteparsers.util as util
-from time import strptime
-from dateutil import parser
-import os, sys
+from smpteparsers.util import get_element, get_element_text, get_element_iterator, get_namespace, validate_xml
 
 class CPLError(Exception):
     pass
 class CPLValidationError(CPLError):
     pass
 
-schema_file = os.path.join(os.path.dirname(__file__), 'cpl.xsd') 
-
 class CPL(object):
-    def __init__(self, path, dcp_path=None, assetmap=None, check_xml=False):
+    def __init__(self, path, assetmap=None):
         self.path = path
-        self.dcp_path = dcp_path
         self.assetmap = assetmap
-        self.check_xml = check_xml
 
-        self.cpl_uuid = ""
-        self.metadata = {}
         self.reels = []
+        self.assets = {}
+
         self.parse()
 
     def parse(self):
@@ -37,199 +28,92 @@ class CPL(object):
         Opens a given CPL asset, parses the XML to extract the playlist info and create a CPL object
         which is added to the DCP's CPL list.
         """
-        if self.check_xml:
-            # TODO improve error handling code
-            try:
-                self.validate(schema_file, self.path)
-            except Exception as e:
-                print "CPLError: {0}".format(e)
-                """
-                There are currently bugs in the cpl.xsd file, which means all
-                cpl xml files will fail validation. Therefore we only print the
-                error here, but in reality we would want to raise an error as below.
-                """
-                # raise CPLError("CPLError: {0}".format(e))
+        try:
+            self.validate()
+        except Exception as e:
+            raise CPLError(e)
 
         tree = ET.parse(self.path)
         root = tree.getroot()
         # ElementTree prepends the namespace to all elements, so we need to extract
         # it so that we can perform sensible searching on elements.
-        cpl_ns = util.get_namespace(root.tag)
+        cpl_ns = get_namespace(root.tag)
 
-        self.cpl_uuid = util.get_element_text(root, "Id", cpl_ns).split(":")[2]
-        # TODO Rating list. Not sure what it's supposed to look like, so not
-        # sure how to parse it.
-        
-        # Check that we have somewhere to store CPL stuff
-        # TODO Move path to config file
-        ingest_folder = os.path.join(os.getcwd(), u'screener/INGEST')
-        folder_path = util.check_directory(os.path.join(ingest_folder, self.cpl_uuid))
-        #folder_path = util.check_directory(os.path.join("screener\INGEST", self.cpl_uuid))
+        self.uuid = get_element_text(root, "Id", cpl_ns).split(":")[2]
+        self.title = get_element_text(root, "ContentTitleText", cpl_ns)
+        self.annotation_text = get_element_text(root, "AnnotationText", cpl_ns)
+        issue_date_string = get_element_text(root, "IssueDate", cpl_ns)
+        self.issue_date = datetime.strptime(issue_date_string, "%Y-%m-%dT%H:%M:%S%z")
+        self.issuer = get_element_text(root, "Issuer", cpl_ns)
+        self.creator = get_element_text(root, "Creator", cpl_ns)
+        self.content_kind = get_element_text(root, "ContentKind", cpl_ns)
 
-        basename = os.path.basename(self.path)
-        cpl_link_path = os.path.join(folder_path, basename)
+        # Get each of the parts of the CPL, i.e. the Reels :)
+        for reel_elem in get_element(root, "ReelList", cpl_ns).getchildren():
+            reel = Reel(reel_elem, cpl_ns, assetmap=self.assetmap)
 
-        if not os.path.isfile(cpl_link_path):
-            # TODO remove this after testing. catches the exception thrown
-            # when a link has already been created.
-            try:
-                cpl_real_path = os.path.join(self.dcp_path, self.path)
-                util.create_link(cpl_link_path, cpl_real_path)
-            except:
-                pass
+            # Add this in as a convenience for working with assets.
+            for asset_id, asset in reel.assets.iteritems():
+                self.assets[asset_id] = asset
 
-        # Change self.path to point to link file
-        self.path = cpl_link_path
+            self.reels.append(reel)
 
-        # Get CPL metadata
-        self.metadata = self.get_metadata(root, cpl_ns)
-        
-        # Get the picture, sound and subtitle (if applicable) info
-        tmp_reel_list = util.get_element(root, "ReelList", cpl_ns)
-        for reel in tmp_reel_list.getchildren():
-            reel_id = util.get_element_text(root, "Id", cpl_ns).split(":")[2]
-            for asset_list in util.get_element_iterator(reel, "AssetList", cpl_ns):
-                self.reels.append(Reel(reel_id, asset_list, cpl_ns, folder_path,
-                    self.assetmap, self.dcp_path))
-
-    def validate(self, schema_file, xml_file):
+    def validate(self, schema=os.path.join(os.path.dirname(__file__), 'cpl.xsd')):
         """
-        Call the validate_xml function in util to valide the xml file against
-        the schema.
+        Call the validate_xml function in util to valide the xml file against the schema.
         """
-        return util.validate_xml(schema_file, xml_file)
-
-    def get_metadata(self, root, cpl_ns):
-        title = util.get_element_text(root, "ContentTitleText", cpl_ns)
-        annotation = util.get_element_text(root, "AnnotationText", cpl_ns)
-        issue_date_string = util.get_element_text(root, "IssueDate", cpl_ns)
-        issue_date = parser.parse(issue_date_string)
-        issuer = util.get_element_text(root, "Issuer", cpl_ns)
-        creator = util.get_element_text(root, "Creator", cpl_ns)
-        content_type = util.get_element_text(root, "ContentKind", cpl_ns)
-        version_id = "urn:uri:{0}_{1}".format(self.cpl_uuid, issue_date_string)
-        version_label = "{0}_{1}".format(self.cpl_uuid, issue_date_string)
-
-        # Store CPL data in a dict
-        metadata = {
-                        "title": title,
-                        "annotation": annotation,
-                        "issue_date": issue_date,
-                        "issuer": issuer,
-                        "creator": creator,
-                        "content_type": content_type,
-                        "version_id": version_id,
-                        "version_label": version_label
-                    }
-
-        return metadata
+        return validate_xml(schema, self.path)
 
 class Reel(object):
-    def __init__(self, reel_id, asset_list_el, cpl_ns, folder_path, assetmap,
-            dcp_path):
-        self.reel_id = reel_id
-        
-        pic_element = util.get_element(asset_list_el, "MainPicture", cpl_ns)
-        self.picture = Picture(pic_element, cpl_ns, folder_path, assetmap,
-                dcp_path)
+    def __init__(self, element, cpl_ns, assetmap=None):
+        self.assets = {}
+        self.id = get_element_text(element, "Id", cpl_ns).split(":")[2]
 
-        sound_element = util.get_element(asset_list_el, "MainSound", cpl_ns)
-        self.sound = Sound(sound_element, cpl_ns, folder_path, assetmap,
-                dcp_path)
+        asset_types = (
+            ("picture", "MainPicture", Picture),
+            ("picture", "MainStereoscopicPicture", Picture),
+            ("sound", "MainSound", Sound),
+            ("subtitle", "MainSubtitle", Subtitle)
+        )
 
-        subt_element = util.get_element(asset_list_el, "MainSubtitle", cpl_ns)
-        if subt_element is not None:
-            self.subtitle = Subtitle(subt_element, cpl_ns, folder_path,
-                    assetmap, dcp_path)
+        # Finally go through all possible asset types and see if this reel has them.
+        for attr, elem_name, klass in asset_types:
+            elem = get_element(element, elem_name, cpl_ns)
+            if elem is not None:
+                asset = klass(elem, cpl_ns)
 
-    def __repr__(self):
-        return 'Reel({0})'.format(self.reel_id)
+                # Finally set the path to this particular asset.
+                if assetmap is not None:
+                    asset.path = assetmap[asset.id]
 
-class Picture(object):
-    def __init__(self, pic_element, cpl_ns, folder_path, assetmap, dcp_path):
+                # Assets can be accessed in two ways now.
+                self.assets[asset.id] = asset
+                setattr(self, attr, asset)
 
-        self.pic_id = util.get_element_text(pic_element, "Id", cpl_ns).split(":")[2]
-        self.edit_rate = util.get_element_text(pic_element, "EditRate", cpl_ns)
-        self.intrinsic_duration = util.get_element_text(pic_element, "IntrinsicDuration", cpl_ns)
-        self.entry_point = util.get_element_text(pic_element, "EntryPoint", cpl_ns)
-        self.duration = util.get_element_text(pic_element, "Duration", cpl_ns)
-        self.frame_rate = util.get_element_text(pic_element, "FrameRate", cpl_ns)
-        self.aspect_ration = util.get_element_text(pic_element, "ScreenAspectRatio", cpl_ns)
+class Asset(object):
+    __metaclass__ = ABCMeta # Don't want Assets being defined on their own!
 
-        # TODO Need a better way to get real path (i.e. path won't
-        # necessarily always be id + file ext
-        file_name = util.get_file_name(assetmap, folder_path, self.pic_id, ".mxf")
+    def __init__(self, element, cpl_ns):
+        self.id = get_element_text(element, "Id", cpl_ns).split(":")[2]
+        self.edit_rate = get_element_text(element, "EditRate", cpl_ns)
+        self.intrinsic_duration = get_element_text(element, "IntrinsicDuration", cpl_ns)
+        self.entry_point = get_element_text(element, "EntryPoint", cpl_ns)
+        self.duration = get_element_text(element, "Duration", cpl_ns)
 
-        link_path = os.path.abspath(os.path.join(folder_path, file_name))
-        
-        self.path = link_path
+class Picture(Asset):
+    def __init__(self, element, cpl_ns):
+        super(Picture, self).__init__(element, cpl_ns)
 
-        if not os.path.isfile(link_path):
-            # TODO remove this after testing. catches the exception thrown
-            # when a link has already been created.
-            try:
-                real_path = os.path.join(dcp_path, file_name)
-                util.create_link(link_path, real_path)
-            except:
-                pass
+        self.frame_rate = get_element_text(element, "FrameRate", cpl_ns)
+        self.aspect_ratio = get_element_text(element, "ScreenAspectRatio", cpl_ns)
 
-    def __repr__(self):
-        return 'Picture({0})'.format(self.pic_id)
 
-class Sound(object):
-    def __init__(self, sound_element, cpl_ns, folder_path, assetmap, dcp_path):
-        self.sound_id = util.get_element_text(sound_element, "Id", cpl_ns).split(":")[2]
-        self.edit_rate = util.get_element_text(sound_element, "EditRate", cpl_ns)
-        self.intrinsic_duration = util.get_element_text(sound_element, "IntrinsicDuration", cpl_ns)
-        self.entry_point = util.get_element_text(sound_element, "EntryPoint", cpl_ns)
-        self.duration = util.get_element_text(sound_element, "Duration", cpl_ns)
-        self.frame_rate = util.get_element_text(sound_element, "FrameRate", cpl_ns)
-        self.aspect_ration = util.get_element_text(sound_element, "ScreenAspectRatio", cpl_ns)
+class Sound(Asset):
+    def __init__(self, element, cpl_ns):
+        super(Sound, self).__init__(element, cpl_ns)
 
-        # TODO Need a better way to get real path (i.e. path won't
-        # necessarily always be id + file ext
-        file_name = util.get_file_name(assetmap, folder_path, self.sound_id, ".mxf")
+        self.frame_rate = get_element_text(element, "FrameRate", cpl_ns)
+        self.aspect_ratio = get_element_text(element, "ScreenAspectRatio", cpl_ns)
 
-        link_path = os.path.join(folder_path, file_name)
-        
-        self.path = link_path
-
-        if not os.path.isfile(link_path):
-            # TODO remove this after testing. catches the exception thrown
-            # when a link has already been created.
-            try:
-                real_path = os.path.join(dcp_path, file_name)
-                util.create_link(link_path, real_path)
-            except:
-                pass
-
-    def __repr__(self):
-        return 'Sound({0})'.format(self.sound_id)
-
-class Subtitle(object):
-    def __init__(self, subt_element, cpl_ns, folder_path, assetmap, dcp_path):
-        self.sub_id = util.get_element_text(subt_element, "Id", cpl_ns).split(":")[2]
-        self.edit_rate = util.get_element_text(subt_element, "EditRate", cpl_ns)
-        self.intrinsic_duration = util.get_element_text(subt_element, "IntrinsicDuration", cpl_ns)
-        self.entry_point = util.get_element_text(subt_element, "EntryPoint", cpl_ns)
-        self.duration = util.get_element_text(subt_element, "Duration", cpl_ns)
-
-        # TODO Need a better way to get real path (i.e. path won't
-        # necessarily always be id + file ext
-        file_name = util.get_file_name(assetmap, folder_path, self.sub_id, ".xml")
-
-        link_path = os.path.join(folder_path, file_name)
-        
-        self.path = link_path
-
-        if not os.path.isfile(link_path):
-            # TODO remove this after testing. catches the exception thrown
-            # when a link has already been created.
-            try:
-                real_path = os.path.join(dcp_path, file_name)
-                util.create_link(link_path, real_path)
-            except:
-                pass
-
-    def __repr__(self):
-        return 'Subtitle({0})'.format(self.sub_id.split(':')[2])
+class Subtitle(Asset):
+    pass
