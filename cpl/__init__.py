@@ -40,7 +40,7 @@ class CPL(object):
         cpl_ns = get_namespace(root.tag)
 
         self.id = get_element_text(root, "Id", cpl_ns).split(":")[2]
-        self.title = get_element_text(root, "ContentTitleText", cpl_ns)
+        self.content_title_text = get_element_text(root, "ContentTitleText", cpl_ns)
         self.annotation_text = get_element_text(root, "AnnotationText", cpl_ns)
         self.issue_date = parse_date(get_element_text(root, "IssueDate", cpl_ns))
         self.issuer = get_element_text(root, "Issuer", cpl_ns)
@@ -102,17 +102,17 @@ class Asset(object):
 
     def __init__(self, element, cpl_ns):
         self.id = get_element_text(element, "Id", cpl_ns).split(":")[2]
-        self.edit_rate = get_element_text(element, "EditRate", cpl_ns)
-        self.intrinsic_duration = get_element_text(element, "IntrinsicDuration", cpl_ns)
-        self.entry_point = get_element_text(element, "EntryPoint", cpl_ns)
-        self.duration = get_element_text(element, "Duration", cpl_ns)
+        self.edit_rate = tuple([int(x) for x in get_element_text(element, "EditRate", cpl_ns).split()])
+        self.intrinsic_duration = int(get_element_text(element, "IntrinsicDuration", cpl_ns))
+        self.entry_point = int(get_element_text(element, "EntryPoint", cpl_ns))
+        self.duration = int(get_element_text(element, "Duration", cpl_ns))
 
 class Picture(Asset):
     def __init__(self, element, cpl_ns):
         super(Picture, self).__init__(element, cpl_ns)
 
-        self.frame_rate = get_element_text(element, "FrameRate", cpl_ns)
-        self.aspect_ratio = get_element_text(element, "ScreenAspectRatio", cpl_ns)
+        self.frame_rate = tuple([int(x) for x in get_element_text(element, "FrameRate", cpl_ns).split()])
+        self.screen_aspect_ratio = tuple([int(x) for x in get_element_text(element, "ScreenAspectRatio", cpl_ns).split()])
 
 
 class Sound(Asset):

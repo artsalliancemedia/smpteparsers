@@ -72,10 +72,13 @@ class Assetmap(object):
 
         self.id = get_element_text(root, "Id", assetmap_ns).split(":")[2]
         self.annotation_text = get_element_text(root, "AnnotationText", assetmap_ns)
-        self.volume_count = get_element_text(root, "VolumeCount", assetmap_ns)
+        self.volume_count = int(get_element_text(root, "VolumeCount", assetmap_ns))
         self.issue_date = parse_date(get_element_text(root, "IssueDate", assetmap_ns))
         self.issuer = get_element_text(root, "Issuer", assetmap_ns)
         self.creator = get_element_text(root, "Creator", assetmap_ns)
+
+        if int(self.volume_count) < 0:
+            raise AssetmapError("Invalid volume count")
 
         asset_list = get_element(root, "AssetList", assetmap_ns)
         # Get the data from the ASSETMAP file
@@ -90,9 +93,9 @@ class Assetmap(object):
                 for chunk in chunklist.getchildren():
                     a = {
                         "path": get_element_text(chunk, "Path", assetmap_ns),
-                        "volume_index": get_element_text(chunk, "VolumeIndex", assetmap_ns),
-                        "offset": get_element_text(chunk, "Offset", assetmap_ns),
-                        "length": get_element_text(chunk, "Length", assetmap_ns)
+                        "volume_index": int(get_element_text(chunk, "VolumeIndex", assetmap_ns)),
+                        "offset": int(get_element_text(chunk, "Offset", assetmap_ns)),
+                        "length": int(get_element_text(chunk, "Length", assetmap_ns))
                     }
 
                     self.assets[asset_id] = AssetData(**a)

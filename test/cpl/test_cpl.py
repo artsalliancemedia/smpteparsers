@@ -21,7 +21,7 @@ class TestCPL(unittest.TestCase):
         cpl = CPL(cpl_paths["success"])
 
         self.assertEqual(cpl.id, "649a5ca6-95d9-4dab-ad21-7636a636ca54")
-        self.assertEqual(cpl.annotation_test, "Blenda Toeffere mot barneflekker 20130219_AAM_DCP")
+        self.assertEqual(cpl.annotation_text, "Blenda Toeffere mot barneflekker 20130219_AAM_DCP")
         self.assertEqual(cpl.issue_date, datetime(2013, 02, 19, 15, 57, 55))
         self.assertEqual(cpl.issuer, "Arts Alliance Media")
         self.assertEqual(cpl.creator, "Arts Alliance Media - Bonaparte")
