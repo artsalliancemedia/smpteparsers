@@ -55,7 +55,8 @@ class PKL(object):
         """
         Call the validate_xml function in util to validate the xml file against the schema.
         """
-        return validate_xml(schema, self.path)
+        pass
+        #return validate_xml(schema, self.path)
 
     def validate_hashes(self, dcp_path, assets):
         """
