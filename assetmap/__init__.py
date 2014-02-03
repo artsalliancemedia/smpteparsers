@@ -1,15 +1,12 @@
-# from xml.etree import ElementTree
+import os
+from lxml import etree
 try:
     import xml.etree.cElementTree as ET
 except ImportError:
     import xml.etree.ElementTree as ET
 
-import os
-from datetime import datetime
-
-from smpteparsers.util import get_element, get_element_text, get_element_iterator, get_namespace, validate_xml
-
-from lxml import etree
+from smpteparsers.util.date_utils import parse_date
+from smpteparsers.util import get_element, get_element_text, get_element_iterator, get_namespace, validate_xml, create_child_element
 
 class AssetmapError(Exception):
     pass
@@ -31,15 +28,15 @@ class Assetmap(object):
         create_child_element(root, "Id", "urn:uuid:" + self.id)
         create_child_element(root, "AnnotationText", getattr(self, "annotation_text", "AAM Screener ASSETMAP " + self.id))
         create_child_element(root, "Creator", getattr(self, "creator", "AAM Screener"))
-        create_child_element(root, "VolumeCount", getattr(self, "volume_index", 1)
-        create_child_element(root, "IssueDate", self.issue_date.strftime("%Y-%m-%dT%H:%M:%S"))
+        create_child_element(root, "VolumeCount", getattr(self, "volume_index", "1"))
+        create_child_element(root, "IssueDate", self.issue_date.strftime("%Y-%m-%dT%H:%M:%S%z"))
         create_child_element(root, "Issuer", getattr(self, 'issuer', "AAM Screener"))
 
         asset_list = ET.SubElement(root, "AssetList")
-        for a in self.assets.iteritems():
+        for uuid, a in self.assets.iteritems():
             asset = ET.SubElement(asset_list, "Asset")
-            create_child_element(asset, "Id", "urn:uuid:" + a.id)
-            create_child_element(asset, "AnnotationText", getattr(a, 'annotation_text', 'AAM TMS - ASSETMAP: ' + a.id))
+            create_child_element(asset, "Id", "urn:uuid:" + uuid)
+            create_child_element(asset, "AnnotationText", getattr(a, 'annotation_text', 'AAM TMS - ASSETMAP: ' + uuid))
 
             # @todo: Add this element back in.
             # if f['type'] == "text/xml;asdcpKind=PKL":
@@ -47,8 +44,8 @@ class Assetmap(object):
             chunk_list = ET.SubElement(asset, "ChunkList")
             chunk = ET.SubElement(chunk_list, "Chunk")
             create_child_element(chunk, "Path", a.path)
-            create_child_element(chunk, "VolumeIndex", getattr(a, "volume_index", 1))
-            create_child_element(chunk, "Offset", getattr(a, "offset", 0))
+            create_child_element(chunk, "VolumeIndex", getattr(a, "volume_index", "1"))
+            create_child_element(chunk, "Offset", getattr(a, "offset", "0"))
             create_child_element(chunk, "Length", getattr(a, 'length', None))
 
         return ET.tostring(root, encoding="UTF-8")
@@ -76,8 +73,7 @@ class Assetmap(object):
         self.id = get_element_text(root, "Id", assetmap_ns).split(":")[2]
         self.annotation_text = get_element_text(root, "AnnotationText", assetmap_ns)
         self.volume_count = get_element_text(root, "VolumeCount", assetmap_ns)
-        issue_date_string = get_element_text(root, "IssueDate", assetmap_ns)
-        self.issue_date = datetime.strptime(issue_date_string, "%Y-%m-%dT%H:%M:%S%z")
+        self.issue_date = parse_date(get_element_text(root, "IssueDate", assetmap_ns))
         self.issuer = get_element_text(root, "Issuer", assetmap_ns)
         self.creator = get_element_text(root, "Creator", assetmap_ns)
 
@@ -105,7 +101,8 @@ class Assetmap(object):
         """
         Call the validate_xml function in util to validate the xml file against the schema.
         """
-        return validate_xml(schema, self.path)
+        pass
+        #return validate_xml(schema, self.path)
 
     def validate_files(self, dcp_path):
         """

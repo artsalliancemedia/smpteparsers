@@ -35,6 +35,8 @@ class PKL(object):
 
         # Again, get the namespace so we can search elements
         pkl_ns = get_namespace(root.tag)
+        self.id = get_element_text(root, "Id", pkl_ns).split(":")[2]
+
         asset_list = get_element(root, "AssetList", pkl_ns)
 
         # Get the data from the pkl file
@@ -42,8 +44,8 @@ class PKL(object):
             asset_id = get_element_text(asset, "Id", pkl_ns).split(":")[2]
 
             p = {
-                "file_hash": get_element_text(asset, "Hash", pkl_ns)
-                "size": get_element_text(asset, "Size", pkl_ns)
+                "file_hash": get_element_text(asset, "Hash", pkl_ns),
+                "size": get_element_text(asset, "Size", pkl_ns),
                 "file_type": get_element_text(asset, "Type", pkl_ns)
             }
 

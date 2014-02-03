@@ -1,4 +1,3 @@
-from time import strptime
 from abc import ABCMeta
 import os, sys
 try:
@@ -6,6 +5,7 @@ try:
 except ImportError:
     import xml.etree.ElementTree as ET
 
+from smpteparsers.util.date_utils import parse_date
 from smpteparsers.util import get_element, get_element_text, get_element_iterator, get_namespace, validate_xml
 
 class CPLError(Exception):
@@ -39,56 +39,63 @@ class CPL(object):
         # it so that we can perform sensible searching on elements.
         cpl_ns = get_namespace(root.tag)
 
-        self.uuid = get_element_text(root, "Id", cpl_ns).split(":")[2]
+        self.id = get_element_text(root, "Id", cpl_ns).split(":")[2]
         self.title = get_element_text(root, "ContentTitleText", cpl_ns)
         self.annotation_text = get_element_text(root, "AnnotationText", cpl_ns)
-        issue_date_string = get_element_text(root, "IssueDate", cpl_ns)
-        self.issue_date = datetime.strptime(issue_date_string, "%Y-%m-%dT%H:%M:%S%z")
+        self.issue_date = parse_date(get_element_text(root, "IssueDate", cpl_ns))
         self.issuer = get_element_text(root, "Issuer", cpl_ns)
         self.creator = get_element_text(root, "Creator", cpl_ns)
         self.content_kind = get_element_text(root, "ContentKind", cpl_ns)
 
         # Get each of the parts of the CPL, i.e. the Reels :)
-        for reel_elem in get_element(root, "ReelList", cpl_ns).getchildren():
-            reel = Reel(reel_elem, cpl_ns, assetmap=self.assetmap)
+        for reel_list_elem in get_element_iterator(root, "ReelList", cpl_ns):
+            for reel_elem in reel_list_elem.getchildren():
+                reel = Reel(reel_elem, cpl_ns, assetmap=self.assetmap)
 
-            # Add this in as a convenience for working with assets.
-            for asset_id, asset in reel.assets.iteritems():
-                self.assets[asset_id] = asset
+                # Add this in as a convenience for working with assets.
+                for asset_id, asset in reel.assets.iteritems():
+                    self.assets[asset_id] = asset
 
-            self.reels.append(reel)
+                self.reels.append(reel)
 
     def validate(self, schema=os.path.join(os.path.dirname(__file__), 'cpl.xsd')):
         """
         Call the validate_xml function in util to valide the xml file against the schema.
         """
-        return validate_xml(schema, self.path)
+        pass
+        #return validate_xml(schema, self.path)
 
 class Reel(object):
     def __init__(self, element, cpl_ns, assetmap=None):
+        """
+        Takes a "Reel" element and parses out the information contained inside.
+
+        @todo: Check this against 3D content, in theory it should work but needs tests!
+        """
+
         self.assets = {}
         self.id = get_element_text(element, "Id", cpl_ns).split(":")[2]
 
-        asset_types = (
-            ("picture", "MainPicture", Picture),
-            ("picture", "MainStereoscopicPicture", Picture),
-            ("sound", "MainSound", Sound),
-            ("subtitle", "MainSubtitle", Subtitle)
-        )
+        for asset in get_element(element, "AssetList", cpl_ns).getchildren():
+            asset_tag = asset.tag.split('}')[1] # Remove the namespace, hack but it works for now!
+            if asset_tag in ("MainPicture", "MainStereoscopicPicture"):
+                asset_instance = Picture(asset, cpl_ns)
+                self.picture = asset_instance
+            elif asset_tag == "MainSound":
+                asset_instance = Sound(asset, cpl_ns)
+                self.sound = asset_instance
+            elif asset_tag == "MainSubtitle":
+                asset_instance = Subtitle(asset, cpl_ns)
+                self.subtitle = asset_instance
+            else:
+                raise CPLError("Unknown asset type found: {0}".format(asset_tag))
 
-        # Finally go through all possible asset types and see if this reel has them.
-        for attr, elem_name, klass in asset_types:
-            elem = get_element(element, elem_name, cpl_ns)
-            if elem is not None:
-                asset = klass(elem, cpl_ns)
+            # Finally set the path to this particular asset.
+            if assetmap is not None:
+                asset_instance.path = assetmap[asset_instance.id].path
 
-                # Finally set the path to this particular asset.
-                if assetmap is not None:
-                    asset.path = assetmap[asset.id]
-
-                # Assets can be accessed in two ways now.
-                self.assets[asset.id] = asset
-                setattr(self, attr, asset)
+            # Assets can be accessed in two ways now.
+            self.assets[asset_instance.id] = asset_instance
 
 class Asset(object):
     __metaclass__ = ABCMeta # Don't want Assets being defined on their own!

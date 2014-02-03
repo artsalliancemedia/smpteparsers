@@ -50,3 +50,17 @@ def validate_xml(schema_file, xml_file):
         raise
     except Exception:
         raise
+
+def create_child_element(parent, el_name, el_val):
+    """ElementTree Helper method to create a new element with a supplied value
+    and attach that element to the specified parent
+    :param parent: parent element
+    :param el_name: name of the elemnt to create
+    :param el_value: text value to be assigned to the element
+
+      e.g.  on the xml, <root />, create_child_element(root, 'foo', 'hello')
+      would create:    <root><foo>hello</foo></root>
+    """
+    el = ET.SubElement(parent, el_name)
+    el.text = el_val
+    return el
