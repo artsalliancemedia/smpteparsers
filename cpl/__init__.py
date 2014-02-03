@@ -107,6 +107,9 @@ class Asset(object):
         self.entry_point = int(get_element_text(element, "EntryPoint", cpl_ns))
         self.duration = int(get_element_text(element, "Duration", cpl_ns))
 
+    def ext(self):
+        return "mxf"
+
 class Picture(Asset):
     def __init__(self, element, cpl_ns):
         super(Picture, self).__init__(element, cpl_ns)
@@ -123,4 +126,6 @@ class Sound(Asset):
         self.aspect_ratio = get_element_text(element, "ScreenAspectRatio", cpl_ns)
 
 class Subtitle(Asset):
-    pass
+    def ext(self):
+        # This will change when we support SMPTE DCPs, currently this is interop format I believe.
+        return "xml"
