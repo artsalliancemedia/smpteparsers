@@ -78,7 +78,7 @@ class Assetmap(object):
         self.creator = get_element_text(root, "Creator", assetmap_ns)
 
         if int(self.volume_count) < 0:
-            raise AssetmapError("Invalid volume count")
+            raise AssetmapError("Invalid Volume Count - Volume Count must be positive")
 
         asset_list = get_element(root, "AssetList", assetmap_ns)
         # Get the data from the ASSETMAP file
@@ -91,11 +91,15 @@ class Assetmap(object):
                 filesystems, which is not applicable for our uses.
                 """
                 for chunk in chunklist.getchildren():
+                    v = get_element_text(chunk, "VolumeIndex", assetmap_ns)
+                    o = get_element_text(chunk, "Offset", assetmap_ns) 
+                    l = get_element_text(chunk, "Length", assetmap_ns)
+                    
                     a = {
                         "path": get_element_text(chunk, "Path", assetmap_ns),
-                        "volume_index": int(get_element_text(chunk, "VolumeIndex", assetmap_ns)),
-                        "offset": int(get_element_text(chunk, "Offset", assetmap_ns)),
-                        "length": int(get_element_text(chunk, "Length", assetmap_ns))
+                        "volume_index": int(v) if v is not None else v,
+                        "offset": int(o) if o is not None else o,
+                        "length": int(l) is l is not None else l
                     }
 
                     self.assets[asset_id] = AssetData(**a)

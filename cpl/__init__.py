@@ -103,9 +103,11 @@ class Asset(object):
     def __init__(self, element, cpl_ns):
         self.id = get_element_text(element, "Id", cpl_ns).split(":")[2]
         self.edit_rate = tuple([int(x) for x in get_element_text(element, "EditRate", cpl_ns).split()])
-        self.intrinsic_duration = int(get_element_text(element, "IntrinsicDuration", cpl_ns))
-        self.entry_point = int(get_element_text(element, "EntryPoint", cpl_ns))
-        self.duration = int(get_element_text(element, "Duration", cpl_ns))
+        self.intrinsic_duration = long(get_element_text(element, "IntrinsicDuration", cpl_ns))
+        e = get_element_text(element, "EntryPoint", cpl_ns)
+        self.entry_point = long(e) if e is not None else e
+        d = get_element_text(element, "Duration", cpl_ns)
+        self.duration = long(d) if d is not None else d
 
     def ext(self):
         return "mxf"
@@ -117,13 +119,9 @@ class Picture(Asset):
         self.frame_rate = tuple([int(x) for x in get_element_text(element, "FrameRate", cpl_ns).split()])
         self.screen_aspect_ratio = tuple([int(x) for x in get_element_text(element, "ScreenAspectRatio", cpl_ns).split()])
 
-
 class Sound(Asset):
     def __init__(self, element, cpl_ns):
         super(Sound, self).__init__(element, cpl_ns)
-
-        self.frame_rate = get_element_text(element, "FrameRate", cpl_ns)
-        self.aspect_ratio = get_element_text(element, "ScreenAspectRatio", cpl_ns)
 
 class Subtitle(Asset):
     def ext(self):
