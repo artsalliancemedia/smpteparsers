@@ -72,10 +72,13 @@ class Assetmap(object):
 
         self.id = get_element_text(root, "Id", assetmap_ns).split(":")[2]
         self.annotation_text = get_element_text(root, "AnnotationText", assetmap_ns)
-        self.volume_count = get_element_text(root, "VolumeCount", assetmap_ns)
+        self.volume_count = int(get_element_text(root, "VolumeCount", assetmap_ns))
         self.issue_date = parse_date(get_element_text(root, "IssueDate", assetmap_ns))
         self.issuer = get_element_text(root, "Issuer", assetmap_ns)
         self.creator = get_element_text(root, "Creator", assetmap_ns)
+
+        if int(self.volume_count) < 0:
+            raise AssetmapError("Invalid Volume Count - Volume Count must be positive")
 
         asset_list = get_element(root, "AssetList", assetmap_ns)
         # Get the data from the ASSETMAP file
@@ -88,11 +91,15 @@ class Assetmap(object):
                 filesystems, which is not applicable for our uses.
                 """
                 for chunk in chunklist.getchildren():
+                    v = get_element_text(chunk, "VolumeIndex", assetmap_ns)
+                    o = get_element_text(chunk, "Offset", assetmap_ns) 
+                    l = get_element_text(chunk, "Length", assetmap_ns)
+                    
                     a = {
                         "path": get_element_text(chunk, "Path", assetmap_ns),
-                        "volume_index": get_element_text(chunk, "VolumeIndex", assetmap_ns),
-                        "offset": get_element_text(chunk, "Offset", assetmap_ns),
-                        "length": get_element_text(chunk, "Length", assetmap_ns)
+                        "volume_index": int(v) if v is not None else v,
+                        "offset": int(o) if o is not None else o,
+                        "length": int(l) is l is not None else l
                     }
 
                     self.assets[asset_id] = AssetData(**a)

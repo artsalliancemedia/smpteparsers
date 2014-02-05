@@ -33,7 +33,7 @@ class TestAssetmap(unittest.TestCase):
     def test_success(self):
         am = Assetmap(am_paths["success"])
 
-        self.assertEqual(am.id, "urn:uuid:aea7e1f1-aa1b-4467-9002-2ff11e0f3669")
+        self.assertEqual(am.id, "aea7e1f1-aa1b-4467-9002-2ff11e0f3669")
         self.assertEqual(am.annotation_text, "TMS ASSETMAP - aea7e1f1-aa1b-4467-9002-2ff11e0f3669")
         self.assertEqual(am.volume_count, 1)
         self.assertEqual(am.issue_date, datetime(2013, 5, 28, 10, 47, 8)) # This may need tzinfo to actually work :)

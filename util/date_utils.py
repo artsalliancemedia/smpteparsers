@@ -51,7 +51,7 @@ def parse_date(datetime_str, default_to_local_time = True):
         #Convert the KDM's local time to UTC
         parsed_timestamp += _parse_time_zone(datetime_str, parsed_timestamp, default_to_local_time)
         
-        return datetime.datetime.fromtimestamp(parsed_timestamp)
+        return datetime.datetime.utcfromtimestamp(parsed_timestamp)
 
     return ValueError
 
