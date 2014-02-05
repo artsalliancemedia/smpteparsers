@@ -9,6 +9,6 @@ setup(
     author_email = 'dev@artsalliancemedia.com',
     url = 'http://www.artsalliancemedia.com',
     packages = ('smpteparsers',),
-    requires = ('beautifulsoup4==4.2.1', 'lxml==3.2.1', 'requests==1.2.3', 'jsonschema==2.3.0'),
+    requires = ('beautifulsoup4==4.2.1', 'lxml==3.2.1', 'requests==1.2.3', 'jsonschema==2.3.0', 'pytz'),
     extras_require = {"docs": ("sphinx",)}
 )
