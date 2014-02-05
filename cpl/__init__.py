@@ -14,14 +14,15 @@ class CPLValidationError(CPLError):
     pass
 
 class CPL(object):
-    def __init__(self, path, assetmap=None):
+    def __init__(self, path, assetmap=None, parse=True):
         self.path = path
         self.assetmap = assetmap
 
         self.reels = []
         self.assets = {}
 
-        self.parse()
+        if parse:
+            self.parse()
 
     def parse(self):
         """
@@ -29,28 +30,29 @@ class CPL(object):
         which is added to the DCP's CPL list.
         """
         try:
+            tree = ET.parse(self.path)
+            root = tree.getroot()
+            # ElementTree prepends the namespace to all elements, so we need to extract
+            # it so that we can perform sensible searching on elements.
+            self.cpl_ns = get_namespace(root.tag)
+
             self.validate()
         except Exception as e:
             raise CPLError(e)
 
-        tree = ET.parse(self.path)
-        root = tree.getroot()
-        # ElementTree prepends the namespace to all elements, so we need to extract
-        # it so that we can perform sensible searching on elements.
-        cpl_ns = get_namespace(root.tag)
 
-        self.id = get_element_text(root, "Id", cpl_ns).split(":")[2]
-        self.content_title_text = get_element_text(root, "ContentTitleText", cpl_ns)
-        self.annotation_text = get_element_text(root, "AnnotationText", cpl_ns)
-        self.issue_date = parse_date(get_element_text(root, "IssueDate", cpl_ns))
-        self.issuer = get_element_text(root, "Issuer", cpl_ns)
-        self.creator = get_element_text(root, "Creator", cpl_ns)
-        self.content_kind = get_element_text(root, "ContentKind", cpl_ns)
+        self.id = get_element_text(root, "Id", self.cpl_ns).split(":")[2]
+        self.content_title_text = get_element_text(root, "ContentTitleText", self.cpl_ns)
+        self.annotation_text = get_element_text(root, "AnnotationText", self.cpl_ns)
+        self.issue_date = parse_date(get_element_text(root, "IssueDate", self.cpl_ns))
+        self.issuer = get_element_text(root, "Issuer", self.cpl_ns)
+        self.creator = get_element_text(root, "Creator", self.cpl_ns)
+        self.content_kind = get_element_text(root, "ContentKind", self.cpl_ns)
 
         # Get each of the parts of the CPL, i.e. the Reels :)
-        for reel_list_elem in get_element_iterator(root, "ReelList", cpl_ns):
+        for reel_list_elem in get_element_iterator(root, "ReelList", self.cpl_ns):
             for reel_elem in reel_list_elem.getchildren():
-                reel = Reel(reel_elem, cpl_ns, assetmap=self.assetmap)
+                reel = Reel(reel_elem, self.cpl_ns, assetmap=self.assetmap)
 
                 # Add this in as a convenience for working with assets.
                 for asset_id, asset in reel.assets.iteritems():
@@ -58,12 +60,28 @@ class CPL(object):
 
                 self.reels.append(reel)
 
-    def validate(self, schema=os.path.join(os.path.dirname(__file__), 'cpl.xsd')):
+    def validate(self):
         """
         Call the validate_xml function in util to valide the xml file against the schema.
         """
-        pass
-        #return validate_xml(schema, self.path)
+
+        schemas = {
+            # Not 100% sure which namespace is for Interop or SMPTE but this seems like the most sensible..
+            "http://www.smpte-ra.org/schemas/429-7/2006/CPL": os.path.join(os.path.dirname(__file__), 'smpte.xsd'),
+            "http://www.digicine.com/PROTO-ASDCP-CPL-20040511#": os.path.join(os.path.dirname(__file__), 'interop.xsd')
+        }
+
+        try:
+            schema = schemas[self.cpl_ns]
+        except KeyError:
+            raise CPLValidationError("Unknown CPL namespace: {0}".format(self.cpl_ns))
+
+        current_dir = u"/".join(os.path.dirname(__file__).split(os.sep))
+        schema_imports = [
+            {"namespace": "http://www.w3.org/2000/09/xmldsig#", "schemaLocation": u'{0}/sig.xsd'.format(current_dir)}
+        ]
+
+        return validate_xml(schema, self.path, schema_imports=schema_imports)
 
 class Reel(object):
     def __init__(self, element, cpl_ns, assetmap=None):

@@ -3,7 +3,7 @@ from datetime import datetime
 from smpteparsers.cpl import CPL, CPLError
 
 # Cannot use mock objects unfortunately, if we want to use cElementTree we cannot override "__builtin__.open" on that..
-base_data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
+base_data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'interop')
 cpl_paths = {
     "success": os.path.join(base_data_path, 'success.xml'),
 
@@ -48,23 +48,22 @@ class TestCPL(unittest.TestCase):
         self.assertEqual(reel.sound.entry_point, 0)
         self.assertEqual(reel.sound.duration, 500)
 
-
     def test_id_fails(self):
-        cpl = CPL(cpl_paths["no_id"])
+        cpl = CPL(cpl_paths["no_id"], parse=False)
         self.assertRaises(CPLError, cpl.parse)
 
-        cpl = CPL(cpl_paths["invalid_id"])
+        cpl = CPL(cpl_paths["invalid_id"], parse=False)
         self.assertRaises(CPLError, cpl.parse)
 
     def test_issue_date_fails(self):
-        cpl = CPL(cpl_paths["no_issue_date"])
+        cpl = CPL(cpl_paths["no_issue_date"], parse=False)
         self.assertRaises(CPLError, cpl.parse)
 
-        cpl = CPL(cpl_paths["invalid_issue_date"])
+        cpl = CPL(cpl_paths["invalid_issue_date"], parse=False)
         self.assertRaises(CPLError, cpl.parse)
 
     def test_content_title_text_fails(self):
-        cpl = CPL(cpl_paths["no_content_title_text"])
+        cpl = CPL(cpl_paths["no_content_title_text"], parse=False)
         self.assertRaises(CPLError, cpl.parse)
 
 if __name__ == '__main__':

@@ -36,20 +36,19 @@ def get_namespace(tag):
     right_brace = tag.rfind("}")
     return tag[1:right_brace]
 
-def validate_xml(schema_file, xml_file):
+def validate_xml(schema_file, xml_file, schema_imports=[]):
     with open(schema_file, 'r') as f:
         schema_root = etree.XML(f.read())
+
+    for schema_import in schema_imports:
+        new_import = etree.Element('{http://www.w3.org/2001/XMLSchema}import', **schema_import)
+        schema_root.insert(0, new_import)
 
     schema = etree.XMLSchema(schema_root)
     xmlparser = etree.XMLParser(schema=schema)
 
-    try:
-        with open(xml_file, 'r') as f:
-            etree.fromstring(f.read(), xmlparser)
-    except etree.XMLSyntaxError:
-        raise
-    except Exception:
-        raise
+    with open(xml_file, 'r') as f:
+        etree.fromstring(f.read(), xmlparser)
 
 def create_child_element(parent, el_name, el_val):
     """ElementTree Helper method to create a new element with a supplied value

@@ -6,7 +6,10 @@
     xmlns:xs="http://www.w3.org/2001/XMLSchema" 
     elementFormDefault="qualified" attributeFormDefault="unqualified">
 
+  <!--
+  Removed from the schema because lxml cannot cope with relative URIs so we construct the full path in python. :(
   <xs:import namespace="http://www.w3.org/2000/09/xmldsig#" schemaLocation="sig.xsd"/>
+  -->
 
   <!-- PackingList -->
   <xs:element name="PackingList" type="pkl:PackingListType"/>
