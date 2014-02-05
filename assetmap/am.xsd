@@ -48,7 +48,7 @@
       <xs:element name="VolumeCount" type="xs:positiveInteger"/>
       <xs:element name="IssueDate" type="xs:dateTime"/>
       <xs:element name="Issuer" type="am:UserText"/>
-	  <xs:element name="Creator" type="am:UserText"/>
+      <xs:element name="Creator" type="am:UserText"/>
       <xs:element name="AssetList">
         <xs:complexType>
           <xs:sequence>

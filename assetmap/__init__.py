@@ -14,13 +14,14 @@ class AssetmapValidationError(AssetmapError):
     pass
 
 class Assetmap(object):
-    def __init__(self, path):
+    def __init__(self, path, parse=True):
         self.path = path
 
         # A list of the assets contained in the DCP.
         self.assets = {}
 
-        self.parse()
+        if parse:
+            self.parse()
 
     def __unicode__(self):
         root = ET.Element("AssetMap")
@@ -77,9 +78,6 @@ class Assetmap(object):
         self.issuer = get_element_text(root, "Issuer", assetmap_ns)
         self.creator = get_element_text(root, "Creator", assetmap_ns)
 
-        if int(self.volume_count) < 0:
-            raise AssetmapError("Invalid Volume Count - Volume Count must be positive")
-
         asset_list = get_element(root, "AssetList", assetmap_ns)
         # Get the data from the ASSETMAP file
         for asset in asset_list.getchildren():
@@ -99,7 +97,7 @@ class Assetmap(object):
                         "path": get_element_text(chunk, "Path", assetmap_ns),
                         "volume_index": int(v) if v is not None else v,
                         "offset": int(o) if o is not None else o,
-                        "length": int(l) is l is not None else l
+                        "length": int(l) if l is not None else l
                     }
 
                     self.assets[asset_id] = AssetData(**a)
@@ -108,8 +106,7 @@ class Assetmap(object):
         """
         Call the validate_xml function in util to validate the xml file against the schema.
         """
-        pass
-        #return validate_xml(schema, self.path)
+        return validate_xml(schema, self.path)
 
     def validate_files(self, dcp_path):
         """

@@ -25,8 +25,7 @@ am_paths = {
     "invalid_asset_id": os.path.join(base_data_path, 'assets', 'invalid_asset_id.xml'),
 
     "no_chunks": os.path.join(base_data_path, 'assets', 'no_chunks.xml'),
-    "no_chunk_path": os.path.join(base_data_path, 'assets', 'no_chunk_path.xml'),
-    "invalid_chunk_path": os.path.join(base_data_path, 'assets', 'invalid_chunk_path.xml')
+    "no_chunk_path": os.path.join(base_data_path, 'assets', 'no_chunk_path.xml')
 }
 
 class TestAssetmap(unittest.TestCase):
@@ -54,55 +53,53 @@ class TestAssetmap(unittest.TestCase):
         self.assertEqual(asset.length, 8075)
 
     def test_id_fails(self):
-        am = Assetmap(am_paths["no_id"])
+        am = Assetmap(am_paths["no_id"], parse=False)
         self.assertRaises(AssetmapError, am.parse)
 
-        am = Assetmap(am_paths["invalid_id"])
+        am = Assetmap(am_paths["invalid_id"], parse=False)
         self.assertRaises(AssetmapError, am.parse)
 
     def test_volume_count_fails(self):
-        am = Assetmap(am_paths["no_volume_count"])
+        am = Assetmap(am_paths["no_volume_count"], parse=False)
         self.assertRaises(AssetmapError, am.parse)
 
-        am = Assetmap(am_paths["negative_volume_count"])
+        am = Assetmap(am_paths["negative_volume_count"], parse=False)
         self.assertRaises(AssetmapError, am.parse)
 
-        am = Assetmap(am_paths["string_volume_count"])
+        am = Assetmap(am_paths["string_volume_count"], parse=False)
         self.assertRaises(AssetmapError, am.parse)
 
     def test_issue_date_fails(self):
-        am = Assetmap(am_paths["no_issue_date"])
+        am = Assetmap(am_paths["no_issue_date"], parse=False)
         self.assertRaises(AssetmapError, am.parse)
 
-        am = Assetmap(am_paths["invalid_issue_date"])
+        am = Assetmap(am_paths["invalid_issue_date"], parse=False)
         self.assertRaises(AssetmapError, am.parse)
 
     def test_issuer_fails(self):
-        am = Assetmap(am_paths["no_issuer"])
+        am = Assetmap(am_paths["no_issuer"], parse=False)
         self.assertRaises(AssetmapError, am.parse)
 
     def test_creator_fails(self):
-        am = Assetmap(am_paths["no_creator"])
+        am = Assetmap(am_paths["no_creator"], parse=False)
         self.assertRaises(AssetmapError, am.parse)
 
     def test_assets_fails(self):
-        am = Assetmap(am_paths["no_assets"])
+        am = Assetmap(am_paths["no_assets"], parse=False)
         self.assertRaises(AssetmapError, am.parse)
 
     def test_asset_id_fails(self):
-        am = Assetmap(am_paths["no_asset_id"])
+        am = Assetmap(am_paths["no_asset_id"], parse=False)
         self.assertRaises(AssetmapError, am.parse)
 
     def test_chunks_fails(self):
-        am = Assetmap(am_paths["no_chunks"])
+        am = Assetmap(am_paths["no_chunks"], parse=False)
         self.assertRaises(AssetmapError, am.parse)
 
     def test_chunk_path_fails(self):
-        am = Assetmap(am_paths["no_chunk_path"])
+        am = Assetmap(am_paths["no_chunk_path"], parse=False)
         self.assertRaises(AssetmapError, am.parse)
 
-        am = Assetmap(am_paths["invalid_chunk_path"])
-        self.assertRaises(AssetmapError, am.parse)
 
 if __name__ == '__main__':
     unittest.main()
