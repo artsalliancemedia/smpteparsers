@@ -3,7 +3,7 @@
   <AuthenticatedPublic Id="ID_AuthenticatedPublic">
     <MessageId>urn:uuid:fceeeb51-a60d-4771-bd23-5844d6a881ea</MessageId>
     <MessageType>http://www.digicine.com/PROTO-ASDCP-KDM-20040311#</MessageType>
-    <AnnotationText>1-DAY_FTR_F_EN-XX_UK-XX_51_2K_VTGO_20091029_AAM ~ KDM for LE SPB MD SM.DCP2000-204127.DC.DOLPHIN.CA.DOREMILABS.COM</AnnotationText>
+    <AnnotationText>XXX-YYY_FTR_F_EN-XX_UK-XX_51_2K_VTGO_20091029_AAM ~ KDM for LE SPB MD SM.DCP2000-204127.DC.DOLPHIN.CA.DOREMILABS.COM</AnnotationText>
     <IssueDate>2009-11-02T16:47:02+00:00</IssueDate>
     <Signer>
       <dsig:X509IssuerName>dnQualifier=vVfvxXz1gOzEDwm2NoiJtcy4REQ=,CN=.192.168.254.3,OU=.mxf-j2c.ca.cinecert.com,O=.ca.cinecert.com</dsig:X509IssuerName>
@@ -18,7 +18,7 @@
         <X509SubjectName>dnQualifier=Vhn8DCoIfQbcEvnhG8gDIPB\+r5s=,CN=LE SPB MD SM.DCP2000-204127.DC.DOLPHIN.CA.DOREMILABS.COM,OU=DOREMILABS.INC,O=CA.DOREMILABS.COM</X509SubjectName>
       </Recipient>
       <CompositionPlaylistId>urn:uuid:91237d4e-be01-4711-afa9-c0b8809b4b4c</CompositionPlaylistId>
-      <ContentTitleText>1-DAY_FTR_F_EN-XX_UK-XX_51_2K_VTGO_20091029_AAM</ContentTitleText>
+      <ContentTitleText>XXX-YYY_FTR_F_EN-XX_UK-XX_51_2K_VTGO_20091029_AAM</ContentTitleText>
       <ContentKeysNotValidBefore>2009-01-01T00:00:00+00:00</ContentKeysNotValidBefore>
       <ContentKeysNotValidAfter>2009-12-11T00:00:00+00:00</ContentKeysNotValidAfter>
       <KeyIdList>
