@@ -23,17 +23,17 @@ class KDMBundle(object):
         :param filepath: KDM bundle tar file
         :type filepath: string -- path to a tar file
         """
-        with tarfile.open(filepath, 'r') as tar:
-            # get the CATALOG xml doc
-            cat_member = tar.getmember('CATALOG')
-            catalog = KDMBundle._parse_catalog(tar.extractfile(cat_member).read())
-            # get each of the referenced KDM files
-            kdms = []
-            for kdm_path in catalog.kdm_paths:
-                # append the CONTENT root dir
-                xml = tar.extractfile(os.path.join('CONTENT', kdm_path)).read()
-                kdms.append(KDM(xml))
-            tar.close()
+        tar = tarfile.open(filepath, 'r')
+        # get the CATALOG xml doc
+        cat_member = tar.getmember('CATALOG')
+        catalog = KDMBundle._parse_catalog(tar.extractfile(cat_member).read())
+        # get each of the referenced KDM files
+        kdms = []
+        for kdm_path in catalog.kdm_paths:
+            # append the CONTENT root dir
+            xml = tar.extractfile(os.path.join('CONTENT', kdm_path)).read()
+            kdms.append(KDM(xml))
+        tar.close()
         return cls(catalog, kdms)
 
     @staticmethod
