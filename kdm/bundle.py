@@ -32,7 +32,7 @@ class KDMBundle(object):
             for kdm_path in catalog.kdm_paths:
                 # append the CONTENT root dir
                 xml = tar.extractfile(os.path.join('CONTENT', kdm_path)).read()
-                kdms.append(KDM.from_string(xml))
+                kdms.append(KDM(xml))
             tar.close()
         return cls(catalog, kdms)
 

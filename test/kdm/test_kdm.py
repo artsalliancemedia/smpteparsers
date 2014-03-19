@@ -1,5 +1,6 @@
 import unittest
 import os.path
+from StringIO import StringIO
 
 from smpteparsers.kdm import KDM
 
@@ -18,7 +19,27 @@ class TestKDM(unittest.TestCase):
             self.smpte_kdm_xml = f.read()
 
     def test_interop_from_string(self):
-        kdm = KDM.from_string(self.interop_kdm_xml)
+        kdm = KDM(self.interop_kdm_xml)
+        self._check_interop_kdm(kdm)
+
+    def test_smpte_from_string(self):
+        kdm = KDM(self.smpte_kdm_xml)
+        self._check_smpte_kdm(kdm)
+
+    def test_interop_from_file(self):
+        kdm = KDM.from_file(StringIO(self.interop_kdm_xml))
+        self._check_interop_kdm(kdm)
+
+    def test_smpte_from_file(self):
+        kdm = KDM.from_file(StringIO(self.smpte_kdm_xml))
+        self._check_smpte_kdm(kdm)
+
+    def test_smpte_validation(self):
+        kdm = KDM(self.smpte_kdm_xml)
+        kdm.validate()
+
+    def _check_interop_kdm(self, kdm):
+        self.assertEqual(kdm.kind, KDM.INTEROP)
         self.assertEqual(kdm.id, 'fceeeb51-a60d-4771-bd23-5844d6a881ea')
         self.assertEqual(kdm.annotation_text,
             'XXX-YYY_FTR_F_EN-XX_UK-XX_51_2K_VTGO_20091029_AAM ~ KDM for LE SPB MD SM.DCP2000-204127.DC.DOLPHIN.CA.DOREMILABS.COM')
@@ -28,8 +49,8 @@ class TestKDM(unittest.TestCase):
         self.assertEqual(kdm.start_date, '2009-01-01T00:00:00+00:00')
         self.assertEqual(kdm.end_date, '2009-12-11T00:00:00+00:00')
 
-    def test_smpte_from_string(self):
-        kdm = KDM.from_string(self.smpte_kdm_xml)
+    def _check_smpte_kdm(self, kdm):
+        self.assertEqual(kdm.kind, KDM.SMPTE)
         self.assertEqual(kdm.id, '6cfcdca2-2c0a-44eb-9df9-aadcf5491341')
         self.assertEqual(kdm.annotation_text,
             'XXX-YYY_FTR_F_EN-XX_UK_51_2K_MTRD_20120531_AAM_OV ~ KDM for SM SPB MDI MDA MDS FMI FMA.Dolby-CAT745-000000FC')
@@ -38,7 +59,6 @@ class TestKDM(unittest.TestCase):
         self.assertEqual(kdm.content_title_text, 'XXX-YYY_FTR_F_EN-XX_UK_51_2K_MTRD_20120531_AAM_OV')
         self.assertEqual(kdm.start_date, '2012-06-08T00:00:00+00:00')
         self.assertEqual(kdm.end_date, '2019-01-01T23:59:00+00:00')
-
 
 if __name__ == '__main__':
     unittest.main()
