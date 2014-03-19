@@ -63,3 +63,14 @@ def create_child_element(parent, el_name, el_val):
     el = ET.SubElement(parent, el_name)
     el.text = el_val
     return el
+
+def strip_urn(urn):
+    """
+    Strips URNs with format urn:<type>:<text> to retrieve the text
+    If a valid urn is not supplied, then the original urn is returned
+    """
+    splitted_urn = urn.split(':')
+    if urn.startswith('urn:') and len(splitted_urn) == 3:
+        return splitted_urn[2]
+    else:
+        return urn
