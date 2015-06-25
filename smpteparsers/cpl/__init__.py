@@ -8,6 +8,9 @@ except ImportError:
 from smpteparsers.util.date_utils import parse_date
 from smpteparsers.util import get_element, get_element_text, get_element_iterator, get_namespace, validate_xml
 
+if sys.version_info > (3, ):
+    long = int
+
 class CPLError(Exception):
     pass
 class CPLValidationError(CPLError):
@@ -23,6 +26,27 @@ class CPL(object):
 
         if parse:
             self.parse()
+
+    @property
+    def duration_in_frames(self):
+        duration = 0
+        for reel in self.reels:
+            duration += self.assets[reel.picture.id].duration
+        return duration
+
+    @property
+    def edit_rate(self):
+        if len(self.reels):
+            return self.assets[self.reels[0].picture.id].edit_rate
+        return (24, 1)
+
+    @property
+    def duration_in_seconds(self):
+        return (
+            float(self.duration_in_frames) /
+            float(self.edit_rate[0]) *
+            float(self.edit_rate[1])
+        )
 
     def parse(self):
         """
@@ -55,7 +79,7 @@ class CPL(object):
                 reel = Reel(reel_elem, self.cpl_ns, assetmap=self.assetmap)
 
                 # Add this in as a convenience for working with assets.
-                for asset_id, asset in reel.assets.iteritems():
+                for asset_id, asset in reel.assets.items():
                     self.assets[asset_id] = asset
 
                 self.reels.append(reel)

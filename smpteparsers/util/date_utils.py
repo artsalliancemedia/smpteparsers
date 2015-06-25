@@ -25,7 +25,7 @@ def parse_date(datetime_str, default_to_local_time = True):
                 int(date_search.group(1)[6:8])
             ]
         datetime_str = datetime_str[date_search.end(1):]
-        
+
         # -- Search for the time component (which is optional)
         time_search = _date_time_re.search(datetime_str)
         if time_search:
@@ -44,13 +44,13 @@ def parse_date(datetime_str, default_to_local_time = True):
         else:
             #Missing time so fill it with zeros
             date_time_array += [0,0,0]
-        
-        #Create the datetime object 
+
+        #Create the datetime object
         parsed_timestamp = float(calendar.timegm(date_time_array))
-        
+
         #Convert the KDM's local time to UTC
         parsed_timestamp += _parse_time_zone(datetime_str, parsed_timestamp, default_to_local_time)
-        
+
         return datetime.datetime.utcfromtimestamp(parsed_timestamp)
 
     return ValueError
@@ -63,7 +63,7 @@ def _parse_time_zone(datetime_str, parsed_timestamp, default_to_local_time):
     and returns a int that will convert the timestamp to UTC
     It doesn't look for the possible Z (zulu) case because zulu==UTC and a failed search results in 0 being returned
     """
-    
+
     tz_search = _date_timezone_regex.search(datetime_str)
     if tz_search:
         utc_offset_direction = tz_search.group(1)
@@ -89,7 +89,7 @@ def parse_xs_duration(duration_str):
     seconds_per_day = seconds_per_hour * 24.0
     seconds_per_year = 31557600.0 # -- http://en.wikipedia.org/wiki/Year
     seconds_per_month = seconds_per_year / 12.0
-    
+
     duration_re = re.compile(r"""
         (?P<sign>[-])?
         P
@@ -117,7 +117,7 @@ def parse_xs_duration(duration_str):
         duration_in_seconds += seconds_per_hour * float(info['hours'])
     if info['days']:
         duration_in_seconds += seconds_per_day * float(info['days'])
-        
+
     accuracy_warning = False
     if info['months'] and info['months'] != '0':
         accuracy_warning = True
@@ -125,7 +125,7 @@ def parse_xs_duration(duration_str):
     if info['years'] and info['years'] != '0':
         accuracy_warning = True
         duration_in_seconds += seconds_per_year * float(info['years'])
-    
+
     if accuracy_warning:
         logging.warning('The duration parser is not intended to be used on durations > 1 day [%s]' % duration_str)
 
@@ -145,24 +145,24 @@ def parse_simple_duration(duration_str):
         (?P<secs>\d?\d?([.]\d+)?)
         $
         """, re.VERBOSE)
-    
+
     re_match = duration_re.match(duration_str)
     if not re_match:
         raise ValueError('Invalid duration string format')
-    
+
     info = re_match.groupdict()
     duration_in_seconds = float(info['secs'])
     duration_in_seconds += float(info['mins']) * 60
     duration_in_seconds += float(info['hours']) * 60 * 60
-    
+
     return duration_in_seconds
-    
+
 def seconds_to_simple_duration(seconds):
     hours = seconds // (60 * 60)
     seconds -= hours * (60 * 60)
     minutes = seconds // 60
     seconds -= minutes * 60
-    return '%02d:%02d:%06.3f' % (hours, minutes, seconds) 
+    return '%02d:%02d:%06.3f' % (hours, minutes, seconds)
 
 def utc_datetime_to_local(utc_datetime):
     """
@@ -207,7 +207,7 @@ def get_timezone(timezone_name):
 
 def datespan(start, end, delta=datetime.timedelta(days=1)):
     """
-    Generator that returns dates between two times, incrementing based on the 
+    Generator that returns dates between two times, incrementing based on the
     delta attribute.
     """
     curr = start
@@ -217,9 +217,9 @@ def datespan(start, end, delta=datetime.timedelta(days=1)):
 
 
 if __name__ == '__main__':
-    print parse_date('2012-01-30 12:58:00')
-    print parse_date('2012-06-30 12:58:00')
-    
-    print parse_date('2012-01-30T12:58:00Z')
-    print parse_date('2012-06-30T12:58:00Z')
-    
+    print(parse_date('2012-01-30 12:58:00'))
+    print(parse_date('2012-06-30 12:58:00'))
+
+    print(parse_date('2012-01-30T12:58:00Z'))
+    print(parse_date('2012-06-30T12:58:00Z'))
+

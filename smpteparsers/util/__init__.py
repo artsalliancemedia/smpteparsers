@@ -1,6 +1,8 @@
 """
 Utility functions
 """
+from io import StringIO
+
 try:
     import xml.etree.cElementTree as ET
 except ImportError:
@@ -38,7 +40,7 @@ def get_namespace(tag):
 
 def validate_xml(schema_file, xml_file, schema_imports=[]):
     with open(schema_file, 'r') as f:
-        schema_root = etree.XML(f.read())
+        schema_root = etree.XML(f.read().encode("utf-8"))
 
     for schema_import in schema_imports:
         new_import = etree.Element('{http://www.w3.org/2001/XMLSchema}import', **schema_import)
@@ -48,7 +50,7 @@ def validate_xml(schema_file, xml_file, schema_imports=[]):
     xmlparser = etree.XMLParser(schema=schema)
 
     with open(xml_file, 'r') as f:
-        etree.fromstring(f.read(), xmlparser)
+        etree.fromstring(f.read().encode("utf-8"), xmlparser)
 
 def create_child_element(parent, el_name, el_val):
     """ElementTree Helper method to create a new element with a supplied value
