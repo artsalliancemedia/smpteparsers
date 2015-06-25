@@ -1,10 +1,11 @@
-from datetime import datetime as dt
-from bs4 import BeautifulSoup
-from helper import get_datetime, validate_XML
-from operator import attrgetter
-from error import FlmxParseError
 import os
 import logging
+from datetime import datetime as dt
+from bs4 import BeautifulSoup
+from operator import attrgetter
+
+from smpteparsers.flmx.helper import get_datetime, validate_XML
+from smpteparsers.flmx.error import FlmxParseError
 
 _logger = logging.getLogger(__name__)
 

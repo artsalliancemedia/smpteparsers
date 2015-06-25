@@ -20,8 +20,8 @@ class TestSiteListXMLParsing(unittest.TestCase):
         </SiteList>
         """
 
-    empty = """ 
-            
+    empty = """
+
             """
 
     nofacilities = """
@@ -43,7 +43,7 @@ class TestSiteListXMLParsing(unittest.TestCase):
             <FacilityList>
                 <Facility id="A" modified="2011-04-07T12:10:01-00:00" xlink:href="linkC" xlink:type="simple"/>
                 <Facility id="B" modified="2012-05-08T12:11:02-01:20" xlink:href="linkB" xlink:type="simple"/>
-                <Facility id="C" modified="2013-06-09T12:11:02-01:20" 
+                <Facility id="C" modified="2013-06-09T12:11:02-01:20"
         """
     # cuts off part-way through a date field
     malformedB = """
@@ -54,7 +54,7 @@ class TestSiteListXMLParsing(unittest.TestCase):
             <FacilityList>
                 <Facility id="A" modified="2011-04-07T12:10:01-00:00" xlink:href="linkC" xlink:type="simple"/>
                 <Facility id="B" modified="2012-05-08T12:11:02-01:20" xlink:href="linkB" xlink:type="simple"/>
-                <Facility id="C" modified="2013-06-09T12: 
+                <Facility id="C" modified="2013-06-09T12:
         """
 
     def test_good_xml(self):
@@ -80,17 +80,17 @@ class TestSiteListDateHandling(unittest.TestCase):
         #bad date (month 13)
         self.assertRaises(ValueError, helper.get_datetime, u'2012-13-13T12:30:00+00:00')
 
-    def test_good_timezones(self):        
+    def test_good_timezones(self):
         date = u'2012-01-01T12:20:00'
         dt = datetime(2012, 1, 1, 12, 20, 0)
         #utc
-        self.assertEqual(helper.get_datetime(date + u'-00:00'), dt)   
-        self.assertEqual(helper.get_datetime(date + u'+00:00'), dt)   
+        self.assertEqual(helper.get_datetime(date + u'-00:00'), dt)
+        self.assertEqual(helper.get_datetime(date + u'+00:00'), dt)
 
-        #positive timezone 
+        #positive timezone
         self.assertEqual(helper.get_datetime(date + u'+01:30'),
                          dt - timedelta(hours=1, minutes = 30))
-        #negative timezone 
+        #negative timezone
         self.assertEqual(helper.get_datetime(date + u'-01:30'),
                          dt - timedelta(hours=-1, minutes = -30))
 
@@ -121,9 +121,9 @@ class TestSiteListUnusualTimes(unittest.TestCase):
     def test_no_colon_timezone(self):
         #timezone as +0000
         self.assertEqual(helper.get_datetime(u'2012-01-01T12:30:00+0130'),
-                         datetime(2012, 1, 1, 11, 00, 0))
+                         datetime(2012, 1, 1, 11, 0, 0))
         self.assertEqual(helper.get_datetime(u'2012-01-01T12:30:00-0130'),
-                         datetime(2012, 1, 1, 14, 00, 0))
+                         datetime(2012, 1, 1, 14, 0, 0))
 
     def test_no_minutes_timezone(self):
         #timezone as +00 (no minutes)
@@ -163,7 +163,7 @@ class TestSiteListFetchHandling(unittest.TestCase):
 
     def test_middle_date(self):
         #beginning of 2012, should only return B and C
-        dict = self.sites.get_sites(datetime(2012,01,01,12,0,0))
+        dict = self.sites.get_sites(datetime(2012,1,1,12,0,0))
         self.assertEqual(len(dict), 2)
         self.assertFalse(u'linkA' in dict)
         self.assertEqual(dict[u'linkB'], self.datetimeB)
@@ -171,7 +171,7 @@ class TestSiteListFetchHandling(unittest.TestCase):
 
     def test_before_date(self):
         #beginning of 2011, should return all
-        dict = self.sites.get_sites(datetime(2011,01,01,12,0,0))
+        dict = self.sites.get_sites(datetime(2011,1,1,12,0,0))
         self.assertEqual(len(dict), 3)
         self.assertEqual(dict[u'linkA'], self.datetimeA)
         self.assertEqual(dict[u'linkB'], self.datetimeB)
@@ -179,7 +179,7 @@ class TestSiteListFetchHandling(unittest.TestCase):
 
     def test_middle_date(self):
         #beginning of 2014, should not return anything
-        dict = self.sites.get_sites(datetime(2014,01,01,12,0,0))
+        dict = self.sites.get_sites(datetime(2014,1,1,12,0,0))
         self.assertEqual(len(dict), 0)
 
 if __name__ == u'__main__':

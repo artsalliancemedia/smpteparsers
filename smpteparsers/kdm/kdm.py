@@ -128,4 +128,4 @@ class KDM(object):
         self.start_date = get_element_text(re_el, 'ContentKeysNotValidBefore', interop_kdm_ns)
         self.end_date = get_element_text(re_el, 'ContentKeysNotValidAfter', interop_kdm_ns)
 
-    
+

@@ -1,6 +1,14 @@
+import os, logging
+
 from bs4 import BeautifulSoup
-from helper import get_boolean, get_string, get_date, get_uint, get_datetime, deliveries, validate_XML
-import error, os, logging
+
+import smpteparsers.flmx.error
+from smpteparsers.flmx.helper import (
+    get_boolean, get_string, get_date, get_uint, get_datetime,
+    deliveries, validate_XML
+)
+
+
 
 _logger = logging.getLogger(__name__)
 

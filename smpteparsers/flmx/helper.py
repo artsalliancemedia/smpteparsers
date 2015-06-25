@@ -1,9 +1,19 @@
+
+import os
+import logging
+
 from datetime import datetime as dt
 from datetime import timedelta
+
 from bs4 import Tag
-from StringIO import StringIO
-import error, xmlvalidation, os
-import logging
+
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
+
+from smpteparsers.flmx import error
+from smpteparsers.flmx import xmlvalidation
 
 _logger = logging.getLogger(__name__)
 
@@ -58,7 +68,7 @@ def get_datetime(s):
     # Additionally timezone might be in a different format, either +01:00, +0100, or +01
     start_timezone = 0
 
-    # must be millis - 3 extra digits. datetime doesn't store that precision so 
+    # must be millis - 3 extra digits. datetime doesn't store that precision so
     # we'll just round up so as not to miss this entry when updating
     if rest.startswith(u'.'):
         date += timedelta(seconds = 1)
@@ -103,8 +113,8 @@ def validate_XML(xml, xsd):
 
     Will raise an `FlmxParseError` if any errors are encountered during the validation process.
 
-    :param string xml: A string object containing the contents of the xml file to validate. 
-    :param string xsd: A filename of a .xsd schema file to validate against. 
+    :param string xml: A string object containing the contents of the xml file to validate.
+    :param string xsd: A filename of a .xsd schema file to validate against.
 
     """
 
@@ -117,7 +127,7 @@ def validate_XML(xml, xsd):
         # will work nicely with it
         if isinstance(xml, str) or isinstance(xml, unicode):
             xml = StringIO(xml)
-                            
+
         if not v.validate(xml, xsd):
             error_msg = u""
             # v.get_messages returns a lxml.etree._ListErrorLog object

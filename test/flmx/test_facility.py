@@ -3,8 +3,8 @@ import unittest, os
 from datetime import datetime
 from bs4 import BeautifulSoup
 
-import smpteparsers.flmx.facility as flmx
-import smpteparsers.flmx.error as error
+from smpteparsers.flmx import facility as flmx
+from smpteparsers.flmx import error
 
 class TestFacilityParserMethods(unittest.TestCase):
 
@@ -476,11 +476,11 @@ class TestDevice(unittest.TestCase):
 
         self.assertEqual(device.serial, u"serial")
         self.assertEqual(device.manufacturer_id, u"fox.com:1560")
-        self.assertEqual(device.install_date, datetime(2013, 07, 01, 02, 54, 51))
+        self.assertEqual(device.install_date, datetime(2013, 7, 1, 2, 54, 51))
         self.assertEqual(device.resolution, u"2K")
         self.assertEqual(device.integrator, u"FOX")
         self.assertEqual(device.vpf_finance_entity, u"FOX")
-        self.assertEqual(device.vpf_start_date, datetime(2013, 07, 01))
+        self.assertEqual(device.vpf_start_date, datetime(2013, 7, 1))
 
         self.assertEqual(len(device.ip_addresses), 1)
         self.assertTrue(isinstance(device.ip_addresses[0], flmx.IPAddress))
@@ -503,7 +503,7 @@ class TestDigital3DSystem(unittest.TestCase):
         <Digital3DSystem>
           <IsActive>0</IsActive>
         </Digital3DSystem>
-        """    
+        """
 
     fullXML = """
         <Digital3DSystem>
@@ -522,7 +522,7 @@ class TestDigital3DSystem(unittest.TestCase):
         system = flmx.Digital3DSystem(minimal)
 
         self.assertEqual(system.active, False)
-        
+
         self.assertEqual(system.configuration, None)
         self.assertEqual(system.install_date, None)
         self.assertEqual(system.screen_color, None)
@@ -535,9 +535,9 @@ class TestDigital3DSystem(unittest.TestCase):
         system = flmx.Digital3DSystem(optional)
 
         self.assertEqual(system.active, True)
-        
+
         self.assertEqual(system.configuration, u"3D")
-        self.assertEqual(system.install_date, datetime(2013, 07, 01, 02, 54, 51))
+        self.assertEqual(system.install_date, datetime(2013, 7, 1, 2, 54, 51))
         self.assertEqual(system.screen_color, u"Silver")
         self.assertEqual(system.screen_luminance, 23)
         self.assertEqual(system.ghostbusting, True)
@@ -614,7 +614,7 @@ class TestAuditorium(unittest.TestCase):
         self.assertEqual(auditorium.screen_aspect_ratio, u"1.85")
         self.assertEqual(auditorium.adjustable_screen_mask, u"Side")
         self.assertEqual(auditorium.audio_format, u"13.2")
-        self.assertEqual(auditorium.install_date, datetime(2013, 07, 01, 02, 54, 51))
+        self.assertEqual(auditorium.install_date, datetime(2013, 7, 1, 2, 54, 51))
         self.assertEqual(auditorium.large_format_type, u"Large")
         self.assertTrue(isinstance(auditorium.digital_3d_system, flmx.Digital3DSystem))
 
