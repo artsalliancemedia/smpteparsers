@@ -38,7 +38,7 @@ def get_namespace(tag):
     right_brace = tag.rfind("}")
     return tag[1:right_brace]
 
-def validate_xml(schema_file, xml_file, schema_imports=[]):
+def validate_xml(schema_file, xml_file, schema_imports=[], from_path=False):
     with open(schema_file, 'r') as f:
         schema_root = etree.XML(f.read().encode("utf-8"))
 
@@ -49,8 +49,10 @@ def validate_xml(schema_file, xml_file, schema_imports=[]):
     schema = etree.XMLSchema(schema_root)
     xmlparser = etree.XMLParser(schema=schema)
 
-    with open(xml_file, 'r') as f:
-        etree.fromstring(f.read().encode("utf-8"), xmlparser)
+    if from_path:
+        with open(xml_file, 'r') as f:
+            xml_file = f.read()
+    etree.fromstring(xml_file.encode("utf-8"), xmlparser)
 
 def create_child_element(parent, el_name, el_val):
     """ElementTree Helper method to create a new element with a supplied value
