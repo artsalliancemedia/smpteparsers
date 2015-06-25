@@ -1,7 +1,7 @@
-import unittest, json
-from smpteparsers.test import uuid_re
+import unittest, json, re
 from smpteparsers.playlist import Playlist, PlaylistValidationError
 
+uuid_re = re.compile("^[a-fA-F\d]{8}-[a-fA-F\d]{4}-[a-fA-F\d]{4}-[a-fA-F\d]{4}-[a-fA-F\d]{12}$")
 # Minimal info required for a playlist to be successful.
 success_playlist = """
 {

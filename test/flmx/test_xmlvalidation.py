@@ -1,8 +1,11 @@
 import unittest
-from StringIO import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
-from smpteparsers.flmx.xmlvalidation import XMLValidator
-import smpteparsers.flmx.error
+from smpteparsers.flmx import xmlvalidation
+from smpteparsers.flmx import error
 
 good_xsd = """<?xml version="1.0" encoding="utf-8"?>
     <schema
