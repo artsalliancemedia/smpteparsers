@@ -1,8 +1,8 @@
 import tarfile
 import os.path
 
-from kdm import KDM
-from catalog import KDMBundleCatalog
+from smpteparsers.kdm import KDM
+from smpteparsers.kdm.catalog import KDMBundleCatalog
 
 class KDMBundle(object):
     """
@@ -42,11 +42,11 @@ class KDMBundle(object):
 
     def str(self, tar):
         for tarinfo in tar:
-            print tarinfo.name, "is", tarinfo.size, "bytes in size and is",
+            print(tarinfo.name, "is", tarinfo.size, "bytes in size and is")
             if tarinfo.isreg():
-                print "a regular file."
+                print("a regular file.")
             elif tarinfo.isdir():
-                print "a directory."
+                print("a directory.")
             else:
-                print "something else."
+                print("something else.")
 

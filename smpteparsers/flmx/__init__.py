@@ -1,4 +1,4 @@
-from parse import ParserMap
+from smpteparsers.flmx.parse import ParserMap
 
 from datetime import datetime
 from optparse import OptionParser

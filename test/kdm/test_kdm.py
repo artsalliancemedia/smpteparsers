@@ -1,6 +1,9 @@
 import unittest
 import os.path
-from StringIO import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 from smpteparsers.kdm import KDM
 

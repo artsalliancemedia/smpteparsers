@@ -8,21 +8,53 @@ except ImportError:
 from smpteparsers.util.date_utils import parse_date
 from smpteparsers.util import get_element, get_element_text, get_element_iterator, get_namespace, validate_xml
 
+if sys.version_info > (3, ):
+    long = int
+
 class CPLError(Exception):
     pass
 class CPLValidationError(CPLError):
     pass
 
 class CPL(object):
-    def __init__(self, path, assetmap=None, parse=True):
+    def __init__(self, path=None, assetmap=None, parse=True):
         self.path = path
         self.assetmap = assetmap
 
         self.reels = []
         self.assets = {}
 
-        if parse:
+        if parse and path is not None:
             self.parse()
+
+    @property
+    def duration_in_frames(self):
+        duration = 0
+        for reel in self.reels:
+            duration += self.assets[reel.picture.id].duration
+        return duration
+
+    @property
+    def edit_rate(self):
+        return self.assets[self.reels[0].picture.id].edit_rate
+
+    @property
+    def duration_in_seconds(self):
+        return (
+            float(self.duration_in_frames) /
+            float(self.edit_rate[0]) *
+            float(self.edit_rate[1])
+        )
+
+    def fromstring(self, xml):
+        try:
+            tree = ET.ElementTree(ET.fromstring(xml))
+            root = tree.getroot()
+            self.cpl_ns = get_namespace(root.tag)
+            self.validate(xml=xml)
+        except Exception as e:
+            raise CPLError(e)
+        self._parse(tree)
 
     def parse(self):
         """
@@ -32,15 +64,13 @@ class CPL(object):
         try:
             tree = ET.parse(self.path)
             root = tree.getroot()
-            # ElementTree prepends the namespace to all elements, so we need to extract
-            # it so that we can perform sensible searching on elements.
             self.cpl_ns = get_namespace(root.tag)
-
             self.validate()
         except Exception as e:
             raise CPLError(e)
+        self._parse(root)
 
-
+    def _parse(self, root):
         self.id = get_element_text(root, "Id", self.cpl_ns).split(":")[2]
         self.content_title_text = get_element_text(root, "ContentTitleText", self.cpl_ns)
         self.annotation_text = get_element_text(root, "AnnotationText", self.cpl_ns)
@@ -55,12 +85,12 @@ class CPL(object):
                 reel = Reel(reel_elem, self.cpl_ns, assetmap=self.assetmap)
 
                 # Add this in as a convenience for working with assets.
-                for asset_id, asset in reel.assets.iteritems():
+                for asset_id, asset in reel.assets.items():
                     self.assets[asset_id] = asset
 
                 self.reels.append(reel)
 
-    def validate(self):
+    def validate(self, xml=None, from_path=True):
         """
         Call the validate_xml function in util to valide the xml file against the schema.
         """
@@ -80,8 +110,9 @@ class CPL(object):
         schema_imports = [
             {"namespace": "http://www.w3.org/2000/09/xmldsig#", "schemaLocation": u'{0}/sig.xsd'.format(current_dir)}
         ]
-
-        return validate_xml(schema, self.path, schema_imports=schema_imports)
+        if xml is not None:
+            return validate_xml(schema, xml, schema_imports=schema_imports)
+        return validate_xml(schema, self.path, schema_imports=schema_imports, from_path=True)
 
 class Reel(object):
     def __init__(self, element, cpl_ns, assetmap=None):

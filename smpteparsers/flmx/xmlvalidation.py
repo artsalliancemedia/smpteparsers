@@ -1,6 +1,6 @@
 from lxml import etree
 from lxml.etree import XMLSyntaxError
-from error import FlmxCriticalError, FlmxParseError
+from smpteparsers.flmx.error import FlmxCriticalError, FlmxParseError
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -46,7 +46,7 @@ class XMLValidator(object):
 
         try:
             schema_doc = etree.parse(xsd)
-        except XMLSyntaxError, e:
+        except XMLSyntaxError as e:
             msg= u"Schema could not be parsed: " + repr(e)
             _logger.critical(msg)
             raise FlmxCriticalError(msg)
@@ -54,7 +54,7 @@ class XMLValidator(object):
         # Not mission critical if the xml file does not parse - just return false as does not validate.
         try:
             xml_doc = etree.parse(xml)
-        except XMLSyntaxError, e:
+        except XMLSyntaxError as e:
             msg = u"XML document could not be parsed: " + repr(e)
             self.messages = [msg]
             _logger.warning(msg)

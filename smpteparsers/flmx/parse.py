@@ -1,11 +1,15 @@
 from datetime import datetime
 from lxml.etree import XMLSyntaxError
-from urlparse import urljoin
 import logging, requests, json, os
 
-from facility import FacilityParser
-from sitelist import SiteListParser
-from error import FlmxParseError, FlmxPartialError
+try:
+    from urlparse import urljoin
+except ImportError:
+    from urllib.parse import urljoin
+
+from smpteparsers.flmx.facility import FacilityParser
+from smpteparsers.flmx.sitelist import SiteListParser
+from smpteparsers.flmx.error import FlmxParseError, FlmxPartialError
 
 # setup logger - __ to ensure it's not accessible from outside
 _logger = logging.getLogger(__name__)
@@ -136,7 +140,7 @@ class Parser(object):
             return FacilityParser(res.raw)
         except FlmxParseError as e:
             raise FlmxParseError(u"Problem parsing FLM at " + url + u". Error message: " + e.msg)
-        except XMLSyntaxError, e:
+        except XMLSyntaxError as e:
             msg = u"FLM at " + url + u" failed validation.  Error message: " + e.msg
             _logger.warning(msg)
             raise XMLSyntaxError(msg)
