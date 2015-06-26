@@ -84,15 +84,15 @@ class Assetmap(object):
             asset_id = get_element_text(asset, "Id", assetmap_ns).split(":")[2]
             for chunklist in get_element_iterator(asset, "ChunkList", assetmap_ns):
                 """
-                The code below assumes that there will only ever be one chunk in a chunklist. Chunking is 
+                The code below assumes that there will only ever be one chunk in a chunklist. Chunking is
                 used to split files up into smaller parts, usually in order to provide compatability with older
                 filesystems, which is not applicable for our uses.
                 """
                 for chunk in chunklist.getchildren():
                     v = get_element_text(chunk, "VolumeIndex", assetmap_ns)
-                    o = get_element_text(chunk, "Offset", assetmap_ns) 
+                    o = get_element_text(chunk, "Offset", assetmap_ns)
                     l = get_element_text(chunk, "Length", assetmap_ns)
-                    
+
                     a = {
                         "path": get_element_text(chunk, "Path", assetmap_ns),
                         "volume_index": int(v) if v is not None else v,
@@ -101,12 +101,12 @@ class Assetmap(object):
                     }
 
                     self.assets[asset_id] = AssetData(**a)
-                    
+
     def validate(self, schema=os.path.join(os.path.dirname(__file__), 'am.xsd')):
         """
         Call the validate_xml function in util to validate the xml file against the schema.
         """
-        return validate_xml(schema, self.path)
+        return validate_xml(schema, self.path, from_path=True)
 
     def validate_files(self, dcp_path):
         """
