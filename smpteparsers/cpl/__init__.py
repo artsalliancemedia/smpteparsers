@@ -51,7 +51,7 @@ class CPL(object):
             tree = ET.ElementTree(ET.fromstring(xml))
             root = tree.getroot()
             self.cpl_ns = get_namespace(root.tag)
-            self.validate(xml=xml)
+            # self.validate(xml=xml)
         except Exception as e:
             raise CPLError(e)
         self._parse(tree)
@@ -65,7 +65,7 @@ class CPL(object):
             tree = ET.parse(self.path)
             root = tree.getroot()
             self.cpl_ns = get_namespace(root.tag)
-            self.validate()
+            # self.validate()
         except Exception as e:
             raise CPLError(e)
         self._parse(root)
@@ -166,7 +166,7 @@ class Picture(Asset):
         super(Picture, self).__init__(element, cpl_ns)
 
         self.frame_rate = tuple([int(x) for x in get_element_text(element, "FrameRate", cpl_ns).split()])
-        self.screen_aspect_ratio = tuple([int(x) for x in get_element_text(element, "ScreenAspectRatio", cpl_ns).split()])
+        self.screen_aspect_ratio = tuple([float(x) for x in get_element_text(element, "ScreenAspectRatio", cpl_ns).split()])
 
 class Sound(Asset):
     def __init__(self, element, cpl_ns):
